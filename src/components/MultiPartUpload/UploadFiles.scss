@@ -1,0 +1,87 @@
+.upload-files-container {
+  background-color: #f7f9fc;
+  padding: 20px;
+  border-radius: 12px;
+  max-width: 600px;
+  margin: auto;
+
+  .upload-instructions {
+    border: 2px dashed #cfd6e1;
+    padding: 40px 20px;
+    text-align: center;
+    border-radius: 12px;
+    background-color: #eef2f7;
+    margin-bottom: 20px;
+
+    img {
+      margin-bottom: 15px;
+    }
+
+    p {
+      font-size: 16px;
+      color: #5a607f;
+    }
+
+    .helperText {
+      font-size: 14px;
+      color: #a3acc2;
+    }
+  }
+
+  .file-list {
+    margin-top: 20px;
+    max-height: 300px;
+    overflow-y: auto;
+
+    #upload-progress {
+      display: flex;
+      align-items: center;
+      margin-bottom: 15px;
+      padding: 10px;
+      background-color: #ffffff;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      border-left: 4px solid #57a3f3;
+
+      img {
+        width: 40px;
+        height: 40px;
+        margin-right: 15px;
+      }
+
+      #progress {
+        flex: 1;
+
+        > div:first-child {
+          display: flex;
+          justify-content: space-between;
+          margin-bottom: 10px;
+
+          > div:first-child {
+            color: #2a324b;
+            font-size: 16px;
+          }
+
+          .error-message {
+            color: #ff5252;
+            font-size: 14px;
+          }
+        }
+
+        .progress-text {
+          font-size: 12px;
+          color: #a3acc2;
+          text-align: right;
+        }
+      }
+    }
+  }
+}
+
+.upload-files-container .MuiIconButton-root {
+  padding: 5px;
+}
+
+.upload-files-container .MuiLinearProgress-root {
+  background-color: #cfd6e1;
+}
