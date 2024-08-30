@@ -31,6 +31,9 @@ const UploadFiles: React.FC<uploadImagesComponentProps> = ({
   setFileFormData,
   fileFormData,
   setFileProgress,
+  resumeUpload,
+  abortFileUpload,
+  abortedFiles,
 }) => {
   const dispatch = useDispatch();
   const [file, setFile] = useState<File[]>([]);
@@ -62,9 +65,8 @@ const UploadFiles: React.FC<uploadImagesComponentProps> = ({
     dispatch(removeOneElement(index));
   };
 
-  const retryUpload = (file: File) => {
-    console.log(file);
-    // handleFileChange(new DataTransfer().items.add(file) as unknown as FileList);
+  const retryUpload = (file: File, index: number) => {
+    resumeUpload(file, index);
   };
 
   const handleTextFieldValueChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -174,10 +176,37 @@ const UploadFiles: React.FC<uploadImagesComponentProps> = ({
                 <p>
                   <u>Click to upload</u> or drag and drop a file here
                 </p>
+                {file[0]?.name && (
+                  <p className="helperText">File Name: {file[0]?.name}</p>
+                )}
                 {file[0]?.size && (
                   <p className="helperText">
                     File Size: {bytesToMB(file[0].size).toFixed(2)} MB
                   </p>
+                )}
+                {file?.length ? (
+                  <Tooltip title="Delete">
+                    <IconButton
+                      aria-label="remove"
+                      color="error"
+                      onClick={() => {
+                        setFile([]);
+                        setMultipleFiles([]);
+                        removeFileAfterAdding(0);
+                        setFileProgress({});
+                        setFileFormData({
+                          chunkSize: "",
+                          unit: "MB",
+                          totalChunksParts: "",
+                          chunkSizeInBytes: 0,
+                        });
+                      }}
+                    >
+                      <DeleteForeverIcon sx={{ color: "#820707" }} />
+                    </IconButton>
+                  </Tooltip>
+                ) : (
+                  ""
                 )}
               </div>
             </div>
@@ -187,9 +216,9 @@ const UploadFiles: React.FC<uploadImagesComponentProps> = ({
 
       <div className="chunk-settings">
         <TextField
-          placeholder="Enter chunk size"
+          placeholder="Chunksize"
           type="number"
-          disabled={file[0]?.size ? false : true}
+          disabled={file[0]?.size && multipleFiles?.length == 0 ? false : true}
           value={fileFormData.chunkSize}
           onChange={handleChunkSizeChange}
           size="small"
@@ -201,7 +230,9 @@ const UploadFiles: React.FC<uploadImagesComponentProps> = ({
             value={fileFormData.unit}
             size="small"
             name="unit"
-            disabled={file[0]?.size ? false : true}
+            disabled={
+              file[0]?.size && multipleFiles?.length == 0 ? false : true
+            }
             onChange={handleUnitChange}
           >
             <MenuItem value="MB">MB</MenuItem>
@@ -209,11 +240,11 @@ const UploadFiles: React.FC<uploadImagesComponentProps> = ({
           </Select>
         </FormControl>
         <TextField
-          placeholder="Enter total chunk parts"
+          placeholder="Parts"
           type="number"
           size="small"
           name="totalChunksParts"
-          disabled={file[0]?.size ? false : true}
+          disabled={file[0]?.size && multipleFiles?.length == 0 ? false : true}
           value={fileFormData.totalChunksParts}
           onChange={handleTextFieldValueChange}
           style={{ width: "100px" }}
@@ -228,13 +259,18 @@ const UploadFiles: React.FC<uploadImagesComponentProps> = ({
       )}
 
       <Button
+        sx={{
+          display: multipleFiles?.length ? "none" : "",
+          marginTop: "8px",
+        }}
         variant="contained"
         onClick={() => handleFileChange(file)}
         disabled={
           !file[0]?.size ||
           !fileFormData?.totalChunksParts ||
           !fileFormData?.chunkSize ||
-          !!error
+          !!error ||
+          +fileFormData?.chunkSize < 5
         }
       >
         Upload
@@ -245,29 +281,46 @@ const UploadFiles: React.FC<uploadImagesComponentProps> = ({
           <div className="file-item" key={index}>
             <img
               alt={item.name}
+              width={50}
+              height={50}
               src={
-                previewImages.find((e) => e.fileIndex === item.name)
-                  ?.previewUrl || item.type === "application/pdf"
-                  ? "/pdf-icon.png"
-                  : "/doc-icon.webp"
+                previewImages.find((e) => e.fileIndex === item.name)?.previewUrl
+                  ? previewImages.find((e) => e.fileIndex === item.name)
+                      ?.previewUrl
+                  : item.type?.includes("application/pdf")
+                  ? "/pdf-icon1.png"
+                  : "/doc-icon.png"
               }
             />
             <div className="file-info">
-              <Typography
-                variant="body2"
-                color={fileErrors[index] ? "error" : "textPrimary"}
-              >
-                {item.name.slice(0, 7)}...{item.type}
+              <Typography variant="body2" color={"textPrimary"}>
+                {item.name.slice(0, 9)}...{item.type}
               </Typography>
+
+              <Box sx={{ width: "100%" }}>
+                <LinearProgress
+                  variant={"determinate"}
+                  value={fileProgress[index]}
+                />
+                <div className="progress-text">
+                  {fileProgress[index]?.toFixed(2)}%
+                </div>
+              </Box>
               {fileErrors[index] ? (
                 <div className="error-message">
-                  {fileErrors[index].reason || "Upload Failed"}
+                  <Typography variant="body2" color={"error"}>
+                    {fileErrors[index].reason || "Upload Failed"}
+                  </Typography>
                 </div>
               ) : (
                 <div>{bytesToMB(item.size).toFixed(2)} MB</div>
               )}
               <div className="file-actions">
-                {fileProgress[index] === 100 ? (
+                {abortedFiles.has(index) ? (
+                  <Typography variant="body2" color="error">
+                    Canceled
+                  </Typography>
+                ) : fileProgress[index] === 100 ? (
                   <div>
                     <IconButton>
                       <DoneIcon sx={{ color: "#05A155" }} />
@@ -280,33 +333,21 @@ const UploadFiles: React.FC<uploadImagesComponentProps> = ({
                   <div>
                     {fileErrors[index] ? (
                       <Tooltip title="Retry Upload">
-                        <IconButton onClick={() => retryUpload(item)}>
+                        <IconButton onClick={() => retryUpload(item, index)}>
                           <ReplayIcon sx={{ color: "#FFA500" }} />
                         </IconButton>
                       </Tooltip>
                     ) : (
-                      <img
-                        alt="Remove File"
-                        src="/close-icon.svg"
-                        onClick={() => removeFileAfterAdding(index)}
-                      />
+                      <Button
+                        variant="text"
+                        onClick={() => abortFileUpload(index)}
+                      >
+                        Cancel
+                      </Button>
                     )}
                   </div>
                 )}
               </div>
-              <Box sx={{ width: "100%" }}>
-                <LinearProgress
-                  variant={
-                    fileProgress[index] == 100 ? "indeterminate" : "determinate"
-                  }
-                  value={fileProgress[index] !== 100 ? fileProgress[index] : 0}
-                />
-                {fileProgress[index] !== 100 && (
-                  <div className="progress-text">
-                    {fileProgress[index]?.toFixed(2)}%
-                  </div>
-                )}
-              </Box>
             </div>
           </div>
         ))}

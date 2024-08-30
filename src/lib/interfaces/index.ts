@@ -64,4 +64,7 @@ export interface uploadImagesComponentProps {
   setFileProgress: React.Dispatch<React.SetStateAction<FileProgress>>;
   setFileFormData: React.Dispatch<React.SetStateAction<FileFormData>>;
   fileFormData: any;
+  resumeUpload: (file: File, index: number) => void;
+  abortFileUpload: (index: number) => void;
+  abortedFiles: Set<number>;
 }

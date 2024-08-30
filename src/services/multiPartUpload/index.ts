@@ -42,3 +42,33 @@ export const mergeAllChunksAPI = async (body: any) => {
     console.error();
   }
 };
+
+export const resumeUploadAPI = async (body: any) => {
+  try {
+    const { data, success } = await $fetch.post(
+      `/multipart-upload/list-incomplete-parts`,
+      body
+    );
+    if (!success) {
+      return handleAPIErrorResponse(data);
+    }
+    return data;
+  } catch (err) {
+    console.error();
+  }
+};
+
+export const abortUploadingAPI = async (body: any) => {
+  try {
+    const { data, success } = await $fetch.post(
+      `/multipart-upload/abort`,
+      body
+    );
+    if (!success) {
+      return handleAPIErrorResponse(data);
+    }
+    return data;
+  } catch (err) {
+    console.error();
+  }
+};

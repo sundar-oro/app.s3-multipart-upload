@@ -41,18 +41,47 @@ export const generateVideoThumbnail = async (
 export const previewImagesEvent = async (
   file: any,
   previewStorage: any,
-  setPreviewImages: any
+  setPreviewImages: any,
+  maxWidth: number = 200,
+  maxHeight: number = 200
 ) => {
   if (file) {
     const reader = new FileReader();
 
     reader.onload = async (e: any) => {
-      previewStorage.splice(1, 0, {
-        fileIndex: file.name,
-        previewUrl: e.target.result,
-      });
-      setPreviewImages(previewStorage);
+      const img = new Image();
+      img.src = e.target.result;
+
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d")!;
+
+        let width = img.width;
+        let height = img.height;
+
+        if (width > maxWidth) {
+          height *= maxWidth / width;
+          width = maxWidth;
+        }
+        if (height > maxHeight) {
+          width *= maxHeight / height;
+          height = maxHeight;
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        ctx.drawImage(img, 0, 0, width, height);
+
+        const resizedDataUrl = canvas.toDataURL("image/jpeg", 0.7);
+
+        previewStorage.splice(1, 0, {
+          fileIndex: file.name,
+          previewUrl: resizedDataUrl,
+        });
+        setPreviewImages(previewStorage);
+      };
     };
+
     reader.readAsDataURL(file);
   } else {
     setPreviewImages(null);
