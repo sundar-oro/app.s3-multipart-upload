@@ -1,27 +1,26 @@
-import Image from "next/image";
-import Link from "next/link";
+"use client";
 import {
-  ChevronLeft,
-  ChevronRight,
-  Copy,
-  CreditCard,
-  File,
   Folder,
+  Users,
+  ChevronDown,
+  FilePlus,
+  FileText,
+  Film,
+  Grid,
+  MoreHorizontal,
+  File,
   Home,
   LineChart,
   ListFilter,
-  LucideHardDrive,
-  MoreVertical,
   Package,
   Package2,
   PanelLeft,
+  PlusCircle,
   Search,
   Settings,
   ShoppingCart,
-  Truck,
   Users2,
 } from "lucide-react";
-
 import { Badge } from "@/components/ui/badge";
 import {
   Breadcrumb,
@@ -50,13 +49,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-} from "@/components/ui/pagination";
-import { Progress } from "@/components/ui/progress";
-import { Separator } from "@/components/ui/separator";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import {
   Table,
@@ -73,98 +65,173 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { StorageStats } from "./storagestats";
+
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export function SideBar() {
+  const router = useRouter();
+
+  const handleCreate = () => {
+    router.push("/upload");
+  };
+
   return (
-    <aside className="fixed inset-y-0 left-0 z-10 hidden w-14 flex-col border-r bg-background sm:flex">
-      <nav className="flex flex-col items-center gap-4 px-2 sm:py-5">
-        <Link
-          href="#"
-          className="group flex h-9 w-9 shrink-0 items-center justify-center gap-2 rounded-full bg-primary text-lg font-semibold text-primary-foreground md:h-8 md:w-8 md:text-base"
-        >
-          <Package2 className="h-4 w-4 transition-all group-hover:scale-110" />
-          <span className="sr-only">Acme Inc</span>
-        </Link>
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Link
-                href="#"
-                className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
-              >
-                <Home className="h-5 w-5" />
-                <span className="sr-only">Dashboard</span>
-              </Link>
-            </TooltipTrigger>
-            <TooltipContent side="right">Dashboard</TooltipContent>
-          </Tooltip>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Link
-                href="#"
-                className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent text-accent-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
-              >
-                <ShoppingCart className="h-5 w-5" />
-                <span className="sr-only">Orders</span>
-              </Link>
-            </TooltipTrigger>
-            <TooltipContent side="right">Orders</TooltipContent>
-          </Tooltip>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Link
-                href="#"
-                className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
-              >
-                <Package className="h-5 w-5" />
-                <span className="sr-only">Products</span>
-              </Link>
-            </TooltipTrigger>
-            <TooltipContent side="right">Products</TooltipContent>
-          </Tooltip>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Link
-                href="#"
-                className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
-              >
-                <Users2 className="h-5 w-5" />
-                <span className="sr-only">Customers</span>
-              </Link>
-            </TooltipTrigger>
-            <TooltipContent side="right">Customers</TooltipContent>
-          </Tooltip>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Link
-                href="#"
-                className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
-              >
-                <LineChart className="h-5 w-5" />
-                <span className="sr-only">Analytics</span>
-              </Link>
-            </TooltipTrigger>
-            <TooltipContent side="right">Analytics</TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-      </nav>
-      <nav className="mt-auto flex flex-col items-center gap-4 px-2 sm:py-5">
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Link
-                href="#"
-                className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
-              >
-                <Settings className="h-5 w-5" />
-                <span className="sr-only">Settings</span>
-              </Link>
-            </TooltipTrigger>
-            <TooltipContent side="right">Settings</TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-      </nav>
-    </aside>
+    <nav className="flex flex-col h-full w-60 bg-white text-gray-800 py-4 px-3">
+      <div className="flex items-center justify-between mb-6 px-3">
+        <div>
+          <span className="text-xl font-semibold text-gray-900">
+            Marketing Team
+          </span>
+          <p className="text-sm text-gray-500">17 members</p>
+        </div>
+        <ChevronDown className="h-5 w-5 text-gray-500" />
+      </div>
+
+      <div className="mb-6 px-3">
+        <h2 className="text-lg font-bold text-gray-800">Storage</h2>
+
+        <h4 className="text-lg font-bold text-blue-500">My Files</h4>
+        <ul className="mt-4 space-y-2 text-gray-600">
+          <li>
+            <Link
+              href="#"
+              className="flex items-center space-x-2 hover:text-gray-900"
+            >
+              <Folder className="h-5 w-5" />
+              <span>Analytics</span>
+            </Link>
+          </li>
+          <li>
+            <Link
+              href="#"
+              className="flex items-center space-x-2 hover:text-gray-900"
+            >
+              <Folder className="h-5 w-5" />
+              <span>Assets</span>
+            </Link>
+          </li>
+          <li>
+            <Link
+              href="#"
+              className="flex items-center space-x-2 hover:text-gray-900"
+            >
+              <Folder className="h-5 w-5" />
+              <span>Marketing</span>
+            </Link>
+          </li>
+          <li>
+            <Link
+              href="#"
+              className="flex items-center space-x-2 hover:text-gray-900"
+            >
+              <Folder className="h-5 w-5" />
+              <span>Templates</span>
+            </Link>
+          </li>
+          <li>
+            <Link
+              href="#"
+              className="flex items-center space-x-2 hover:text-gray-900"
+            >
+              <Folder className="h-5 w-5" />
+              <span>Projects</span>
+            </Link>
+          </li>
+          <li>
+            <Link
+              href="#"
+              className="flex items-center space-x-2 hover:text-gray-900"
+            >
+              <Folder className="h-5 w-5" />
+              <span>Projector Courses</span>
+            </Link>
+          </li>
+        </ul>
+      </div>
+
+      <div className="mb-6 px-3">
+        <ul className="space-y-2 text-gray-600">
+          <li>
+            <Link
+              href="#"
+              className="flex items-center space-x-2 hover:text-gray-900"
+            >
+              <span>Shared with me</span>
+            </Link>
+          </li>
+          <li>
+            <Link
+              href="#"
+              className="flex items-center space-x-2 hover:text-gray-900"
+            >
+              <span>Recent</span>
+            </Link>
+          </li>
+          <li>
+            <Link
+              href="#"
+              className="flex items-center space-x-2 hover:text-gray-900"
+            >
+              <span>Starred</span>
+            </Link>
+          </li>
+          <li>
+            <Link
+              href="#"
+              className="flex items-center space-x-2 hover:text-gray-900"
+            >
+              <span>Trash</span>
+            </Link>
+          </li>
+        </ul>
+      </div>
+
+      {/* Divider */}
+      <hr className="border-gray-300 mb-6" />
+
+      <div className="mt-auto px-3">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button className="flex items-center justify-center w-full py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+              <span>Create new</span>
+              <span className="ml-2">
+                <FilePlus className="h-5 w-5" />
+              </span>
+            </button>
+          </DropdownMenuTrigger>
+
+          <DropdownMenuContent
+            align="end"
+            className="space-y-2 p-4 bg-white shadow-md rounded-md"
+          >
+            <h3 className="text-md font-bold mb-4 text-gray-800">Create new</h3>
+            <button
+              onClick={handleCreate}
+              className="flex items-center w-full space-x-2 p-2 bg-gray-100 hover:bg-gray-200 rounded"
+            >
+              <FilePlus className="h-5 w-5 text-blue-500" />
+              <span>Folder</span>
+            </button>
+            <button className="flex items-center w-full space-x-2 p-2 bg-gray-100 hover:bg-gray-200 rounded">
+              <FileText className="h-5 w-5 text-blue-500" />
+              <span>Text Doc</span>
+            </button>
+            <button className="flex items-center w-full space-x-2 p-2 bg-gray-100 hover:bg-gray-200 rounded">
+              <Film className="h-5 w-5 text-blue-500" />
+              <span>Presentation</span>
+            </button>
+            <button className="flex items-center w-full space-x-2 p-2 bg-gray-100 hover:bg-gray-200 rounded">
+              <Grid className="h-5 w-5 text-blue-500" />
+              <span>Sheets</span>
+            </button>
+            <button className="flex items-center w-full space-x-2 p-2 bg-gray-100 hover:bg-gray-200 rounded">
+              <MoreHorizontal className="h-5 w-5 text-blue-500" />
+              <span>More</span>
+            </button>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+    </nav>
   );
 }
