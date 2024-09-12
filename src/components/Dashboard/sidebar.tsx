@@ -81,18 +81,28 @@ import { useRouter } from "next/navigation";
 import { postCreateCategoryAPI } from "@/lib/services/categories";
 import { useState } from "react";
 
-export function SideBar() {
+export function SideBar({
+  getAllCategories,
+}: {
+  getAllCategories?: () => void;
+}) {
   const router = useRouter();
 
   const [loading, setLoading] = useState(false);
+  const [open, setOpen] = useState(false);
   const [data, setData] = useState({
     name: "",
     description: "",
   });
 
   const handleCreate = () => {
-    router.push("/upload");
+    setOpen(true);
   };
+
+  const handleClose = () => {
+    setOpen(false);
+  };
+
   console.log(data);
   const createCategories = async () => {
     setLoading(true);
@@ -102,7 +112,11 @@ export function SideBar() {
 
       if (response?.status == 200 || response?.status == 201) {
         console.log(response?.data?.message);
+        setOpen(false);
         router.push("/categories");
+
+        getAllCategories && getAllCategories();
+
         // toast.success(response?.data?.message);
         // setDeleteid(false);
       } else {
@@ -242,18 +256,16 @@ export function SideBar() {
       <hr className="border-gray-300 mb-6" />
 
       <div className="mt-auto px-3">
-        <Dialog>
-          <DialogTrigger asChild>
-            <Button
-              // onClick={handleCreate}
-              className="flex items-center justify-center w-full py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-            >
-              <span>Create new</span>
-              <span className="ml-2">
-                <FilePlus className="h-5 w-5" />
-              </span>
-            </Button>
-          </DialogTrigger>
+        <Button
+          onClick={handleCreate}
+          className="flex items-center justify-center w-full py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+        >
+          <span>Create new</span>
+          <span className="ml-2">
+            <FilePlus className="h-5 w-5" />
+          </span>
+        </Button>
+        <Dialog open={open}>
           <DialogContent className="bg-white">
             <DialogHeader>
               <DialogTitle>Create Categories</DialogTitle>
@@ -292,7 +304,7 @@ export function SideBar() {
               </div>
             </div>
             <DialogFooter>
-              <Button variant="ghost" type="submit">
+              <Button onClick={handleClose} variant="ghost" type="submit">
                 Cancel
               </Button>
               <Button onClick={createCategories} type="submit">

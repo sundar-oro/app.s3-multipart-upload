@@ -172,7 +172,7 @@ export function Categories() {
     <>
       <div className="flex min-h-screen w-full">
         <div className="sticky top-0 left-0 h-screen w-50 bg-white">
-          <SideBar />
+          <SideBar getAllCategories={getAllCategories} />
         </div>
 
         <div className="flex flex-1 flex-col bg-muted/40">
