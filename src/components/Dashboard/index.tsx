@@ -1,3 +1,4 @@
+"use client";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -7,13 +8,6 @@ import {
   CreditCard,
   File,
   Folder,
-  Home,
-  LineChart,
-  ListFilter,
-  LucideHardDrive,
-  MoreVertical,
-  Package,
-  Package2,
   PanelLeft,
   Search,
   Settings,
@@ -76,11 +70,18 @@ import {
 import { StorageStats } from "./storagestats";
 import { SideBar } from "./sidebar";
 import { DashboardTable } from "./dashboardtable";
+import { statsData } from "./dummydata";
+import { useRouter } from "next/navigation";
 
 export const description =
   "An orders dashboard with a sidebar navigation. The sidebar has icon navigation. The content area has a breadcrumb and search in the header. The main area has a list of recent orders with a filter and export button. The main area also has a detailed view of a single order with order details, shipping information, billing information, customer information, and payment information.";
 
 export function Dashboard() {
+  const router = useRouter();
+
+  const handleViewAll = () => {
+    router.push("/categories");
+  };
   return (
     <div className="flex min-h-screen w-full">
       <div className="flex-shrink-0 w-50">
@@ -97,12 +98,21 @@ export function Dashboard() {
                 <span className="sr-only">Toggle Menu</span>
               </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="sm:max-w-xs">
-              {/* Your sidebar content for small screen */}
-            </SheetContent>
+            <SheetContent side="left" className="sm:max-w-xs"></SheetContent>
           </Sheet>
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink href="/">Home</BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbLink href="/dashboard">Dashboard</BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+            </BreadcrumbList>
+          </Breadcrumb>
 
-          {/* Search */}
           <div className="relative ml-auto flex-1 md:grow-0">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
@@ -112,7 +122,6 @@ export function Dashboard() {
             />
           </div>
 
-          {/* User Avatar Dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
@@ -140,76 +149,42 @@ export function Dashboard() {
           </DropdownMenu>
         </header>
 
-        {/* Main Content Area */}
         <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8 lg:grid-cols-3 xl:grid-cols-3">
           <div className="grid auto-rows-max items-start gap-4 md:gap-8 lg:col-span-2">
-            <div className="grid gap-6 md:grid-cols-2 md:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4">
-              <Card className="bg-blue-500 text-white ">
-                <CardHeader className="pb-2">
-                  <Image
-                    src="/dashboard/google-drive.svg"
-                    width={36}
-                    height={36}
-                    alt="drive"
-                    className="overflow-hidden rounded-full"
-                  />
-                  <CardTitle className="text-4xl">Google Drive</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-xs text-muted-foreground ">
-                    +25% from last week
-                  </div>
-                </CardContent>
-                <CardFooter>
-                  <Progress value={25} aria-label="25% " />
-                </CardFooter>
-              </Card>
-              <Card x-chunk="dashboard-05-chunk-2">
-                <CardHeader className="pb-2">
-                  <Image
-                    src="/dashboard/dropbox.svg"
-                    width={36}
-                    height={36}
-                    alt="drive"
-                    className="overflow-hidden rounded-full"
-                  />
-                  <CardTitle className="text-4xl">Drop Box</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-xs text-muted-foreground">
-                    +10% from last month
-                  </div>
-                </CardContent>
-                <CardFooter>
-                  <Progress value={12} aria-label="12% increase" />
-                </CardFooter>
-              </Card>
-              <Card x-chunk="dashboard-05-chunk-3">
-                <CardHeader className="pb-2">
-                  <Image
-                    src="/dashboard/onedrive.svg"
-                    width={36}
-                    height={36}
-                    alt="drive"
-                    className="overflow-hidden rounded-full"
-                  />
-                  <CardTitle className="text-4xl">One Drive</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-xs text-muted-foreground">
-                    +10% from last month
-                  </div>
-                </CardContent>
-                <CardFooter>
-                  <Progress value={12} aria-label="12% increase" />
-                </CardFooter>
-              </Card>
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {statsData.map((data, index) => (
+                <Card key={index} className="w-full">
+                  {" "}
+                  <CardHeader className="flex items-center space-x-4 pb-2">
+                    {" "}
+                    <Image
+                      src={data?.path}
+                      width={36}
+                      height={36}
+                      alt="drive"
+                      className="overflow-hidden rounded-full"
+                    />
+                    <CardTitle className="text-4xl">{data?.name}</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-xs text-muted-foreground">
+                      {data?.total}
+                    </div>
+                  </CardContent>
+                  <CardFooter>
+                    <Progress value={25} aria-label="25%" />
+                  </CardFooter>
+                </Card>
+              ))}
             </div>
 
             <div>
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-xl font-semibold">Folders</h3>
-                <button className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                <button
+                  onClick={handleViewAll}
+                  className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                >
                   View All
                 </button>
               </div>
