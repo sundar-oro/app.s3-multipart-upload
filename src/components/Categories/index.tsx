@@ -48,13 +48,17 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { createcategory } from "@/lib/interfaces";
+import { useRouter } from "next/navigation";
 
 export const description =
   "An orders dashboard with a sidebar navigation. The sidebar has icon navigation. The content area has a breadcrumb and search in the header. The main area has a list of recent orders with a filter and export button. The main area also has a detailed view of a single order with order details, shipping information, billing information, customer information, and payment information.";
 
 export function Categories() {
+  const router = useRouter();
+
   const [loading, setLoading] = useState(false);
   const [id, setId] = useState<number>(0);
+  // const [categoryid, setCategoryid] = useState(0);
   const [open, setOpen] = useState<boolean>(false);
   const [renameOpen, setRenameOpen] = useState<boolean>(false);
   const [deleteid, setDeleteid] = useState<number>(0);
@@ -164,6 +168,10 @@ export function Categories() {
     setData(value);
   };
 
+  const handleCard = (categoryid: number) => {
+    router.push(`/categories/${categoryid}/files`);
+  };
+
   useEffect(() => {
     getAllCategories();
   }, []);
@@ -239,7 +247,11 @@ export function Categories() {
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                   {categorydata?.map((data, index) => (
-                    <Card key={index} className="w-60">
+                    <Card
+                      key={index}
+                      onClick={() => handleCard(data?.id)}
+                      className="w-60"
+                    >
                       <CardHeader className="flex flex-row items-center justify-between pb-2">
                         <Folder className="h-6 w-6 font-medium font-bold" />
 
