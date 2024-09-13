@@ -21,8 +21,9 @@ import {
 import { Progress } from "@/components/ui/progress";
 import { X } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { Card } from "@/components/ui/card";
 
-const MultiPartUpload = () => {
+const FileUpload = () => {
   const router = useRouter();
 
   const [open, setOpen] = useState(true);
@@ -58,7 +59,6 @@ const MultiPartUpload = () => {
     });
     setChunks([]);
     setSelectedFiles([]);
-    router.back();
   };
 
   const { getRootProps, getInputProps } = useDropzone({
@@ -147,24 +147,10 @@ const MultiPartUpload = () => {
   }, [selectedFiles]);
 
   return (
-    <>
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogTrigger asChild>
-          <Button>Upload</Button>
-        </DialogTrigger>
-        <DialogContent className="bg-white">
-          {" "}
-          {/* Ensures white background */}
-          <DialogHeader>
-            <DialogTitle>Upload Documents</DialogTitle>
-            <Button
-              variant="ghost"
-              onClick={handleCancel}
-              className="absolute top-2 right-2"
-            >
-              <X className="w-5 h-5" />
-            </Button>
-          </DialogHeader>
+    <Card className="sticky h-screen p-6 m-4 bg-white rounded-lg shadow-md">
+      <div className="flex flex-col h-full justify-between">
+        <div>
+          <h2 className="text-xl font-semibold mb-4">Upload Documents</h2>
           <div
             {...getRootProps()}
             className="border-2 border-dashed border-gray-300 p-4 rounded-md text-center cursor-pointer"
@@ -215,18 +201,19 @@ const MultiPartUpload = () => {
               </SelectContent>
             </Select>
           </div>
-          <div className="flex justify-end mt-4">
-            <Button variant="ghost" onClick={handleCancel}>
-              Cancel
-            </Button>
-            <Button onClick={uploadDocuments} className="ml-2">
-              Upload
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-    </>
+        </div>
+
+        <div className="flex justify-end mt-4">
+          <Button variant="ghost" onClick={handleCancel}>
+            Cancel
+          </Button>
+          <Button onClick={uploadDocuments} className="ml-2">
+            Upload
+          </Button>
+        </div>
+      </div>
+    </Card>
   );
 };
 
-export default MultiPartUpload;
+export default FileUpload;

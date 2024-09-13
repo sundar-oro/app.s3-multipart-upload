@@ -65,30 +65,95 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { postCreateCategoryAPI } from "@/lib/services/categories";
+import { useState } from "react";
 
-export function SideBar() {
+export function SideBar({
+  getAllCategories,
+}: {
+  getAllCategories?: () => void;
+}) {
   const router = useRouter();
 
+  const [loading, setLoading] = useState(false);
+  const [open, setOpen] = useState(false);
+  const [data, setData] = useState({
+    name: "",
+    description: "",
+  });
+
   const handleCreate = () => {
-    router.push("/upload");
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+  };
+
+  console.log(data);
+  const createCategories = async () => {
+    setLoading(true);
+    try {
+      const payload = { ...data };
+      const response = await postCreateCategoryAPI(payload);
+
+      if (response?.status == 200 || response?.status == 201) {
+        console.log(response?.data?.message);
+        setOpen(false);
+        router.push("/categories");
+
+        getAllCategories && getAllCategories();
+
+        // toast.success(response?.data?.message);
+        // setDeleteid(false);
+      } else {
+        throw response;
+      }
+    } catch (err: any) {
+      //   errorPopper(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleTextFieldChange = (e: any) => {
+    const { name, value } = e.target;
+
+    // setErrMessages((prevErr: any) => ({
+    //   ...prevErr,
+    //   [name]: null,
+    // }));
+
+    setData((prev: any) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
   return (
     <nav className="flex flex-col h-full w-60 bg-white text-gray-800 py-4 px-3">
       <div className="flex items-center justify-between mb-6 px-3">
         <div>
-          <span className="text-xl font-semibold text-gray-900">
-            Marketing Team
-          </span>
-          <p className="text-sm text-gray-500">17 members</p>
+          <span className="text-xl font-semibold text-gray-900">Developer</span>
+          <p className="text-sm text-gray-500">UserName</p>
         </div>
         <ChevronDown className="h-5 w-5 text-gray-500" />
       </div>
 
-      <div className="mb-6 px-3">
+      {/* <div className="mb-6 px-3">
         <h2 className="text-lg font-bold text-gray-800">Storage</h2>
 
         <h4 className="text-lg font-bold text-blue-500">My Files</h4>
@@ -148,7 +213,7 @@ export function SideBar() {
             </Link>
           </li>
         </ul>
-      </div>
+      </div> */}
 
       <div className="mb-6 px-3">
         <ul className="space-y-2 text-gray-600">
@@ -191,46 +256,63 @@ export function SideBar() {
       <hr className="border-gray-300 mb-6" />
 
       <div className="mt-auto px-3">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <button className="flex items-center justify-center w-full py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
-              <span>Create new</span>
-              <span className="ml-2">
-                <FilePlus className="h-5 w-5" />
-              </span>
-            </button>
-          </DropdownMenuTrigger>
-
-          <DropdownMenuContent
-            align="end"
-            className="space-y-2 p-4 bg-white shadow-md rounded-md"
-          >
-            <h3 className="text-md font-bold mb-4 text-gray-800">Create new</h3>
-            <button
-              onClick={handleCreate}
-              className="flex items-center w-full space-x-2 p-2 bg-gray-100 hover:bg-gray-200 rounded"
-            >
-              <FilePlus className="h-5 w-5 text-blue-500" />
-              <span>Folder</span>
-            </button>
-            <button className="flex items-center w-full space-x-2 p-2 bg-gray-100 hover:bg-gray-200 rounded">
-              <FileText className="h-5 w-5 text-blue-500" />
-              <span>Text Doc</span>
-            </button>
-            <button className="flex items-center w-full space-x-2 p-2 bg-gray-100 hover:bg-gray-200 rounded">
-              <Film className="h-5 w-5 text-blue-500" />
-              <span>Presentation</span>
-            </button>
-            <button className="flex items-center w-full space-x-2 p-2 bg-gray-100 hover:bg-gray-200 rounded">
-              <Grid className="h-5 w-5 text-blue-500" />
-              <span>Sheets</span>
-            </button>
-            <button className="flex items-center w-full space-x-2 p-2 bg-gray-100 hover:bg-gray-200 rounded">
-              <MoreHorizontal className="h-5 w-5 text-blue-500" />
-              <span>More</span>
-            </button>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <Button
+          onClick={handleCreate}
+          className="flex items-center justify-center w-full py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+        >
+          <span>Create new</span>
+          <span className="ml-2">
+            <FilePlus className="h-5 w-5" />
+          </span>
+        </Button>
+        <Dialog open={open}>
+          <DialogContent className="bg-white">
+            <DialogHeader>
+              <DialogTitle>Create Categories</DialogTitle>
+              <DialogDescription>
+                You can create your new Categories Here.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="name" className="text-right">
+                  Category Name
+                </Label>
+                <Input
+                  id="name"
+                  value={data?.name}
+                  // defaultValue="Pedro Duarte"
+                  className="col-span-3"
+                  name="name"
+                  placeholder="Enter the Category Name"
+                  onChange={handleTextFieldChange}
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="username" className="text-right">
+                  Description
+                </Label>
+                <Input
+                  id="username"
+                  // defaultValue="@peduarte"
+                  name="description"
+                  value={data?.description}
+                  className="col-span-3"
+                  placeholder="Enter the Description"
+                  onChange={handleTextFieldChange}
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button onClick={handleClose} variant="ghost" type="submit">
+                Cancel
+              </Button>
+              <Button onClick={createCategories} type="submit">
+                Submit
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </nav>
   );
