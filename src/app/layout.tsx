@@ -1,9 +1,10 @@
 import { Metadata } from "next";
 
-import "../sass/app.scss";
+import { Providers } from "@/redux/provider";
+import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Yoda Reports",
+  title: "File Manager",
 };
 
 export default function RootLayout({
@@ -14,7 +15,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <Provider>{children}</Provider>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

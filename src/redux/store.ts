@@ -1,11 +1,14 @@
 import { configureStore } from '@reduxjs/toolkit';
-import {persistReducer } from 'redux-persist';
-import storage from 'redux-persist/lib/storage'; // Ensure this import is correct
+import {PERSIST, persistReducer, REHYDRATE } from 'redux-persist';
+
 import userReducer from './userSlice';
-import persistStore from "./persistateStore"
+
+import pesistStorage from "./persistateStore";
 const persistConfig = {
-  key: 'root',
-  storage: persistStore 
+  key: 'file manager',
+  version: 1,
+  storage: pesistStorage,
+  REHYDRATE: false, 
 
 };
 
@@ -13,6 +16,12 @@ const persistedReducer = persistReducer(persistConfig, userReducer);
 
 export const store:any = configureStore({
   reducer: persistedReducer,
+   middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware({
+      serializableCheck: {
+        ignoredActions: [ REHYDRATE,  PERSIST],
+      },
+    }),
 });
 
 

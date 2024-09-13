@@ -24,7 +24,7 @@ const SignInPage = () => {
   const [isLoading, setLoading] = useState(false);
   const [errors, setErrors] = useState<string | null>(null);
 
-  const authState = useSelector((state: RootState) => state);
+  const user = useSelector((state: RootState) => state.user);
 
   const fetchData = async (e: React.FormEvent) => {
     e.preventDefault(); // Prevents default form submission behavior
@@ -50,11 +50,11 @@ const SignInPage = () => {
       }
 
       const data = await response.json();
-
+      console.log(data, "dtaat");
       dispatch(
         loginSuccess({
-          user: data.user,
-          token: data.token,
+          user: data.data,
+          token: data.data.access_token,
         })
       );
 
