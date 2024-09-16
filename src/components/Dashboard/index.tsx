@@ -1,4 +1,5 @@
 "use client";
+
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -70,6 +71,8 @@ import {
 import { StorageStats } from "./storagestats";
 import { SideBar } from "./sidebar";
 import { DashboardTable } from "./dashboardtable";
+import { useSelector } from "react-redux";
+import { RootState } from "@/redux/store";
 import { statsData } from "./dummydata";
 import { useRouter } from "next/navigation";
 
@@ -77,6 +80,9 @@ export const description =
   "An orders dashboard with a sidebar navigation. The sidebar has icon navigation. The content area has a breadcrumb and search in the header. The main area has a list of recent orders with a filter and export button. The main area also has a detailed view of a single order with order details, shipping information, billing information, customer information, and payment information.";
 
 export function Dashboard() {
+  const user = useSelector((state: RootState) => state.user.user_details);
+  console.log(user);
+
   const router = useRouter();
 
   const handleViewAll = () => {
@@ -139,7 +145,9 @@ export function Dashboard() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuLabel>My Account</DropdownMenuLabel>
+              <DropdownMenuLabel>MyAccount</DropdownMenuLabel>
+              <p>{user ? `Hello, ${user.full_name}` : "Hello, Guest"}</p>
+
               <DropdownMenuSeparator />
               <DropdownMenuItem>Settings</DropdownMenuItem>
               <DropdownMenuItem>Support</DropdownMenuItem>
