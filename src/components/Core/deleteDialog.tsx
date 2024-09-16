@@ -8,7 +8,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import CircularProgress from "@mui/material/CircularProgress";
+// import CircularProgress from "@mui/material/CircularProgress";
 
 const DeleteDialog = ({
   openOrNot,
@@ -35,11 +35,11 @@ const DeleteDialog = ({
             className="bg-red-500 text-white"
             onClick={onOKClick}
           >
-            {deleteLoading ? (
-              <CircularProgress size={24} sx={{ color: "#fff" }} />
+            {/* {deleteLoading ? (
+              // <CircularProgress size={24} sx={{ color: "#fff" }} />
             ) : (
               "Yes! Delete"
-            )}
+            )} */}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

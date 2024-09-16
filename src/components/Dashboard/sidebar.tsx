@@ -103,7 +103,6 @@ export function SideBar({
     setOpen(false);
   };
 
-  console.log(data);
   const createCategories = async () => {
     setLoading(true);
     try {

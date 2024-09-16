@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 
-import { Providers } from "@/redux/provider";
 import "./globals.css";
+import { Providers } from "@/redux/Provider";
 
 export const metadata: Metadata = {
   title: "File Manager",
