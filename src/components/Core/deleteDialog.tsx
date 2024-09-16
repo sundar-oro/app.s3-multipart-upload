@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 // import CircularProgress from "@mui/material/CircularProgress";
+import { Spinner } from "../ui/spinner";
 
 const DeleteDialog = ({
   openOrNot,
@@ -40,6 +41,7 @@ const DeleteDialog = ({
             ) : (
               "Yes! Delete"
             )} */}
+            {deleteLoading ? <Spinner /> : "Yes! Delete"}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

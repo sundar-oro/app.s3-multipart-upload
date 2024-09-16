@@ -24,12 +24,13 @@ export const postCreateCategoryAPI = async (payload: createcategory) => {
 };
 
 
-export const getAllCategoriesAPI = async () => {
+export const getAllCategoriesAPI = async (page :number) => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/categories`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/categories?page=${page}&limit=10`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
+          "Authorization": `${process.env.NEXT_PUBLIC_API_TOKEN}`, 
         },
       });
   
