@@ -59,19 +59,37 @@ export function Categories() {
   const [loading, setLoading] = useState(false);
   const [id, setId] = useState<number>(0);
   // const [categoryid, setCategoryid] = useState(0);
+  const [page, setPage] = useState(1);
   const [open, setOpen] = useState<boolean>(false);
   const [renameOpen, setRenameOpen] = useState<boolean>(false);
   const [deleteid, setDeleteid] = useState<number>(0);
   const [categorydata, setCategoryData] = useState<any[]>([]);
   const [data, setData] = useState("");
+  const [noData, setNoData] = useState(false);
 
-  const getAllCategories = async () => {
+  window.onscroll = () => {
+    if (
+      window.innerHeight + document.documentElement.scrollTop ===
+      document.documentElement.offsetHeight
+    ) {
+      if (!noData) {
+        getAllCategories(page);
+      }
+    }
+  };
+
+  const getAllCategories = async (page: number) => {
     try {
       setLoading(true);
-      const response = await getAllCategoriesAPI();
+      const response = await getAllCategoriesAPI(page);
 
-      if (response?.status == 200 || response?.status == 201) {
-        setCategoryData(response?.data);
+      if (response?.success) {
+        console.log(response?.data);
+        const newPage = page + 1;
+        const newcategorydata = categorydata.concat(response?.data);
+        setCategoryData(newcategorydata);
+        setPage(newPage);
+        if (response.data.length === 0) setNoData(true);
       } else {
         throw response;
       }
@@ -91,7 +109,7 @@ export function Categories() {
       if (response?.status == 200 || response?.status == 201) {
         // toast.success(response?.data?.message);
         setOpen(false);
-        await getAllCategories();
+        await getAllCategories(page);
       } else {
         throw response;
       }
@@ -132,7 +150,7 @@ export function Categories() {
         // toast.success(response?.data?.message);
         setRenameOpen(false);
         setId(0);
-        await getAllCategories();
+        await getAllCategories(page);
       } else {
         throw response;
       }
@@ -173,7 +191,7 @@ export function Categories() {
   };
 
   useEffect(() => {
-    getAllCategories();
+    getAllCategories(page);
   }, []);
 
   return (

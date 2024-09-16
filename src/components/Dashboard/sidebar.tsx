@@ -84,7 +84,7 @@ import { useState } from "react";
 export function SideBar({
   getAllCategories,
 }: {
-  getAllCategories?: () => void;
+  getAllCategories?: (page: number) => void;
 }) {
   const router = useRouter();
 
@@ -103,7 +103,6 @@ export function SideBar({
     setOpen(false);
   };
 
-  console.log(data);
   const createCategories = async () => {
     setLoading(true);
     try {
@@ -111,11 +110,10 @@ export function SideBar({
       const response = await postCreateCategoryAPI(payload);
 
       if (response?.status == 200 || response?.status == 201) {
-        console.log(response?.data?.message);
         setOpen(false);
         router.push("/categories");
 
-        getAllCategories && getAllCategories();
+        getAllCategories && getAllCategories(1);
 
         // toast.success(response?.data?.message);
         // setDeleteid(false);
