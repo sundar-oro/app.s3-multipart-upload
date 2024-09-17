@@ -28,7 +28,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { SideBar } from "@/components/Dashboard/sidebar";
 import { StorageStats } from "@/components/Dashboard/storagestats";
 import { statsData } from "@/components/Dashboard/dummydata";
@@ -71,6 +71,8 @@ const Files = () => {
   const [loading, setLoading] = useState(false);
   const [noData, setNoData] = useState(false);
 
+  const { file_id } = useParams();
+
   const handleToggle = () => {
     setShowFileUpload((prevState: any) => !prevState);
   };
@@ -78,7 +80,7 @@ const Files = () => {
   const getAllFiles = async (page: number) => {
     try {
       setLoading(true);
-      const response = await getAllFilesAPI(page);
+      const response = await getAllFilesAPI(page, file_id);
 
       if (response?.success) {
         const newPage = page + 1;

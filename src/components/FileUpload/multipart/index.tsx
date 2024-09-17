@@ -1,35 +1,25 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { useDropzone } from "react-dropzone";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
 import { X } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { Card } from "@/components/ui/card";
 
 const MultiPartUpload = () => {
   const router = useRouter();
 
-  const [open, setOpen] = useState(true);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [chunks, setChunks] = useState<Blob[]>([]);
   const [data, setData] = useState({});
+  const [uploaddata, setUploadData] = useState({
+    parts: 0,
+  });
+  const [urls, setUrls] = useState([]);
   const [size, setSize] = useState({
     size: "",
     unit: 1024 * 1024,
@@ -38,17 +28,12 @@ const MultiPartUpload = () => {
     filetype: "",
   });
 
-  console.log(chunks);
-
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setSize((prev) => ({ ...prev, [name]: value }));
+    setUploadData((prev) => ({ ...prev, [name]: parseInt(value) }));
   };
 
   const handleCancel = () => {
-    setOpen(false);
     setSize({
       size: "",
       unit: 1024 * 1024,
@@ -61,11 +46,19 @@ const MultiPartUpload = () => {
     router.back();
   };
 
+  const handleUpload = async () => {
+    if (size.filesize > 5242880) {
+      await postapi();
+    } else {
+      await getsinglepartpresignedurl();
+    }
+  };
+
   const { getRootProps, getInputProps } = useDropzone({
     onDrop: (files) => {
       const file = files[0];
       if (file) {
-        setSelectedFiles(files);
+        setSelectedFiles([file]);
         setSize({
           ...size,
           filename: file.name,
@@ -78,28 +71,129 @@ const MultiPartUpload = () => {
     accept: {},
   });
 
-  const postapi = async () => {
+  // Single-part upload (file < 5 MB)
+  const getsinglepartpresignedurl = async () => {
     try {
-      const response = await fetch("/upload-endpoint", {
-        method: "POST",
-        body: JSON.stringify({
-          original_name: size.filename,
-          file_type: size.filesize,
-          file_size: size.filetype,
-        }),
-      });
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/categories/5/files/generate-presigned-url`,
+        {
+          method: "POST",
+          body: JSON.stringify({
+            file_name: size.filename,
+            file_size: size.filesize,
+          }),
+        }
+      );
+      const result = await response.json();
 
-      if (response.status === 200 || response.status === 201) {
-        setData(response);
+      if (response.ok) {
+        console.log(result);
+        setUploadProgress(33);
+        setUploadData(result);
+        s3partfile(result);
       }
     } catch (error) {
-      console.error("Failed to call api", error);
+      console.error("Failed to call API", error);
     }
   };
 
-  const uploadDocuments = async () => {
-    const chunkSize = parseInt(size.size) * size.unit;
+  const s3partfile = async (data: any) => {
+    try {
+      const response = await fetch(data?.url, {
+        method: "PUT",
+        body: selectedFiles[0],
+      });
 
+      if (response.ok) {
+        console.log("Single-part file upload successful");
+        setUploadProgress(66); // Full progress for single-part upload
+        addsinglepartfile(data);
+      }
+    } catch (error) {
+      console.error("Failed to upload single part file", error);
+    }
+  };
+
+  const addsinglepartfile = async (data: any) => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/categories/5/files`,
+        {
+          method: "POST",
+          body: JSON.stringify({
+            name: data.file_name,
+            size: data.file_size,
+            path: data?.path,
+            mime_type: size?.filetype,
+            type: "image",
+            tags: ["image", "sample"],
+          }),
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `${process.env.NEXT_PUBLIC_API_TOKEN}`,
+          },
+        }
+      );
+      const result = await response.json();
+
+      if (response.ok) {
+        console.log("File metadata saved:", result);
+        setUploadProgress(100);
+      }
+    } catch (error) {
+      console.error("Failed to save file metadata", error);
+    }
+  };
+
+  // Multi-part upload (file > 5 MB)
+  const postapi = async () => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/categories/5/files/start`,
+        {
+          method: "POST",
+          body: JSON.stringify({
+            original_name: size.filename,
+            file_type: size.filetype,
+            file_size: size.filesize,
+          }),
+        }
+      );
+      const result = await response.json();
+
+      if (response.ok) {
+        console.log(result);
+        setUploadData(result?.data);
+        getpresignedurl(result?.data);
+      }
+    } catch (error) {
+      console.error("Failed to start multi-part upload", error);
+    }
+  };
+
+  const getpresignedurl = async (data: any) => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/categories/5/files/urls`,
+        {
+          method: "POST",
+          body: JSON.stringify(data), //should add parts
+        }
+      );
+
+      const result = await response.json();
+
+      if (response.ok) {
+        setUrls(result?.data);
+        uploadDocuments(result?.data);
+      }
+    } catch (error) {
+      console.error("Failed to fetch presigned URLs", error);
+    }
+  };
+
+  const uploadDocuments = async (chunkurls: []) => {
+    const chunkSize = size.filesize / uploaddata.parts;
     const chunkArray: Blob[] = [];
 
     for (const file of selectedFiles) {
@@ -115,117 +209,94 @@ const MultiPartUpload = () => {
     setData((prev) => ({ ...prev, parts: chunkArray.length }));
 
     for (let i = 0; i < chunkArray.length; i++) {
-      await uploadChunk(chunkArray[i], i, chunkArray.length);
+      await uploadChunk(chunkArray[i], i, chunkurls[i], chunkArray.length);
     }
   };
 
   const uploadChunk = async (
     chunk: Blob,
     index: number,
-    totalChunks: number,
-    retries = 3
+    url: string,
+    totalChunks: number
   ) => {
     try {
-      await fetch("/upload-endpoint", {
-        method: "POST",
+      await fetch(url, {
+        method: "PUT",
         body: chunk,
       });
+
       setUploadProgress(Math.round(((index + 1) / totalChunks) * 100));
     } catch (error) {
-      if (retries > 0) {
-        await uploadChunk(chunk, index, totalChunks, retries - 1);
-      } else {
-        console.error("Failed to upload chunk:", error);
-      }
+      console.error(`Upload failed for URL ${url}, chunk ${index}`, error);
     }
   };
 
-  useEffect(() => {
-    if (selectedFiles.length > 0) {
-      postapi();
-    }
-  }, [selectedFiles]);
+  // useEffect(() => {
+  //   if (size.filesize > 5242880) {
+  //     postapi();
+  //   } else {
+  //     getsinglepartpresignedurl();
+  //   }
+  // }, [selectedFiles]);
 
   return (
-    <>
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogTrigger asChild>
-          <Button>Upload</Button>
-        </DialogTrigger>
-        <DialogContent className="bg-white">
-          {" "}
-          {/* Ensures white background */}
-          <DialogHeader>
-            <DialogTitle>Upload Documents</DialogTitle>
-            <Button
-              variant="ghost"
-              onClick={handleCancel}
-              className="absolute top-2 right-2"
-            >
-              <X className="w-5 h-5" />
-            </Button>
-          </DialogHeader>
-          <div
-            {...getRootProps()}
-            className="border-2 border-dashed border-gray-300 p-4 rounded-md text-center cursor-pointer"
-          >
-            <input {...getInputProps()} />
-            <p>Drag 'n' drop a file here, or click to select a file</p>
-          </div>
-          {size.filename && (
-            <div className="mt-4">
-              <p>File name: {size.filename}</p>
-              <p>File size: {size.filesize} bytes</p>
-              <p>File Type: {size.filetype}</p>
-            </div>
-          )}
-          {chunks.length > 0 && (
-            <div className="mt-4">
-              <Progress value={uploadProgress} />
-              <p className="text-center mt-2">{uploadProgress}%</p>
-            </div>
-          )}
+    <div className="flex justify-center items-center h-screen">
+      <Card className="p-6 w-full max-w-md">
+        <h3 className="text-xl font-semibold mb-4">Upload Documents</h3>
+
+        <div
+          {...getRootProps()}
+          className="border-2 border-dashed border-gray-300 p-4 rounded-md text-center cursor-pointer"
+        >
+          <input {...getInputProps()} />
+          <p>Drag 'n' drop a file here, or click to select a file</p>
+        </div>
+
+        {size.filename && (
           <div className="mt-4">
-            <Label htmlFor="size">Chunk Size</Label>
+            <p>File name: {size.filename}</p>
+            <p>File size: {size.filesize} bytes</p>
+            <p>File type: {size.filetype}</p>
+          </div>
+        )}
+
+        {/* Show Chunk Size only if file is > 5MB */}
+        {size.filesize > 5242880 && (
+          <div className="mt-4">
+            <Label htmlFor="parts">Chunk Size</Label>
             <Input
-              name="size"
-              value={size.size}
+              name="parts"
+              value={uploaddata && uploaddata?.parts}
               placeholder="Enter chunk size"
-              onChange={handleChange}
+              onChange={(e) =>
+                setUploadData({
+                  ...uploaddata,
+                  parts: parseInt(e.target.value),
+                })
+              }
               type="number"
               className="mt-2"
             />
+          </div>
+        )}
 
-            <Label htmlFor="unit" className="mt-4">
-              Units
-            </Label>
-            <Select
-              onValueChange={(value: any) =>
-                setSize((prev) => ({ ...prev, unit: Number(value) }))
-              }
-              value={String(size.unit)}
-            >
-              <SelectTrigger className="mt-2">
-                <SelectValue placeholder="Select unit" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="1048576">MB</SelectItem>
-                <SelectItem value="1073741824">GB</SelectItem>
-                <SelectItem value="1099511627776">TB</SelectItem>
-              </SelectContent>
-            </Select>
+        {uploadProgress > 0 && (
+          <div className="mt-4">
+            <Progress value={uploadProgress} />
+            <p className="text-center mt-2">{uploadProgress}%</p>
           </div>
-          <div className="flex justify-end mt-4">
-            <Button variant="ghost" onClick={handleCancel}>
-              Cancel
-            </Button>
-            <Button onClick={uploadDocuments} className="ml-2">
-              Upload
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-    </>
+        )}
+
+        <div className="flex justify-end mt-4">
+          <Button variant="ghost" onClick={handleCancel}>
+            Cancel
+          </Button>
+          <Button onClick={handleUpload} className="ml-2">
+            Upload
+          </Button>
+        </div>
+      </Card>
+    </div>
   );
 };
 

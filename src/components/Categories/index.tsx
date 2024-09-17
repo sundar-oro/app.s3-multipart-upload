@@ -49,6 +49,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { createcategory } from "@/lib/interfaces";
 import { useRouter } from "next/navigation";
+import { prepareQueryParams } from "@/lib/helpers/Core/prepareQueryParams";
 
 export const description =
   "An orders dashboard with a sidebar navigation. The sidebar has icon navigation. The content area has a breadcrumb and search in the header. The main area has a list of recent orders with a filter and export button. The main area also has a detailed view of a single order with order details, shipping information, billing information, customer information, and payment information.";
@@ -73,23 +74,39 @@ export function Categories() {
       document.documentElement.offsetHeight
     ) {
       if (!noData) {
-        getAllCategories(page);
+        getAllCategories(page, true);
       }
     }
   };
 
-  const getAllCategories = async (page: number) => {
+  const getAllCategories = async (
+    page: number,
+    isScrolling: boolean = false
+  ) => {
+    let queryParams = prepareQueryParams({
+      page: page ? page : 1,
+      limit: 10,
+    });
+    // setCategoryData([]);
     try {
       setLoading(true);
-      const response = await getAllCategoriesAPI(page);
+      const response = await getAllCategoriesAPI(queryParams);
 
       if (response?.success) {
-        console.log(response?.data);
+        // console.log(response?.data?.data);
         const newPage = page + 1;
-        const newcategorydata = categorydata.concat(response?.data);
-        setCategoryData(newcategorydata);
+        const newData = response?.data?.data;
+
+        if (isScrolling) {
+          // Concatenate only when fetching more data on scroll
+          setCategoryData((prevData) => prevData.concat(newData));
+        } else {
+          // Replace data when not scrolling
+          setCategoryData(newData);
+        }
+
         setPage(newPage);
-        if (response.data.length === 0) setNoData(true);
+        if (newData.length === 0) setNoData(true);
       } else {
         throw response;
       }
@@ -109,7 +126,7 @@ export function Categories() {
       if (response?.status == 200 || response?.status == 201) {
         // toast.success(response?.data?.message);
         setOpen(false);
-        await getAllCategories(page);
+        await getAllCategories(1, false);
       } else {
         throw response;
       }
@@ -150,7 +167,7 @@ export function Categories() {
         // toast.success(response?.data?.message);
         setRenameOpen(false);
         setId(0);
-        await getAllCategories(page);
+        await getAllCategories(1, false);
       } else {
         throw response;
       }
@@ -191,7 +208,7 @@ export function Categories() {
   };
 
   useEffect(() => {
-    getAllCategories(page);
+    getAllCategories(page, false);
   }, []);
 
   return (
@@ -276,18 +293,27 @@ export function Categories() {
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <EllipsisVertical
-                              onClick={() => handleMenu(data?.id)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleMenu(data?.id);
+                              }}
                             />
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
                             <DropdownMenuItem
-                              onClick={() => handleMenu(data?.id)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleMenu(data?.id);
+                              }}
                             >
                               Rename
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
-                              onClick={() => handleDeleteClick(data?.id)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteClick(data?.id);
+                              }}
                             >
                               Delete
                             </DropdownMenuItem>

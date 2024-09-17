@@ -10,10 +10,12 @@ import { Label } from "../ui/label";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { useRouter } from "next/navigation";
-
+import Cookies from "js-cookie";
+import jwt from "jsonwebtoken";
+import { encode } from "string-encode-decode";
 import { useDispatch, useSelector } from "react-redux";
-import { loginSuccess } from "@/redux/userSlice";
-import { RootState, store } from "@/redux/store";
+import { loginSuccess } from "@/redux/Modules/userlogin/userlogin.slice";
+import { RootState, store } from "@/redux";
 
 const SignInPage = () => {
   const router = useRouter();
@@ -26,8 +28,18 @@ const SignInPage = () => {
 
   const user = useSelector((state: RootState) => state.user);
 
+  const setUserDetailsInCookies = ({ access_token, user_details }: any) => {
+    const details: any = jwt.decode(access_token);
+    const encodedString = access_token;
+
+    Cookies.set("token", access_token, {
+      priority: "High",
+      expires: details["exp"],
+    });
+  };
+
   const fetchData = async (e: React.FormEvent) => {
-    e.preventDefault(); // Prevents default form submission behavior
+    e.preventDefault();
     setLoading(true);
 
     try {
@@ -52,7 +64,7 @@ const SignInPage = () => {
       const data = await response.json();
 
       console.log(data, "dtaat");
-
+      setUserDetailsInCookies(data?.data);
       dispatch(
         loginSuccess({
           user: data.data,

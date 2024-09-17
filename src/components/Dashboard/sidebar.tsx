@@ -79,12 +79,16 @@ import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { postCreateCategoryAPI } from "@/lib/services/categories";
-import { useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
 
 export function SideBar({
+  categoryid,
   getAllCategories,
+  setCategoryId,
 }: {
-  getAllCategories?: (page: number) => void;
+  categoryid?: number;
+  getAllCategories?: (page: number, value: boolean) => void;
+  setCategoryId?: Dispatch<SetStateAction<number>>;
 }) {
   const router = useRouter();
 
@@ -113,7 +117,7 @@ export function SideBar({
         setOpen(false);
         router.push("/categories");
 
-        getAllCategories && getAllCategories(1);
+        getAllCategories && getAllCategories(1, false);
 
         // toast.success(response?.data?.message);
         // setDeleteid(false);
@@ -254,15 +258,17 @@ export function SideBar({
       <hr className="border-gray-300 mb-6" />
 
       <div className="mt-auto px-3">
-        <Button
-          onClick={handleCreate}
-          className="flex items-center justify-center w-full py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-        >
-          <span>Create new</span>
-          <span className="ml-2">
-            <FilePlus className="h-5 w-5" />
-          </span>
-        </Button>
+        {categoryid && (
+          <Button
+            onClick={handleCreate}
+            className="flex items-center justify-center w-full py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+          >
+            <span>Create new</span>
+            <span className="ml-2">
+              <FilePlus className="h-5 w-5" />
+            </span>
+          </Button>
+        )}
         <Dialog open={open}>
           <DialogContent className="bg-white">
             <DialogHeader>
