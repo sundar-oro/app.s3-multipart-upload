@@ -15,10 +15,12 @@ import {
 import Image from "next/image";
 import { Button } from "../ui/button";
 import { useDispatch, useSelector } from "react-redux";
-import { RootState } from "@/redux/store";
-import { logout } from "@/redux/userSlice";
+// import { RootState } from "@/redux/store";
+// import { logout } from "@/redux/userSlice";
 import router from "next/router";
 import Link from "next/link";
+import { RootState } from "@/redux";
+import { logout } from "@/redux/Modules/userlogin/userlogin.slice";
 
 const Navbar = () => {
   const dispatch = useDispatch();

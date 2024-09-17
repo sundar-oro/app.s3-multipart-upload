@@ -16,6 +16,7 @@ import { encode } from "string-encode-decode";
 import { useDispatch, useSelector } from "react-redux";
 import { loginSuccess } from "@/redux/Modules/userlogin/userlogin.slice";
 import { RootState, store } from "@/redux";
+import { getAuthApi } from "@/lib/services/auth";
 
 const SignInPage = () => {
   const router = useRouter();
@@ -43,25 +44,24 @@ const SignInPage = () => {
     setLoading(true);
 
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/users/signin`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            email,
-            password,
-          }),
-        }
-      );
+      const data = await getAuthApi(email, password);
+      // `${process.env.NEXT_PUBLIC_API_URL}/users/signin`,
+      // {
+      //   method: "POST",
+      //   headers: {
+      //     "Content-Type": "application/json",
+      //   },
+      //   body: JSON.stringify({
+      //     email,
+      //     password,
+      //   }),
+      // }
 
-      if (!response.ok) {
-        throw new Error(`Error fetching data: ${response.statusText}`);
-      }
+      // if (!response.ok) {
+      //   throw new Error(`Error fetching data: ${response.statusText}`);
+      // }
 
-      const data = await response.json();
+      // const data = await response.json();
 
       console.log(data, "dtaat");
       setUserDetailsInCookies(data?.data);
