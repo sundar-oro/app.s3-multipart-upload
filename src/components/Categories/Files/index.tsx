@@ -36,6 +36,12 @@ import { statsData } from "@/components/Dashboard/dummydata";
 import { useEffect, useState } from "react";
 import FileUpload from "./filesupload";
 import { getAllFilesAPI } from "@/lib/services/files";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface FileData {
   id: string;
@@ -46,6 +52,15 @@ interface FileData {
   status: string;
   url: string;
 }
+
+const truncateFileName = (name: string, maxLength: number) => {
+  // Remove the extension and trailing unique identifier (anything after '.pdf' or other file extensions)
+  const baseName = name.split("_")[0]; // Get the part before the file extension
+  if (baseName.length <= maxLength) {
+    return baseName;
+  }
+  return `${baseName.substring(0, maxLength)}...`; // Truncate after maxLength and add '...'
+};
 
 const Files = () => {
   const router = useRouter();
@@ -276,9 +291,20 @@ const Files = () => {
                     className="rounded-lg"
                   /> */}
 
-                  {renderFilePreview(file)}
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger>{renderFilePreview(file)}</TooltipTrigger>
+                      <TooltipContent>
+                        <p>Name :{file.name}</p>
+                        <p>Size :{file.size}</p>
+                        <p>Type :{file.type}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+
+                  {/* {renderFilePreview(file)} */}
                   <span className="text-lg font-medium text-center">
-                    {file.name}
+                    {truncateFileName(file.name, 10)}
                   </span>
                 </div>
               ))
