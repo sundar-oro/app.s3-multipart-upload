@@ -89,7 +89,7 @@ export function Dashboard() {
     dispatch(logout());
 
     // Redirect to login page
-    router.push("/login");
+    router.push("/");
   };
 
   console.log(user, "daaa");
