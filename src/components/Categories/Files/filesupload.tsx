@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
 import { X } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 import { filedetails } from "@/lib/interfaces";
@@ -28,15 +28,17 @@ import { filedetails } from "@/lib/interfaces";
 const FileUpload = ({
   showFileUpload,
   setShowFileUpload,
+  getAllFiles,
 }: {
   showFileUpload: boolean;
   setShowFileUpload: Dispatch<SetStateAction<boolean>>;
+  getAllFiles: (page: number) => void;
 }) => {
   const router = useRouter();
 
   const [open, setOpen] = useState(true);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
-  const [uploadProgress, setUploadProgress] = useState(100);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [chunks, setChunks] = useState<Blob[]>([]);
   const [data, setData] = useState({});
   const [size, setSize] = useState({
@@ -52,6 +54,8 @@ const FileUpload = ({
     parts: 0,
   });
   const [urls, setUrls] = useState([]);
+
+  const { file_id } = useParams();
 
   console.log(chunks);
 
@@ -116,10 +120,6 @@ const FileUpload = ({
           filesize: file.size,
           filetype: file.type,
         });
-        setFileStatus((prev) => [
-          ...prev,
-          { filename: file.name, status: "uploading" },
-        ]);
       }
     },
     multiple: false,
@@ -130,9 +130,13 @@ const FileUpload = ({
   const getsinglepartpresignedurl = async () => {
     setOpen(false);
     setUploadProgress(1);
+    setFileStatus((prev) => [
+      ...prev,
+      { filename: size.filename, status: "uploading" },
+    ]);
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/categories/5/files/generate-presigned-url`,
+        `${process.env.NEXT_PUBLIC_API_URL}/categories/${file_id}/files/generate-presigned-url`,
         {
           method: "POST",
           body: JSON.stringify({
@@ -142,14 +146,15 @@ const FileUpload = ({
           }),
         }
       );
-
       const result = await response.json();
 
-      if (response.ok) {
+      if (result.status === 200 || result.status === 201) {
         console.log(result);
         setUploadProgress(33);
         setUploadData(result?.data);
         s3partfile(result?.data);
+      } else {
+        throw result;
       }
     } catch (error) {
       console.error("Failed to call API", error);
@@ -161,7 +166,7 @@ const FileUpload = ({
   const s3partfile = async (data: any) => {
     console.log(data, "s3");
     try {
-      const response = await fetch(data?.url, {
+      const response = await fetch(data?.generateUrl, {
         method: "PUT",
         body: selectedFiles[0],
       });
@@ -170,6 +175,8 @@ const FileUpload = ({
         console.log("Single-part file upload successful");
         setUploadProgress(66);
         addsinglepartfile(data);
+      } else {
+        throw response;
       }
     } catch (error) {
       console.error("Failed to upload single part file", error);
@@ -181,7 +188,7 @@ const FileUpload = ({
   const addsinglepartfile = async (data: any) => {
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/categories/5/files`,
+        `${process.env.NEXT_PUBLIC_API_URL}/categories/${file_id}/files`,
         {
           method: "POST",
           body: JSON.stringify({
@@ -189,7 +196,7 @@ const FileUpload = ({
             size: data.file_size,
             path: data?.path,
             mime_type: data?.file_type,
-            file_type: data?.file_type?.split("/")[1],
+            type: data?.file_type?.split("/")[0],
             tags: ["image", "sample"],
           }),
           headers: {
@@ -204,8 +211,11 @@ const FileUpload = ({
         console.log("File metadata saved:", result);
         setUploadProgress(100);
         updateFileStatus(size.filename, "success");
+        getAllFiles(1);
         toast.success(result?.message);
         handleClear();
+      } else {
+        throw result;
       }
     } catch (error) {
       console.error("Failed to save file metadata", error);
@@ -221,7 +231,7 @@ const FileUpload = ({
   const postapi = async () => {
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/categories/5/files/start`,
+        `${process.env.NEXT_PUBLIC_API_URL}/categories/${file_id}/files/start`,
         {
           method: "POST",
           body: JSON.stringify({
@@ -246,7 +256,7 @@ const FileUpload = ({
   const getpresignedurl = async (data: any) => {
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/categories/5/files/urls`,
+        `${process.env.NEXT_PUBLIC_API_URL}/categories/${file_id}/files/urls`,
         {
           method: "POST",
           body: JSON.stringify(data), //should add parts
@@ -313,7 +323,7 @@ const FileUpload = ({
             className="border-2 border-dashed border-gray-300 p-4 rounded-md text-center cursor-pointer"
           >
             <input {...getInputProps()} />
-            <p>Drag 'n' drop a file here, or click to select a file</p>
+            <p>Drag drop a file here, or click to select a file</p>
           </div>
           {size.filename && (
             <div className="mt-4">

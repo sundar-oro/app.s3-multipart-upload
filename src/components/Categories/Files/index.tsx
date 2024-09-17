@@ -1,7 +1,7 @@
 "use client";
-import Image from "next/image";
-import { Folder, PanelLeft, Search } from "lucide-react";
+import { PanelLeft } from "lucide-react";
 
+import { SideBar } from "@/components/Dashboard/sidebar";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -10,38 +10,18 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
-import { Progress } from "@/components/ui/progress";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useParams, useRouter } from "next/navigation";
-import { SideBar } from "@/components/Dashboard/sidebar";
-import { StorageStats } from "@/components/Dashboard/storagestats";
-import { statsData } from "@/components/Dashboard/dummydata";
 
-import { useEffect, useState } from "react";
-import FileUpload from "./filesupload";
-import { getAllFilesAPI } from "@/lib/services/files";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { getAllFilesAPI } from "@/lib/services/files";
+import { useEffect, useState } from "react";
+import FileUpload from "./filesupload";
 
 interface FileData {
   id: string;
@@ -54,8 +34,8 @@ interface FileData {
 }
 
 const truncateFileName = (name: string, maxLength: number) => {
-  // Remove the extension and trailing unique identifier (anything after '.pdf' or other file extensions)
-  const baseName = name.split("_")[0]; // Get the part before the file extension
+  // Remove the extension
+  const baseName = name.split(".")[0]; // Get the part before the file extension
   if (baseName.length <= maxLength) {
     return baseName;
   }
@@ -67,7 +47,7 @@ const Files = () => {
   const [page, setPage] = useState(1);
   const [showFileUpload, setShowFileUpload] = useState(false);
   const [filesData, setFilesData] = useState<FileData[]>([]); // State for file list
-  const [categoryId, setCategoryId] = useState<string>(""); // Keep track of category ID
+  const [categoryId, setCategoryId] = useState<number | null>(null); // Keep track of category ID
   const [loading, setLoading] = useState(false);
   const [noData, setNoData] = useState(false);
 
@@ -95,8 +75,8 @@ const Files = () => {
       if (response?.success) {
         const newPage = page + 1;
         const newFileData = response.data;
-        const updatedFilesData = [...filesData, ...newFileData];
-        setFilesData(updatedFilesData);
+        // const updatedFilesData = [...filesData, ...newFileData];
+        setFilesData(newFileData);
         setPage(newPage);
 
         if (newFileData.length === 0) {
@@ -113,8 +93,12 @@ const Files = () => {
   };
 
   useEffect(() => {
-    getAllFiles(page);
-  }, []); // Fetch files on component mount
+    if (file_id) {
+      getAllFiles(page);
+      const id = Array.isArray(file_id) ? file_id[0] : file_id;
+      setCategoryId(parseInt(id));
+    }
+  }, []);
 
   // const handleImageError = (
   //   event: React.SyntheticEvent<HTMLImageElement, Event>
@@ -158,14 +142,22 @@ const Files = () => {
   const renderFilePreview = (file: FileData) => {
     const mimeType = file.mime_type;
     const isImage = mimeType.startsWith("image/");
+    console.log(isImage);
+
     const isVideo = mimeType.startsWith("video/");
-    const isPdf = mimeType === "application/pdf";
+    console.log(isVideo);
+
+    const isPdf = mimeType == "application/pdf";
+    console.log(isPdf);
+
     const isDoc =
       mimeType === "application/msword" ||
       mimeType ===
         "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+    const isOthers = !isImage && !isVideo && !isPdf && !isDoc;
+    console.log(isOthers);
 
-    if (isImage) {
+    if (mimeType.startsWith("image/")) {
       return (
         <img
           src={file.url}
@@ -179,16 +171,26 @@ const Files = () => {
       );
     }
 
-    if (isVideo) {
+    if (mimeType.startsWith("video/")) {
       return (
-        <video width={60} height={60} controls>
-          <source src={file.url} type={mimeType} />
-          Your browser does not support the video tag.
-        </video>
+        <>
+          {/* <video width={60} height={60} controls>
+            <source src={file.url} type={mimeType} />
+            Your browser does not support the video tag.
+          </video> */}
+          <img
+            src={file.url}
+            alt={file.name}
+            data-file-type="video"
+            width={60}
+            height={60}
+            onError={handleImageError}
+          />
+        </>
       );
     }
 
-    if (isPdf) {
+    if (mimeType == "application/pdf") {
       return (
         <img
           src="/dashboard/stats/pdf.svg"
@@ -197,11 +199,12 @@ const Files = () => {
           width={60}
           height={60}
           className="rounded-lg"
+          onError={handleImageError}
         />
       );
     }
 
-    if (isDoc) {
+    if (mimeType === "application/msword") {
       return (
         <img
           src="/dashboard/stats/docs.svg"
@@ -210,6 +213,7 @@ const Files = () => {
           width={60}
           height={60}
           className="rounded-lg"
+          onError={handleImageError}
         />
       );
     }
@@ -222,6 +226,7 @@ const Files = () => {
         width={60}
         height={60}
         className="rounded-lg"
+        onError={handleImageError}
       />
     );
   };
@@ -230,7 +235,7 @@ const Files = () => {
     <div className="flex min-h-screen w-full">
       {/* Sidebar - sticky */}
       <div className="sticky top-0 left-0 h-screen w-50 bg-white">
-        <SideBar />
+        <SideBar categoryid={categoryId} />
       </div>
 
       {/* Main Content */}
@@ -265,44 +270,9 @@ const Files = () => {
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
-
-          <div className="relative ml-auto flex-1 md:grow-0">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              type="search"
-              placeholder="Search..."
-              className="w-full rounded-lg bg-background pl-8 md:w-[200px] lg:w-[336px]"
-            />
-          </div>
-
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="outline"
-                size="icon"
-                className="overflow-hidden rounded-full"
-              >
-                <Image
-                  src="/dashboard/dashboard-avatar.svg"
-                  width={36}
-                  height={36}
-                  alt="Avatar"
-                  className="overflow-hidden rounded-full"
-                />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>My Account</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>Settings</DropdownMenuItem>
-              <DropdownMenuItem>Support</DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>Logout</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
         </header>
 
-        <div className="flex mt-10">
+        <div className="flex">
           {/* File List */}
           <div
             className={`grid gap-10 transition-all duration-300 ${
@@ -350,12 +320,13 @@ const Files = () => {
           {/* File Upload Section */}
           {showFileUpload && (
             <div
-              // className=" right-0 top-0 w-85 h-20   transition-all duration-300"
+              className=" right-0 top-0 w-85 h-20   transition-all duration-300"
               style={{ zIndex: 1000 }}
             >
               <FileUpload
                 showFileUpload={showFileUpload}
                 setShowFileUpload={setShowFileUpload}
+                getAllFiles={getAllFiles}
               />
             </div>
           )}

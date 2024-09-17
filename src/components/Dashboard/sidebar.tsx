@@ -80,13 +80,15 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { postCreateCategoryAPI } from "@/lib/services/categories";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
+import { RootState } from "@/redux";
+import { useSelector } from "react-redux";
 
 export function SideBar({
   categoryid,
   getAllCategories,
   setCategoryId,
 }: {
-  categoryid?: number;
+  categoryid?: number | null;
   getAllCategories?: (page: number, value: boolean) => void;
   setCategoryId?: Dispatch<SetStateAction<number>>;
 }) {
@@ -98,6 +100,7 @@ export function SideBar({
     name: "",
     description: "",
   });
+  const user = useSelector((state: RootState) => state?.user?.user_details);
 
   const handleCreate = () => {
     setOpen(true);
@@ -146,11 +149,15 @@ export function SideBar({
   };
 
   return (
-    <nav className="flex flex-col h-full w-60 bg-white text-gray-800 py-4 px-3">
-      <div className="flex items-center justify-between mb-6 px-3">
+    <nav className="flex flex-col h-full w-60 bg-white text-gray-800 py-4 px-3 ">
+      <div className="flex items-center justify-between mb-6 px-3 border-gray-300 mb-6">
         <div>
-          <span className="text-xl font-semibold text-gray-900">Developer</span>
-          <p className="text-sm text-gray-500">UserName</p>
+          <p className="text-xl font-semibold text-gray-900">
+            {user ? user?.full_name : "Username"}
+          </p>
+          <p className="text-sm text-gray-500">
+            {user ? user?.email : "email"}
+          </p>
         </div>
         <ChevronDown className="h-5 w-5 text-gray-500" />
       </div>
@@ -258,7 +265,7 @@ export function SideBar({
       <hr className="border-gray-300 mb-6" />
 
       <div className="mt-auto px-3">
-        {categoryid && (
+        {!categoryid && (
           <Button
             onClick={handleCreate}
             className="flex items-center justify-center w-full py-2 bg-blue-500 text-white rounded hover:bg-blue-600"

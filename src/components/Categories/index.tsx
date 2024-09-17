@@ -235,43 +235,6 @@ export function Categories() {
                 </BreadcrumbItem>
               </BreadcrumbList>
             </Breadcrumb>
-
-            {/* Search */}
-            <div className="relative ml-auto flex-1 md:grow-0">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                type="search"
-                placeholder="Search..."
-                className="w-full rounded-lg bg-background pl-8 md:w-[200px] lg:w-[336px]"
-              />
-            </div>
-
-            {/* User Avatar Dropdown */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="overflow-hidden rounded-full"
-                >
-                  <Image
-                    src="/dashboard/dashboard-avatar.svg"
-                    width={36}
-                    height={36}
-                    alt="Avatar"
-                    className="overflow-hidden rounded-full"
-                  />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem>Settings</DropdownMenuItem>
-                <DropdownMenuItem>Support</DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem>Logout</DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
           </header>
           {/* Main Content Area */}
           <main className="grid flex-1 gap-4 p-4">
@@ -336,14 +299,18 @@ export function Categories() {
         </div>
       </div>
 
-      <DeleteDialog
-        openOrNot={open}
-        onCancelClick={handleClose}
-        label="Are you sure you want to delete this Category?"
-        onOKClick={deleteCategory}
-        deleteLoading={loading}
-      />
-      <Dialog open={renameOpen}>
+      {open ? (
+        <DeleteDialog
+          openOrNot={open}
+          onCancelClick={handleClose}
+          label="Are you sure you want to delete this Category?"
+          onOKClick={deleteCategory}
+          deleteLoading={loading}
+        />
+      ) : (
+        ""
+      )}
+      {/* <Dialog open={renameOpen}>
         <DialogContent className="bg-white">
           <DialogHeader>
             <DialogTitle>Rename</DialogTitle>
@@ -372,7 +339,7 @@ export function Categories() {
             </Button>
           </DialogFooter>
         </DialogContent>
-      </Dialog>
+      </Dialog> */}
     </>
   );
 }
