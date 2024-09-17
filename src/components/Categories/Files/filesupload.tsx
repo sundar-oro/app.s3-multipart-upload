@@ -36,7 +36,7 @@ const FileUpload = ({
 
   const [open, setOpen] = useState(true);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
-  const [uploadProgress, setUploadProgress] = useState(100);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [chunks, setChunks] = useState<Blob[]>([]);
   const [data, setData] = useState({});
   const [size, setSize] = useState({
@@ -161,7 +161,7 @@ const FileUpload = ({
   const s3partfile = async (data: any) => {
     console.log(data, "s3");
     try {
-      const response = await fetch(data?.url, {
+      const response = await fetch(data?.generateUrl, {
         method: "PUT",
         body: selectedFiles[0],
       });
@@ -189,7 +189,7 @@ const FileUpload = ({
             size: data.file_size,
             path: data?.path,
             mime_type: data?.file_type,
-            file_type: data?.file_type?.split("/")[1],
+            type: data?.file_type?.split("/")[0],
             tags: ["image", "sample"],
           }),
           headers: {

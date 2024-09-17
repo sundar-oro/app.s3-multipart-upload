@@ -15,12 +15,16 @@ import {
 import Image from "next/image";
 import { Button } from "../ui/button";
 import { useDispatch, useSelector } from "react-redux";
-import { RootState } from "@/redux/store";
-import { logout } from "@/redux/userSlice";
-import router from "next/router";
+// import { RootState } from "@/redux/store";
+// import { logout } from "@/redux/userSlice";
+// import router from "next/router";
 import Link from "next/link";
+import { RootState } from "@/redux";
+import { logout } from "@/redux/Modules/userlogin/userlogin.slice";
+import { useRouter } from "next/navigation";
 
 const Navbar = () => {
+  const router = useRouter();
   const dispatch = useDispatch();
   const user = useSelector((state: RootState) => state?.user?.user_details);
 
@@ -29,11 +33,11 @@ const Navbar = () => {
     dispatch(logout());
 
     // Redirect to login page
-    router.push("/login");
+    router.push("/");
   };
 
   return (
-    <div className="flex min-h-screen w-full flex-col ">
+    <div className="flex  w-full flex-col ">
       <header className="sticky top-0 flex h-16 items-center gap-4 border-b bg-gray-700 px-4 md:px-6">
         <Link
           href="#"

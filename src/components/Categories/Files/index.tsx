@@ -67,7 +67,7 @@ const Files = () => {
   const [page, setPage] = useState(1);
   const [showFileUpload, setShowFileUpload] = useState(false);
   const [filesData, setFilesData] = useState<FileData[]>([]); // State for file list
-  const [categoryId, setCategoryId] = useState<string>(""); // Keep track of category ID
+  const [categoryId, setCategoryId] = useState<number | null>(null); // Keep track of category ID
   const [loading, setLoading] = useState(false);
   const [noData, setNoData] = useState(false);
 
@@ -103,8 +103,12 @@ const Files = () => {
   };
 
   useEffect(() => {
-    getAllFiles(page);
-  }, []); // Fetch files on component mount
+    if (file_id) {
+      getAllFiles(page);
+      const id = Array.isArray(file_id) ? file_id[0] : file_id;
+      setCategoryId(parseInt(id));
+    }
+  }, []);
 
   const handleImageError = (
     event: React.SyntheticEvent<HTMLImageElement, Event>
@@ -198,7 +202,7 @@ const Files = () => {
     <div className="flex min-h-screen w-full">
       {/* Sidebar - sticky */}
       <div className="sticky top-0 left-0 h-screen w-50 bg-white">
-        <SideBar />
+        <SideBar categoryid={categoryId} />
       </div>
 
       {/* Main Content */}
@@ -233,44 +237,9 @@ const Files = () => {
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
-
-          <div className="relative ml-auto flex-1 md:grow-0">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              type="search"
-              placeholder="Search..."
-              className="w-full rounded-lg bg-background pl-8 md:w-[200px] lg:w-[336px]"
-            />
-          </div>
-
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="outline"
-                size="icon"
-                className="overflow-hidden rounded-full"
-              >
-                <Image
-                  src="/dashboard/dashboard-avatar.svg"
-                  width={36}
-                  height={36}
-                  alt="Avatar"
-                  className="overflow-hidden rounded-full"
-                />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>My Account</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>Settings</DropdownMenuItem>
-              <DropdownMenuItem>Support</DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>Logout</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
         </header>
 
-        <div className="flex mt-10">
+        <div className="flex">
           {/* File List */}
           <div
             className={`grid gap-10 transition-all duration-300 ${
@@ -318,7 +287,7 @@ const Files = () => {
           {/* File Upload Section */}
           {showFileUpload && (
             <div
-              // className=" right-0 top-0 w-85 h-20   transition-all duration-300"
+              className=" right-0 top-0 w-85 h-20   transition-all duration-300"
               style={{ zIndex: 1000 }}
             >
               <FileUpload
