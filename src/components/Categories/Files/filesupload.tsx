@@ -323,7 +323,7 @@ const FileUpload = ({
             className="border-2 border-dashed border-gray-300 p-4 rounded-md text-center cursor-pointer"
           >
             <input {...getInputProps()} />
-            <p>Drag 'n' drop a file here, or click to select a file</p>
+            <p>Drag drop a file here, or click to select a file</p>
           </div>
           {size.filename && (
             <div className="mt-4">
