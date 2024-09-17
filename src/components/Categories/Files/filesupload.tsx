@@ -24,6 +24,8 @@ import { useParams, useRouter } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 import { filedetails } from "@/lib/interfaces";
+import { useSelector } from "react-redux";
+import { RootState } from "@/redux";
 
 const FileUpload = ({
   showFileUpload,
@@ -58,6 +60,9 @@ const FileUpload = ({
   const { file_id } = useParams();
 
   console.log(chunks);
+
+  const user = useSelector((state: RootState) => state?.user?.access_token);
+  // const access_token = user?.access_token;
 
   const handleToggle = () => {
     setShowFileUpload((prevState: any) => !prevState);
@@ -207,7 +212,7 @@ const FileUpload = ({
           }),
           headers: {
             "Content-Type": "application/json",
-            Authorization: `${process.env.NEXT_PUBLIC_API_TOKEN}`,
+            Authorization: `${user}`,
           },
         }
       );

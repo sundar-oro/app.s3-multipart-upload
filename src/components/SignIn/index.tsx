@@ -26,6 +26,7 @@ const SignInPage = () => {
   const [password, setPassword] = useState("");
   const [isLoading, setLoading] = useState(false);
   const [errors, setErrors] = useState<string | null>(null);
+  const [errmessages, setErrMessages] = useState<any>(null);
 
   const user = useSelector((state: RootState) => state.user);
 
