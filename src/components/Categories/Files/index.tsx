@@ -85,8 +85,8 @@ const Files = () => {
       if (response?.success) {
         const newPage = page + 1;
         const newFileData = response.data;
-        const updatedFilesData = [...filesData, ...newFileData];
-        setFilesData(updatedFilesData);
+        // const updatedFilesData = [...filesData, ...newFileData];
+        setFilesData(newFileData);
         setPage(newPage);
 
         if (newFileData.length === 0) {
@@ -293,6 +293,7 @@ const Files = () => {
               <FileUpload
                 showFileUpload={showFileUpload}
                 setShowFileUpload={setShowFileUpload}
+                getAllFiles={getAllFiles}
               />
             </div>
           )}
