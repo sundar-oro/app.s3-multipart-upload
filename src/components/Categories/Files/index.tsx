@@ -42,6 +42,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import Loading from "@/components/Core/loading";
 
 interface FileData {
   id: string;
@@ -199,60 +200,61 @@ const Files = () => {
   };
 
   return (
-    <div className="flex min-h-screen w-full">
-      {/* Sidebar - sticky */}
-      <div className="sticky top-0 left-0 h-screen w-50 bg-white">
-        <SideBar categoryid={categoryId} />
-      </div>
+    <>
+      <div className="flex min-h-screen w-full">
+        {/* Sidebar - sticky */}
+        <div className="sticky top-0 left-0 h-screen w-50 bg-white">
+          <SideBar categoryid={categoryId} />
+        </div>
 
-      {/* Main Content */}
-      <div className="flex flex-1 flex-col bg-muted/40">
-        {/* Header */}
-        <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
-          <Sheet>
-            <SheetTrigger asChild>
-              <Button size="icon" variant="outline" className="sm:hidden">
-                <PanelLeft className="h-5 w-5" />
-                <span className="sr-only">Toggle Menu</span>
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="left" className="sm:max-w-xs"></SheetContent>
-          </Sheet>
-          <Breadcrumb>
-            <BreadcrumbList>
-              <BreadcrumbItem>
-                <BreadcrumbLink href="/">Home</BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator />
-              <BreadcrumbItem>
-                <BreadcrumbLink href="/dashboard">Dashboard</BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator />
-              <BreadcrumbItem>
-                <BreadcrumbLink href="/dashboard">Categories</BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator />
-              <BreadcrumbItem>
-                <BreadcrumbLink href="/files"> Files</BreadcrumbLink>
-              </BreadcrumbItem>
-            </BreadcrumbList>
-          </Breadcrumb>
-        </header>
+        {/* Main Content */}
+        <div className="flex flex-1 flex-col bg-muted/40">
+          {/* Header */}
+          <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button size="icon" variant="outline" className="sm:hidden">
+                  <PanelLeft className="h-5 w-5" />
+                  <span className="sr-only">Toggle Menu</span>
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="left" className="sm:max-w-xs"></SheetContent>
+            </Sheet>
+            <Breadcrumb>
+              <BreadcrumbList>
+                <BreadcrumbItem>
+                  <BreadcrumbLink href="/">Home</BreadcrumbLink>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator />
+                <BreadcrumbItem>
+                  <BreadcrumbLink href="/dashboard">Dashboard</BreadcrumbLink>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator />
+                <BreadcrumbItem>
+                  <BreadcrumbLink href="/dashboard">Categories</BreadcrumbLink>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator />
+                <BreadcrumbItem>
+                  <BreadcrumbLink href="/files"> Files</BreadcrumbLink>
+                </BreadcrumbItem>
+              </BreadcrumbList>
+            </Breadcrumb>
+          </header>
 
-        <div className="flex">
-          {/* File List */}
-          <div
-            className={`grid gap-10 transition-all duration-300 ${
-              showFileUpload ? "grid-cols-3" : "grid-cols-4"
-            } flex-grow`}
-          >
-            {filesData.length > 0 ? (
-              filesData.map((file) => (
-                <div
-                  key={file.id}
-                  className="flex flex-col items-center space-y-2"
-                >
-                  {/* <img
+          <div className="flex">
+            {/* File List */}
+            <div
+              className={`grid gap-10 transition-all duration-300 ${
+                showFileUpload ? "grid-cols-3" : "grid-cols-4"
+              } flex-grow`}
+            >
+              {filesData.length > 0 ? (
+                filesData.map((file) => (
+                  <div
+                    key={file.id}
+                    className="flex flex-col items-center space-y-2"
+                  >
+                    {/* <img
                     src={file.url}
                     alt={file.name}
                     data-file-type={file.type}
@@ -262,54 +264,58 @@ const Files = () => {
                     className="rounded-lg"
                   /> */}
 
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger>{renderFilePreview(file)}</TooltipTrigger>
-                      <TooltipContent>
-                        <p>Name :{file.name}</p>
-                        <p>Size :{file.size}</p>
-                        <p>Type :{file.type}</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger>
+                          {renderFilePreview(file)}
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Name :{file.name}</p>
+                          <p>Size :{file.size}</p>
+                          <p>Type :{file.type}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
 
-                  {/* {renderFilePreview(file)} */}
-                  <span className="text-lg font-medium text-center">
-                    {truncateFileName(file.name, 10)}
-                  </span>
-                </div>
-              ))
-            ) : (
-              <div></div>
+                    {/* {renderFilePreview(file)} */}
+                    <span className="text-lg font-medium text-center">
+                      {truncateFileName(file.name, 10)}
+                    </span>
+                  </div>
+                ))
+              ) : (
+                <div></div>
+              )}
+            </div>
+
+            {/* File Upload Section */}
+            {showFileUpload && (
+              <div
+                className=" right-0 top-0 w-85 h-20   transition-all duration-300"
+                style={{ zIndex: 1000 }}
+              >
+                <FileUpload
+                  showFileUpload={showFileUpload}
+                  setShowFileUpload={setShowFileUpload}
+                  getAllFiles={getAllFiles}
+                />
+              </div>
             )}
           </div>
 
-          {/* File Upload Section */}
-          {showFileUpload && (
-            <div
-              className=" right-0 top-0 w-85 h-20   transition-all duration-300"
-              style={{ zIndex: 1000 }}
+          {/* Upload Button */}
+          <div className="fixed bottom-20 right-20">
+            <button
+              onClick={handleToggle}
+              className="bg-blue-500 text-white p-3 rounded-full hover:bg-blue-700 focus:outline-none"
             >
-              <FileUpload
-                showFileUpload={showFileUpload}
-                setShowFileUpload={setShowFileUpload}
-                getAllFiles={getAllFiles}
-              />
-            </div>
-          )}
-        </div>
-
-        {/* Upload Button */}
-        <div className="fixed bottom-20 right-20">
-          <button
-            onClick={handleToggle}
-            className="bg-blue-500 text-white p-3 rounded-full hover:bg-blue-700 focus:outline-none"
-          >
-            +
-          </button>
+              +
+            </button>
+          </div>
         </div>
       </div>
-    </div>
+      <Loading loading={loading} />
+    </>
   );
 };
 

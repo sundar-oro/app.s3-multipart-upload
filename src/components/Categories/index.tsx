@@ -50,6 +50,7 @@ import { Label } from "@/components/ui/label";
 import { createcategory } from "@/lib/interfaces";
 import { useRouter } from "next/navigation";
 import { prepareQueryParams } from "@/lib/helpers/Core/prepareQueryParams";
+import Loading from "../Core/loading";
 
 export const description =
   "An orders dashboard with a sidebar navigation. The sidebar has icon navigation. The content area has a breadcrumb and search in the header. The main area has a list of recent orders with a filter and export button. The main area also has a detailed view of a single order with order details, shipping information, billing information, customer information, and payment information.";
@@ -88,8 +89,8 @@ export function Categories() {
       limit: 10,
     });
     // setCategoryData([]);
+    setLoading(true);
     try {
-      setLoading(true);
       const response = await getAllCategoriesAPI(queryParams);
 
       if (response?.success) {
@@ -119,7 +120,7 @@ export function Categories() {
   };
 
   const deleteCategory = async () => {
-    setLoading(true);
+    // setLoading(true);
     try {
       const response = await deleteCategoryAPI(deleteid);
 
@@ -133,7 +134,7 @@ export function Categories() {
     } catch (err: any) {
       // errorPopper(err);
     } finally {
-      setLoading(false);
+      // setLoading(false);
     }
   };
 
@@ -310,7 +311,7 @@ export function Categories() {
       ) : (
         ""
       )}
-      {/* <Dialog open={renameOpen}>
+      <Dialog open={renameOpen}>
         <DialogContent className="bg-white">
           <DialogHeader>
             <DialogTitle>Rename</DialogTitle>
@@ -339,7 +340,8 @@ export function Categories() {
             </Button>
           </DialogFooter>
         </DialogContent>
-      </Dialog> */}
+      </Dialog>
+      <Loading loading={loading} />
     </>
   );
 }

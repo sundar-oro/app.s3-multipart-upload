@@ -160,6 +160,9 @@ const FileUpload = ({
       console.error("Failed to call API", error);
       updateFileStatus(size.filename, "failed");
       handleClear();
+      setTimeout(() => {
+        setUploadProgress(0);
+      }, 10000);
     }
   };
 
@@ -182,6 +185,9 @@ const FileUpload = ({
       console.error("Failed to upload single part file", error);
       updateFileStatus(size.filename, "failed");
       handleClear();
+      setTimeout(() => {
+        setUploadProgress(0);
+      }, 10000);
     }
   };
 
@@ -214,6 +220,9 @@ const FileUpload = ({
         getAllFiles(1);
         toast.success(result?.message);
         handleClear();
+        setTimeout(() => {
+          setUploadProgress(0);
+        }, 50000);
       } else {
         throw result;
       }
@@ -222,6 +231,9 @@ const FileUpload = ({
       toast.error("Failed to Upload the file");
       updateFileStatus(size.filename, "failed");
       handleClear();
+      setTimeout(() => {
+        setUploadProgress(0);
+      }, 10000);
     } finally {
       setOpen(true);
     }
@@ -361,7 +373,7 @@ const FileUpload = ({
           )}
 
           {uploadProgress === 100 && (
-            <div className="flex items-center" style={{ marginLeft: "80px" }}>
+            <div className="flex items-center" style={{ marginLeft: "130px" }}>
               <img
                 src="/files/success.svg"
                 alt="successful"
@@ -403,21 +415,23 @@ const FileUpload = ({
             </div> */}
         </div>
         <div>
-          <h3>Uploaded Files:</h3>
           <ul>
             {filestatus.map((file, index) => (
-              <li key={index} className="flex items-center space-x-4">
-                <span>{file.filename}</span>
-                <span>
-                  {file.status === "success" ? (
-                    <span className="text-green-500">Success</span>
-                  ) : file.status === "uploading" ? (
-                    <span className="text-yellow-500">Uploading</span>
-                  ) : (
-                    <span className="text-red-500">Failed</span>
-                  )}
-                </span>
-              </li>
+              <>
+                <h3>Uploaded Files:</h3>
+                <li key={index} className="flex items-center space-x-4">
+                  <span>{file.filename}</span>
+                  <span>
+                    {file.status === "success" ? (
+                      <span className="text-green-500">Success</span>
+                    ) : file.status === "uploading" ? (
+                      <span className="text-yellow-500">Uploading</span>
+                    ) : (
+                      <span className="text-red-500">Failed</span>
+                    )}
+                  </span>
+                </li>
+              </>
             ))}
           </ul>
         </div>
