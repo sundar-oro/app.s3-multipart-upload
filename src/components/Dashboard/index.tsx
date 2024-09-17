@@ -71,17 +71,28 @@ import {
 import { StorageStats } from "./storagestats";
 import { SideBar } from "./sidebar";
 import { DashboardTable } from "./dashboardtable";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/redux";
 import { statsData } from "./dummydata";
 import { useRouter } from "next/navigation";
+import { logout } from "@/redux/Modules/userlogin/userlogin.slice";
 
 export const description =
   "An orders dashboard with a sidebar navigation. The sidebar has icon navigation. The content area has a breadcrumb and search in the header. The main area has a list of recent orders with a filter and export button. The main area also has a detailed view of a single order with order details, shipping information, billing information, customer information, and payment information.";
 
 export function Dashboard() {
-  const user = useSelector((state: RootState) => state.user.user_details);
-  console.log(user);
+  const dispatch = useDispatch();
+  const user = useSelector((state: RootState) => state?.user?.user_details);
+
+  const handleLogout = () => {
+    // Dispatch the logout action
+    dispatch(logout());
+
+    // Redirect to login page
+    router.push("/login");
+  };
+
+  console.log(user, "daaa");
 
   const router = useRouter();
 
@@ -152,7 +163,7 @@ export function Dashboard() {
               <DropdownMenuItem>Settings</DropdownMenuItem>
               <DropdownMenuItem>Support</DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>Logout</DropdownMenuItem>
+              <DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </header>

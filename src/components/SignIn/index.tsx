@@ -62,6 +62,7 @@ const SignInPage = () => {
       }
 
       const data = await response.json();
+
       console.log(data, "dtaat");
       setUserDetailsInCookies(data?.data);
       dispatch(
