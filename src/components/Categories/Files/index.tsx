@@ -1,7 +1,7 @@
 "use client";
-import Image from "next/image";
-import { Folder, PanelLeft, Search } from "lucide-react";
+import { PanelLeft } from "lucide-react";
 
+import { SideBar } from "@/components/Dashboard/sidebar";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -10,38 +10,18 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
-import { Progress } from "@/components/ui/progress";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useParams, useRouter } from "next/navigation";
-import { SideBar } from "@/components/Dashboard/sidebar";
-import { StorageStats } from "@/components/Dashboard/storagestats";
-import { statsData } from "@/components/Dashboard/dummydata";
 
-import { useEffect, useState } from "react";
-import FileUpload from "./filesupload";
-import { getAllFilesAPI } from "@/lib/services/files";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { getAllFilesAPI } from "@/lib/services/files";
+import { useEffect, useState } from "react";
+import FileUpload from "./filesupload";
 
 interface FileData {
   id: string;
@@ -55,7 +35,7 @@ interface FileData {
 
 const truncateFileName = (name: string, maxLength: number) => {
   // Remove the extension and trailing unique identifier (anything after '.pdf' or other file extensions)
-  const baseName = name.split("_")[0]; // Get the part before the file extension
+  const baseName = name.split(".")[0]; // Get the part before the file extension
   if (baseName.length <= maxLength) {
     return baseName;
   }
@@ -110,34 +90,57 @@ const Files = () => {
     }
   }, []);
 
+  const formatSize = (sizeInBytes: number) => {
+    if (sizeInBytes < 1048576) {
+      // Less than 1 MB
+      return `${(sizeInBytes / 1024).toFixed(2)} KB`; // Convert to KB
+    } else {
+      // 1 MB or more
+      return `${(sizeInBytes / 1048576).toFixed(2)} MB`; // Convert to MB
+    }
+  };
+
   const handleImageError = (
     event: React.SyntheticEvent<HTMLImageElement, Event>
   ) => {
     const fileType = event.currentTarget.getAttribute("data-file-type");
-    if (fileType === "image") {
+    console.log(fileType, "oortotreotre");
+    if (fileType == "image") {
       event.currentTarget.src = "/dashboard/stats/image.svg";
-    } else if (fileType === "pdf") {
+    }
+    if (fileType == "pdf") {
       event.currentTarget.src = "/dashboard/stats/pdf.svg";
-    } else if (fileType === "document") {
+    }
+    if (fileType == "document") {
       event.currentTarget.src = "/dashboard/stats/docs.svg";
-    } else if (fileType === "video") {
+    }
+    if (fileType == "video") {
       event.currentTarget.src = "/dashboard/stats/video.svg";
-    } else {
-      event.currentTarget.src = "/dashboard/stats/other.svg";
+    }
+    if (fileType == "other") {
+      event.currentTarget.src = "/dashboard/stats/others.svg";
     }
   };
 
   const renderFilePreview = (file: FileData) => {
     const mimeType = file.mime_type;
     const isImage = mimeType.startsWith("image/");
+    console.log(isImage);
+
     const isVideo = mimeType.startsWith("video/");
-    const isPdf = mimeType === "application/pdf";
+    console.log(isVideo);
+
+    const isPdf = mimeType == "application/pdf";
+    console.log(isPdf);
+
     const isDoc =
       mimeType === "application/msword" ||
       mimeType ===
         "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+    const isOthers = !isImage && !isVideo && !isPdf && !isDoc;
+    console.log(isOthers);
 
-    if (isImage) {
+    if (mimeType.startsWith("image/")) {
       return (
         <img
           src={file.url}
@@ -151,16 +154,26 @@ const Files = () => {
       );
     }
 
-    if (isVideo) {
+    if (mimeType.startsWith("video/")) {
       return (
-        <video width={60} height={60} controls>
-          <source src={file.url} type={mimeType} />
-          Your browser does not support the video tag.
-        </video>
+        <>
+          {/* <video width={60} height={60} controls>
+            <source src={file.url} type={mimeType} />
+            Your browser does not support the video tag.
+          </video> */}
+          <img
+            src={file.url}
+            alt={file.name}
+            data-file-type="video"
+            width={60}
+            height={60}
+            onError={handleImageError}
+          />
+        </>
       );
     }
 
-    if (isPdf) {
+    if (mimeType == "application/pdf") {
       return (
         <img
           src="/dashboard/stats/pdf.svg"
@@ -169,11 +182,12 @@ const Files = () => {
           width={60}
           height={60}
           className="rounded-lg"
+          onError={handleImageError}
         />
       );
     }
 
-    if (isDoc) {
+    if (mimeType === "application/msword") {
       return (
         <img
           src="/dashboard/stats/docs.svg"
@@ -182,6 +196,7 @@ const Files = () => {
           width={60}
           height={60}
           className="rounded-lg"
+          onError={handleImageError}
         />
       );
     }
@@ -194,6 +209,7 @@ const Files = () => {
         width={60}
         height={60}
         className="rounded-lg"
+        onError={handleImageError}
       />
     );
   };
@@ -267,8 +283,8 @@ const Files = () => {
                       <TooltipTrigger>{renderFilePreview(file)}</TooltipTrigger>
                       <TooltipContent>
                         <p>Name :{file.name}</p>
-                        <p>Size :{file.size}</p>
-                        <p>Type :{file.type}</p>
+                        <p>Size :{formatSize(file.size)}</p>
+                        <p>Type :{file.mime_type}</p>
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
