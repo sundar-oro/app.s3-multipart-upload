@@ -95,6 +95,7 @@ const NavBar = ({
           </DropdownMenu>
         </header>
       </div>
+      {children}
     </div>
   );
 };
