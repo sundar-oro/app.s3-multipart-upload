@@ -72,7 +72,7 @@ import { StorageStats } from "./storagestats";
 import { SideBar } from "./sidebar";
 import { DashboardTable } from "./dashboardtable";
 import { useSelector } from "react-redux";
-import { RootState } from "@/redux/store";
+import { RootState } from "@/redux";
 import { statsData } from "./dummydata";
 import { useRouter } from "next/navigation";
 

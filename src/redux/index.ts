@@ -1,7 +1,7 @@
 import { configureStore } from '@reduxjs/toolkit';
 import {PERSIST, persistReducer, REHYDRATE } from 'redux-persist';
 
-import userReducer from './userSlice';
+import userReducer from './Modules/userlogin/userlogin.slice';
 
 import pesistStorage from "./persistateStore";
 const persistConfig = {

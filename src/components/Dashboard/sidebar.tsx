@@ -84,7 +84,7 @@ import { useState } from "react";
 export function SideBar({
   getAllCategories,
 }: {
-  getAllCategories?: (page: number) => void;
+  getAllCategories?: (page: number, value: boolean) => void;
 }) {
   const router = useRouter();
 
@@ -113,7 +113,7 @@ export function SideBar({
         setOpen(false);
         router.push("/categories");
 
-        getAllCategories && getAllCategories(1);
+        getAllCategories && getAllCategories(1, false);
 
         // toast.success(response?.data?.message);
         // setDeleteid(false);

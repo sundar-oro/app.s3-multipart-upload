@@ -1,7 +1,8 @@
 import { prepareURLEncodedParams } from "@/lib/helpers/prepareUrlEncodedParams";
-import { removeUserDetails } from "@/redux/Modules/userlogin";
+import { removeUserDetails } from "@/redux/Modules/userlogin/userlogin.slice";
 import { store } from "@redux/../../src/redux/index";
 import Cookies from "js-cookie";
+// import { encode, decode } from "string-encode-decode";
 
 interface IAPIResponse {
   success: boolean;
@@ -32,11 +33,13 @@ class FetchService {
 
   configureAuthorization(config: any) {
     // const state = store.getState();
-    let accessToken = "Bearer "; //state?.auth?.user?.access_token;
+    // let accessToken = state?.auth?.user?.access_token;
+    let accessToken = Cookies.get("token");; 
 
-    const encodedString = Cookies.get("token");
+    // const encodedString = Cookies.get("token");
+    // accessToken += decode(encodedString);
 
-    config.headers["Authorization"] = accessToken + encodedString;
+    config.headers["Authorization"] = accessToken ;
   }
   setHeader(config: any) {
     config.headers = {};
