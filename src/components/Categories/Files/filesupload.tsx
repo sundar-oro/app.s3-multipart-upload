@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import {
   Dialog,
@@ -23,7 +23,13 @@ import { X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Card } from "@/components/ui/card";
 
-const FileUpload = () => {
+const FileUpload = ({
+  showFileUpload,
+  setShowFileUpload,
+}: {
+  showFileUpload: boolean;
+  setShowFileUpload: Dispatch<SetStateAction<boolean>>;
+}) => {
   const router = useRouter();
 
   const [open, setOpen] = useState(true);
@@ -48,8 +54,12 @@ const FileUpload = () => {
     setSize((prev) => ({ ...prev, [name]: value }));
   };
 
+  const handleToggle = () => {
+    setShowFileUpload((prevState: any) => !prevState);
+  };
+
   const handleCancel = () => {
-    setOpen(false);
+    setShowFileUpload(false);
     setSize({
       size: "",
       unit: 1024 * 1024,
