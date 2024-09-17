@@ -166,7 +166,7 @@ export function Dashboard() {
 
             <div>
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-xl font-semibold">Folders</h3>
+                <h3 className="text-xl font-semibold">Categories</h3>
                 <button
                   onClick={handleViewAll}
                   className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"

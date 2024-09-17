@@ -69,16 +69,18 @@ export function Categories() {
   const [data, setData] = useState("");
   const [noData, setNoData] = useState(false);
 
-  window.onscroll = () => {
-    if (
-      window.innerHeight + document.documentElement.scrollTop ===
-      document.documentElement.offsetHeight
-    ) {
-      if (!noData) {
-        getAllCategories(page, true);
-      }
-    }
-  };
+  // const infinitescroll = () => {
+  //   window.onscroll = () => {
+  //     if (
+  //       window.innerHeight + document.documentElement.scrollTop ===
+  //       document.documentElement.offsetHeight
+  //     ) {
+  //       if (!noData) {
+  //         getAllCategories(page, true);
+  //       }
+  //     }
+  //   };
+  // };
 
   const getAllCategories = async (
     page: number,
@@ -208,6 +210,25 @@ export function Categories() {
     router.push(`/categories/${categoryid}/files`);
   };
 
+  const handleScroll = () => {
+    if (
+      window.innerHeight + document.documentElement.scrollTop >=
+      document.documentElement.offsetHeight
+    ) {
+      if (!noData) {
+        getAllCategories(page, true);
+      }
+    }
+  };
+
+  useEffect(() => {
+    window.addEventListener("scroll", handleScroll);
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, [page, noData]);
+
   useEffect(() => {
     getAllCategories(page, false);
   }, []);
@@ -242,7 +263,7 @@ export function Categories() {
             <div className="grid auto-rows-max items-start gap-4 md:gap-8 lg:col-span-2">
               <div>
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-xl font-semibold">Folders</h3>
+                  <h3 className="text-xl font-semibold">Categories</h3>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                   {categorydata?.map((data, index) => (
