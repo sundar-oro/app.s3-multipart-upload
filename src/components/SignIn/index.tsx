@@ -16,6 +16,7 @@ import { encode } from "string-encode-decode";
 import { useDispatch, useSelector } from "react-redux";
 import { loginSuccess } from "@/redux/Modules/userlogin/userlogin.slice";
 import { RootState, store } from "@/redux";
+import { toast } from "sonner";
 
 const SignInPage = () => {
   const router = useRouter();
@@ -57,11 +58,11 @@ const SignInPage = () => {
         }
       );
 
-      if (!response.ok) {
-        throw new Error(`Error fetching data: ${response.statusText}`);
-      }
-
       const data = await response.json();
+
+      if (!response.ok) {
+        throw data;
+      }
 
       console.log(data, "dtaat");
       setUserDetailsInCookies(data?.data);
@@ -71,6 +72,7 @@ const SignInPage = () => {
           token: data.data.access_token,
         })
       );
+      toast.success(data?.message);
 
       console.log("Stored User State:", store.getState());
       router.push("/dashboard");
@@ -78,6 +80,7 @@ const SignInPage = () => {
       console.log("API Response Data:", data);
     } catch (error) {
       console.error("Error fetching data:", error);
+      toast.error("Invalid credentials");
     } finally {
       setLoading(false);
     }
@@ -108,12 +111,12 @@ const SignInPage = () => {
             <div className="grid gap-2">
               <div className="flex items-center">
                 <Label htmlFor="password">Password</Label>
-                <Link
+                {/* <Link
                   href="/forgot-password"
                   className="ml-auto inline-block text-sm underline"
                 >
                   Forgot your password?
-                </Link>
+                </Link> */}
               </div>
               <Input
                 id="password"

@@ -68,16 +68,16 @@ export function Categories() {
   const [data, setData] = useState("");
   const [noData, setNoData] = useState(false);
 
-  // window.onscroll = () => {
-  //   if (
-  //     window.innerHeight + document.documentElement.scrollTop ===
-  //     document.documentElement.offsetHeight
-  //   ) {
-  //     if (!noData) {
-  //       getAllCategories(page, true);
-  //     }
-  //   }
-  // };
+  window.onscroll = () => {
+    if (
+      window.innerHeight + document.documentElement.scrollTop ===
+      document.documentElement.offsetHeight
+    ) {
+      if (!noData) {
+        getAllCategories(page, true);
+      }
+    }
+  };
 
   const getAllCategories = async (
     page: number,
