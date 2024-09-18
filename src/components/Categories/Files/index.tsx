@@ -56,10 +56,10 @@ const Files = () => {
   const formatSize = (sizeInBytes: number) => {
     if (sizeInBytes < 1048576) {
       // Less than 1 MB and 1048576bytes
-      return `${(sizeInBytes / 1024).toFixed(2)} KB`; // Convert to KB
+      return `${(sizeInBytes / 1024).toFixed(2)} KB`;
     } else {
       // 1 MB or more
-      return `${(sizeInBytes / 1048576).toFixed(2)} MB`; // Convert to MB
+      return `${(sizeInBytes / 1048576).toFixed(2)} MB`;
     }
   };
 
@@ -100,44 +100,44 @@ const Files = () => {
     }
   }, []);
 
-  // const handleImageError = (
-  //   event: React.SyntheticEvent<HTMLImageElement, Event>
-  // ) => {
-  //   const fileType = event.currentTarget.getAttribute("data-file-type");
-  //   if (fileType === "image") {
-  //     event.currentTarget.src = "/dashboard/stats/image.svg";
-  //   } else if (fileType === "pdf") {
-  //     event.currentTarget.src = "/dashboard/stats/pdf.svg";
-  //   } else if (fileType === "document") {
-  //     event.currentTarget.src = "/dashboard/stats/docs.svg";
-  //   } else if (fileType === "media") {
-  //     event.currentTarget.src = "/dashboard/stats/video.svg";
-  //   } else {
-  //     event.currentTarget.src = "/dashboard/stats/other.svg";
-  //   }
-  // };
-
   const handleImageError = (
     event: React.SyntheticEvent<HTMLImageElement, Event>
   ) => {
-    const mimeType = event.currentTarget.getAttribute("data-file-type");
-
-    if (mimeType?.startsWith("image/")) {
-      event.currentTarget.src = "/dashboard/stats/image.svg"; // Fallback for images
-    } else if (mimeType === "application/pdf") {
-      event.currentTarget.src = "/dashboard/stats/pdf.svg"; // Fallback for PDF
-    } else if (
-      mimeType === "application/msword" ||
-      mimeType ===
-        "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-    ) {
-      event.currentTarget.src = "/dashboard/stats/docs.svg"; // Fallback for documents
-    } else if (mimeType?.startsWith("video/")) {
-      event.currentTarget.src = "/dashboard/stats/video.svg"; // Fallback for videos
+    const fileType = event.currentTarget.getAttribute("data-file-type");
+    if (fileType === "image") {
+      event.currentTarget.src = "/dashboard/stats/image.svg";
+    } else if (fileType === "pdf") {
+      event.currentTarget.src = "/dashboard/stats/pdf.svg";
+    } else if (fileType === "document") {
+      event.currentTarget.src = "/dashboard/stats/docs.svg";
+    } else if (fileType === "video") {
+      event.currentTarget.src = "/dashboard/stats/video.svg";
     } else {
-      event.currentTarget.src = "/dashboard/stats/other.svg"; // Fallback for other file types
+      event.currentTarget.src = "/dashboard/stats/others.svg";
     }
   };
+
+  // const handleImageError = (
+  //   event: React.SyntheticEvent<HTMLImageElement, Event>
+  // ) => {
+  //   const mimeType = event.currentTarget.getAttribute("data-file-type");
+
+  //   if (mimeType?.startsWith("image/")) {
+  //     event.currentTarget.src = "/dashboard/stats/image.svg"; // Fallback for images
+  //   } else if (mimeType === "application/pdf") {
+  //     event.currentTarget.src = "/dashboard/stats/pdf.svg"; // Fallback for PDF
+  //   } else if (
+  //     mimeType === "application/msword" ||
+  //     mimeType ===
+  //       "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+  //   ) {
+  //     event.currentTarget.src = "/dashboard/stats/docs.svg"; // Fallback for documents
+  //   } else if (mimeType?.startsWith("video/")) {
+  //     event.currentTarget.src = "/dashboard/stats/video.svg"; // Fallback for videos
+  //   } else {
+  //     event.currentTarget.src = "/dashboard/stats/others.svg"; // Fallback for other file types
+  //   }
+  // };
 
   const renderFilePreview = (file: FileData) => {
     const mimeType = file.mime_type;
@@ -301,7 +301,7 @@ const Files = () => {
                       <TooltipContent>
                         <p>Name :{file.name}</p>
                         <p>Size :{formatSize(file.size)}</p>
-                        <p>Type :{file.type}</p>
+                        <p>Type :{file.mime_type}</p>
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>

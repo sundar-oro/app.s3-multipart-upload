@@ -17,12 +17,6 @@ import { Button } from "../ui/button";
 import { useDispatch, useSelector } from "react-redux";
 // import { RootState } from "@/redux/store";
 // import { logout } from "@/redux/userSlice";
-<<<<<<< HEAD
-import router from "next/router";
-import Link from "next/link";
-import { RootState } from "@/redux";
-import { logout } from "@/redux/Modules/userlogin/userlogin.slice";
-=======
 // import router from "next/router";
 import Link from "next/link";
 import { RootState } from "@/redux";
@@ -36,7 +30,6 @@ const NavBar = ({
 }>) => {
   const router = useRouter();
   const pathname = usePathname();
->>>>>>> ebb71d41d40110cddaefdaa49cd3fc6e4d1d4f02
 
   const dispatch = useDispatch();
   const user = useSelector((state: RootState) => state?.user?.user_details);

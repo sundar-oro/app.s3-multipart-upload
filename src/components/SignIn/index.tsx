@@ -16,7 +16,6 @@ import { encode } from "string-encode-decode";
 import { useDispatch, useSelector } from "react-redux";
 import { loginSuccess } from "@/redux/Modules/userlogin/userlogin.slice";
 import { RootState, store } from "@/redux";
-import { getAuthApi } from "@/lib/services/auth";
 import { toast } from "sonner";
 
 const SignInPage = () => {
@@ -45,31 +44,29 @@ const SignInPage = () => {
     setLoading(true);
 
     try {
-      const data = await getAuthApi(email, password);
-      // `${process.env.NEXT_PUBLIC_API_URL}/users/signin`,
-      // {
-      //   method: "POST",
-      //   headers: {
-      //     "Content-Type": "application/json",
-      //   },
-      //   body: JSON.stringify({
-      //     email,
-      //     password,
-      //   }),
-      // }
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/users/signin`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email,
+            password,
+          }),
+        }
+      );
 
-      // if (!response.ok) {
-      //   throw new Error(`Error fetching data: ${response.statusText}`);
-      // }
+      const data = await response.json();
 
-      // const data = await response.json();
-
-      if (!data.ok) {
+      if (!response.ok) {
         throw data;
       }
 
       console.log(data, "dtaat");
       setUserDetailsInCookies(data?.data);
+
       dispatch(
         loginSuccess({
           user: data.data,
@@ -102,11 +99,11 @@ const SignInPage = () => {
           </div>
           <form onSubmit={fetchData} className="grid gap-4">
             <div className="grid gap-2">
-              <Label htmlFor="username">Username</Label>
+              <Label htmlFor="username">Email</Label>
               <Input
                 id="username"
                 type="text"
-                placeholder="Enter your username"
+                placeholder="Enter your email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
