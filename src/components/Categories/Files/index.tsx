@@ -20,8 +20,9 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { getAllFilesAPI } from "@/lib/services/files";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import FileUpload from "./filesupload";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
 
 interface FileData {
   id: string;
@@ -51,6 +52,20 @@ const Files = () => {
   const [loading, setLoading] = useState(false);
   const [noData, setNoData] = useState(false);
 
+  const lastFileRef = useRef<HTMLDivElement>(null);
+  const fileListRef = useRef<HTMLDivElement>(null);
+
+  // window.onscroll = () => {
+  //   if (
+  //     window.innerHeight + document.documentElement.scrollTop ===
+  //     document.documentElement.offsetHeight
+  //   ) {
+  //     if (!noData) {
+  //       getAllFiles(page, true);
+  //     }
+  //   }
+  // };
+
   const { file_id } = useParams();
 
   const formatSize = (sizeInBytes: number) => {
@@ -67,7 +82,7 @@ const Files = () => {
     setShowFileUpload((prevState: any) => !prevState);
   };
 
-  const getAllFiles = async (page: number) => {
+  const getAllFiles = async (page: number, isScrolling: boolean = false) => {
     try {
       setLoading(true);
       const response = await getAllFilesAPI(page, file_id);
@@ -76,7 +91,7 @@ const Files = () => {
         const newPage = page + 1;
         const newFileData = response.data;
         // const updatedFilesData = [...filesData, ...newFileData];
-        setFilesData(newFileData);
+        setFilesData((prevFilesData) => [...prevFilesData, ...newFileData]);
         setPage(newPage);
 
         if (newFileData.length === 0) {
@@ -100,11 +115,57 @@ const Files = () => {
     }
   }, []);
 
+  useEffect(() => {
+    const fileListContainer = fileListRef.current;
+
+    if (!fileListContainer || noData) return;
+
+    const handleScroll = () => {
+      if (
+        fileListContainer.scrollTop + fileListContainer.clientHeight >=
+        fileListContainer.scrollHeight
+      ) {
+        getAllFiles(page, true); // Load more files
+      }
+    };
+
+    fileListContainer.addEventListener("scroll", handleScroll);
+
+    return () => {
+      fileListContainer.removeEventListener("scroll", handleScroll);
+    };
+  }, [page, filesData, noData]);
+
+  // useEffect(() => {
+  //   if (!lastFileRef.current || noData) return;
+
+  //   const observer = new IntersectionObserver(
+  //     (entries) => {
+  //       const target = entries[0];
+  //       if (target.isIntersecting) {
+  //         getAllFiles(page, true); // Load more files
+  //       }
+  //     },
+  //     { threshold: 1.0 }
+  //   );
+
+  //   observer.observe(lastFileRef.current);
+
+  //   return () => {
+  //     if (lastFileRef.current) {
+  //       observer.unobserve(lastFileRef.current);
+  //     }
+  //   };
+  // }, [page, filesData, noData]);
+
   const handleImageError = (
     event: React.SyntheticEvent<HTMLImageElement, Event>
   ) => {
+    console.log("fdslafkd9irew");
     const fileType = event.currentTarget.getAttribute("data-file-type");
-    if (fileType === "image") {
+    console.log(fileType, "yestsest");
+
+    if (fileType == "image") {
       event.currentTarget.src = "/dashboard/stats/image.svg";
     } else if (fileType === "pdf") {
       event.currentTarget.src = "/dashboard/stats/pdf.svg";
@@ -141,37 +202,21 @@ const Files = () => {
 
   const renderFilePreview = (file: FileData) => {
     const mimeType = file.mime_type;
-    const isImage = mimeType.startsWith("image/");
-    console.log(isImage);
 
-    const isVideo = mimeType.startsWith("video/");
-    console.log(isVideo);
-
-    const isPdf = mimeType == "application/pdf";
-    console.log(isPdf);
-
-    const isDoc =
-      mimeType === "application/msword" ||
-      mimeType ===
-        "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
-    const isOthers = !isImage && !isVideo && !isPdf && !isDoc;
-    console.log(isOthers);
-
-    if (mimeType.startsWith("image/")) {
+    if (mimeType.includes("image")) {
       return (
         <img
-          src={file.url}
+          src={"/dashboard/stats/image.svg"}
           alt={file.name}
           data-file-type="image"
           width={60}
           height={60}
-          onError={handleImageError}
           className="rounded-lg"
         />
       );
     }
 
-    if (mimeType.startsWith("video/")) {
+    if (mimeType.includes("video/")) {
       return (
         <>
           {/* <video width={60} height={60} controls>
@@ -179,12 +224,11 @@ const Files = () => {
             Your browser does not support the video tag.
           </video> */}
           <img
-            src={file.url}
+            src={"/dashboard/stats/video.svg"}
             alt={file.name}
             data-file-type="video"
             width={60}
             height={60}
-            onError={handleImageError}
           />
         </>
       );
@@ -199,7 +243,6 @@ const Files = () => {
           width={60}
           height={60}
           className="rounded-lg"
-          onError={handleImageError}
         />
       );
     }
@@ -213,7 +256,6 @@ const Files = () => {
           width={60}
           height={60}
           className="rounded-lg"
-          onError={handleImageError}
         />
       );
     }
@@ -222,11 +264,10 @@ const Files = () => {
       <img
         src="/dashboard/stats/others.svg"
         alt={file.name}
-        data-file-type="other"
+        data-file-type="others"
         width={60}
         height={60}
         className="rounded-lg"
-        onError={handleImageError}
       />
     );
   };
@@ -275,14 +316,16 @@ const Files = () => {
         <div className="flex">
           {/* File List */}
           <div
+            ref={fileListRef} // Ref for scrolling
             className={`grid gap-10 transition-all duration-300 ${
               showFileUpload ? "grid-cols-3" : "grid-cols-4"
-            } flex-grow`}
+            } flex-grow h-[calc(100vh-5rem)] overflow-y-auto p-4`}
           >
             {filesData.length > 0 ? (
-              filesData.map((file) => (
+              filesData.map((file, index) => (
                 <div
                   key={file.id}
+                  ref={index === filesData.length - 1 ? lastFileRef : null} // load more file when reach to last
                   className="flex flex-col items-center space-y-2"
                 >
                   {/* <img
@@ -295,21 +338,34 @@ const Files = () => {
                     className="rounded-lg"
                   /> */}
 
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger>{renderFilePreview(file)}</TooltipTrigger>
-                      <TooltipContent>
-                        <p>Name :{file.name}</p>
-                        <p>Size :{formatSize(file.size)}</p>
-                        <p>Type :{file.mime_type}</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
+                  <Card className="w-[200px] rounded-lg border border-[#8E8EFC] shadow-none flex flex-col flex items-center ">
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <a
+                            href={file.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="w-12 h-12 "
+                          >
+                            {renderFilePreview(file)}
+                          </a>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Name :{file.name}</p>
+                          <p>Size :{formatSize(file.size)}</p>
+                          <p>Type :{file.mime_type}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
 
-                  {/* {renderFilePreview(file)} */}
-                  <span className="text-lg font-medium text-center">
-                    {truncateFileName(file.name, 10)}
-                  </span>
+                    {/* {renderFilePreview(file)} */}
+                    <CardFooter className="bg-[#F5F5F5] py-2 w-full flex items-center justify-center">
+                      <span className="text-sm font-medium flex ">
+                        {truncateFileName(file.name, 10)}
+                      </span>
+                    </CardFooter>
+                  </Card>
                 </div>
               ))
             ) : (

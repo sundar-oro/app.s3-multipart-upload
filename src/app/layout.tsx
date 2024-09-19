@@ -5,6 +5,7 @@ import { Providers } from "@/redux/provider";
 import { Toaster } from "sonner";
 import Navbar from "@/components/Dashboard/navbar";
 import { usePathname } from "next/navigation";
+import { SideBar } from "@/components/Dashboard/sidebar";
 
 export const metadata: Metadata = {
   title: "File Manager",
