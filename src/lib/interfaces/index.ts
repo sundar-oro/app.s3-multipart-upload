@@ -4,6 +4,8 @@ export interface  createcategory{
 }
 
 export interface filedetails {
-    filename: string;
+    name: string;
+    size: string | number;
+    type:string;
     status: string;
   }
