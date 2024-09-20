@@ -270,6 +270,7 @@ export function Categories() {
                     <Card
                       key={index}
                       onClick={() => handleCard(data?.id)}
+                      // onClick={() => handleCard(data?.id)}
                       className="w-60"
                     >
                       <CardHeader className="flex flex-row items-center justify-between pb-2">
