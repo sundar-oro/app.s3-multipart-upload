@@ -42,6 +42,10 @@ const NavBar = ({
     router.replace("/");
   };
 
+  if (pathname == "/") {
+    return children;
+  }
+
   return (
     <div>
       <div className="flex  w-full flex-col ">

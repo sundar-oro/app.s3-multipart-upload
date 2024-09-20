@@ -153,10 +153,6 @@ export function SideBar({
     }));
   };
 
-  // const handleCategories = () => {
-  //   router.replace("/categories");
-  // };
-
   return (
     <nav className="flex flex-col h-full w-40 bg-white text-gray-800 py-4 px-3 ">
       <div className="flex items-center justify-between mb-6 px-3 border-gray-300 mb-6">
@@ -293,7 +289,7 @@ export function SideBar({
                 height={20}
                 className="transition-all duration-200"
               />
-              <span>Starred</span>
+              <span>Stared</span>
             </Link>
           </li>
 
