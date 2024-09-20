@@ -68,15 +68,16 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { StorageStats } from "./storagestats";
+
 import { SideBar } from "./sidebar";
 import { DashboardTable } from "./dashboardtable";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/redux";
-import { statsData } from "./dummydata";
+
 import { useRouter } from "next/navigation";
 import { logout } from "@/redux/Modules/userlogin/userlogin.slice";
 import Navbar from "./navbar";
+import StatsData from "./dummydata";
 
 export const description =
   "An orders dashboard with a sidebar navigation. The sidebar has icon navigation. The content area has a breadcrumb and search in the header. The main area has a list of recent orders with a filter and export button. The main area also has a detailed view of a single order with order details, shipping information, billing information, customer information, and payment information.";
@@ -135,10 +136,10 @@ export function Dashboard() {
           </Breadcrumb>
         </header>
 
-        <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8 lg:grid-cols-3 xl:grid-cols-3">
+        <main className="grid flex-1 items-start gap-4 ps-0 sm:px-6 sm:py-0 md:gap-8 lg:grid-cols-3 xl:grid-cols-3">
           <div className="grid auto-rows-max items-start gap-4 md:gap-8 lg:col-span-2">
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {statsData.map((data, index) => (
+              {/* {statsData.map((data, index) => (
                 <Card key={index} className="w-full">
                   {" "}
                   <CardHeader className="flex items-center space-x-4 pb-2">
@@ -161,7 +162,7 @@ export function Dashboard() {
                     <Progress value={25} aria-label="25%" />
                   </CardFooter>
                 </Card>
-              ))}
+              ))} */}
             </div>
 
             <div>
@@ -211,7 +212,7 @@ export function Dashboard() {
           </div>
 
           <div>
-            <StorageStats />
+            <StatsData />
           </div>
         </main>
       </div>

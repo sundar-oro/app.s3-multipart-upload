@@ -1,4 +1,5 @@
 "use client";
+import Image from "next/image";
 import {
   Folder,
   Users,
@@ -149,7 +150,7 @@ export function SideBar({
   };
 
   return (
-    <nav className="flex flex-col h-full w-60 bg-white text-gray-800 py-4 px-3 ">
+    <nav className="flex flex-col h-full w-40 bg-white text-gray-800 py-4 px-3 ">
       <div className="flex items-center justify-between mb-6 px-3 border-gray-300 mb-6">
         <div>
           <p className="text-xl font-semibold text-gray-900">
@@ -161,7 +162,6 @@ export function SideBar({
         </div>
         <ChevronDown className="h-5 w-5 text-gray-500" />
       </div>
-
       {/* <div className="mb-6 px-3">
         <h2 className="text-lg font-bold text-gray-800">Storage</h2>
 
@@ -223,47 +223,107 @@ export function SideBar({
           </li>
         </ul>
       </div> */}
-
       <div className="mb-6 px-3">
         <ul className="space-y-2 text-gray-600">
           <li>
             <Link
               href="#"
-              className="flex items-center space-x-2 hover:text-gray-900"
+              className="flex items-center space-x-2 p-2 rounded-md hover:text-violet-500 "
             >
-              <span>Shared with me</span>
+              <Image
+                src="/dashboard/dashboard.svg"
+                alt="dashboard"
+                width={20}
+                height={20}
+                className="transition-all duration-200"
+              />
+              <span>Dashboard</span>
             </Link>
           </li>
+
           <li>
             <Link
               href="#"
-              className="flex items-center space-x-2 hover:text-gray-900"
+              className="flex items-center space-x-2 p-2 rounded-md hover:text-violet-500 "
             >
-              <span>Recent</span>
+              <Image
+                src="/dashboard/MyFiles.svg"
+                alt="MyFiles"
+                width={20}
+                height={20}
+                className="transition-all duration-200"
+              />
+              <span>MyFiles</span>
             </Link>
           </li>
+
           <li>
             <Link
               href="#"
-              className="flex items-center space-x-2 hover:text-gray-900"
+              className="flex items-center space-x-2 p-2 rounded-md hover:text-violet-500 "
             >
-              <span>Starred</span>
+              <Image
+                src="/dashboard/Categories.svg"
+                alt="Categories"
+                width={20}
+                height={20}
+                className="transition-all duration-200"
+              />
+              <span>Categories</span>
             </Link>
           </li>
+
           <li>
             <Link
               href="#"
-              className="flex items-center space-x-2 hover:text-gray-900"
+              className="flex items-center space-x-2 p-2 rounded-md hover:text-violet-500 "
             >
+              <Image
+                src="/dashboard/Stared.svg"
+                alt="Stared"
+                width={20}
+                height={20}
+                className="transition-all duration-200"
+              />
+              <span>Stared</span>
+            </Link>
+          </li>
+
+          <li>
+            <Link
+              href="#"
+              className="flex items-center space-x-2 p-2 rounded-md hover:text-violet-500 "
+            >
+              <Image
+                src="/dashboard/Trash.svg"
+                alt="Trash"
+                width={20}
+                height={20}
+                className="transition-all duration-200"
+              />
               <span>Trash</span>
+            </Link>
+          </li>
+
+          <li>
+            <Link
+              href="#"
+              className="flex items-center space-x-2 p-2 rounded-md hover:text-violet-500 "
+            >
+              <Image
+                src="/dashboard/Setting.svg"
+                alt="Settings"
+                width={20}
+                height={20}
+                className="transition-all duration-200"
+              />
+              <span>Settings</span>
             </Link>
           </li>
         </ul>
       </div>
-
-      {/* Divider */}
-      <hr className="border-gray-300 mb-6" />
-
+      {/* Divider
+      <hr className="border-gray-300 mb-6" /> */}
       <div className="mt-auto px-3">
         {!categoryid && (
           <Button

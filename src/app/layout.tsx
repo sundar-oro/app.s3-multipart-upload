@@ -6,6 +6,11 @@ import { Providers } from "@/redux/provider";
 import { usePathname } from "next/navigation";
 import { Toaster } from "sonner";
 import "./globals.css";
+import { SideBar } from "@/components/Dashboard/sidebar";
+
+export const metadata: Metadata = {
+  title: "File Manager",
+};
 
 export default function RootLayout({
   children,

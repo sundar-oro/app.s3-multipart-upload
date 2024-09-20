@@ -73,7 +73,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { StorageStats } from "./storagestats";
+// import { StorageStats } from "./storagestats";
 
 export function DashboardTable() {
   return (

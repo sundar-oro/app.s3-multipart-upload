@@ -24,8 +24,39 @@ const SignInPage = () => {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [emailError, setEmailError] = useState<string | null>(null);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
   const [isLoading, setLoading] = useState(false);
-  const [errors, setErrors] = useState<string | null>(null);
+  const [errors, setErrors] = useState<any>([]);
+
+  // const validateEmail = (email: string) => {
+  //   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  //   return emailRegex.test(email);
+  // };
+
+  // const validatePassword = (password: string) => {
+  //   return password.length >= 6;
+  // };
+
+  // const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   const value = e.target.value;
+  //   setEmail(value);
+  //   if (!validateEmail(value)) {
+  //     setEmailError("Please enter a valid email.");
+  //   } else {
+  //     setEmailError(null);
+  //   }
+  // };
+
+  // const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   const value = e.target.value;
+  //   setPassword(value);
+  //   if (!validatePassword(value)) {
+  //     setPasswordError("Password must be at least 6 characters.");
+  //   } else {
+  //     setPasswordError(null);
+  //   }
+  // };
 
   const user = useSelector((state: RootState) => state.user);
 
@@ -34,6 +65,7 @@ const SignInPage = () => {
     const encodedString = access_token;
 
     Cookies.set("token", access_token, {
+      // session cookies are temporary cookies
       priority: "High",
       expires: details["exp"],
     });
@@ -42,6 +74,8 @@ const SignInPage = () => {
   const fetchData = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+
+    // if (emailError || passwordError) return;
 
     try {
       const response = await fetch(
@@ -59,13 +93,15 @@ const SignInPage = () => {
       );
 
       const data = await response.json();
-
-      if (!response.ok) {
-        throw data;
+      console.log(data);
+      if (response.ok) {
+        setUserDetailsInCookies(data?.data);
+      } else if (data?.status == 422) {
+        setErrors(data?.errors); // errors
+      } else if (data?.status == 401) {
+        setErrors(data);
       }
 
-      console.log(data, "dtaat");
-      setUserDetailsInCookies(data?.data);
       dispatch(
         loginSuccess({
           user: data.data,
@@ -105,8 +141,12 @@ const SignInPage = () => {
                 placeholder="Enter your email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                // onChange={handleEmailChange}
                 required
               />
+              {errors?.email && (
+                <p className="text-red-500">{errors.email[0]}</p>
+              )}
             </div>
             <div className="grid gap-2">
               <div className="flex items-center">
@@ -124,8 +164,15 @@ const SignInPage = () => {
                 placeholder="Enter your password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                // onChange={handlePasswordChange}
                 required
               />
+              {errors?.password && (
+                <p className="text-red-500">{errors.password[0]}</p>
+              )}
+              {errors?.message && (
+                <p className="text-red-500">{errors.message[0]}</p>
+              )}
             </div>
             <Button
               type="submit"
@@ -139,7 +186,7 @@ const SignInPage = () => {
               Login with Google
             </Button>
           </form>
-          {errors && <p style={{ color: "red" }}>{errors}</p>}
+
           <div className="mt-4 text-center text-sm">
             Don&apos;t have an account?{" "}
             <Link href="#" className="underline">
