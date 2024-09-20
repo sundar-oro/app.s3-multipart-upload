@@ -23,6 +23,8 @@ import { getAllFilesAPI, getMyFilesAPI } from "@/lib/services/files";
 import { useEffect, useRef, useState } from "react";
 import FileUpload from "./filesupload";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { useSelector } from "react-redux";
+import { RootState } from "@/redux";
 
 interface FileData {
   id: string;
@@ -56,6 +58,9 @@ const Files = () => {
   const fileListRef = useRef<HTMLDivElement>(null);
 
   const { file_id } = useParams();
+
+  const user = useSelector((state: RootState) => state?.user);
+  console.log(user?.access_token);
 
   const formatSize = (sizeInBytes: number) => {
     if (sizeInBytes < 1048576) {
@@ -99,7 +104,7 @@ const Files = () => {
   const getAllMyFiles = async (page: number, isScrolling: boolean = false) => {
     try {
       setLoading(true);
-      const response = await getMyFilesAPI(page);
+      const response = await getMyFilesAPI(page, user?.access_token);
 
       if (response?.success) {
         const newPage = page + 1;

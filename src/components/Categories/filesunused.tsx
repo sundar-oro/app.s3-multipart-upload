@@ -1,67 +1,40 @@
 "use client";
-import Image from "next/image";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { SideBar } from "../Dashboard/sidebar";
 import {
-  EllipsisVertical,
-  Folder,
-  Menu,
-  MenuIcon,
-  PanelLeft,
-  Search,
-} from "lucide-react";
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
-import { Button } from "@/components/ui/button";
+  getAllCategoriesAPI,
+  deleteCategoryAPI,
+  getSingleCategoryAPI,
+  updateCategoryAPI,
+} from "@/lib/services/categories";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { EllipsisVertical, Folder } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { SideBar } from "../Dashboard/sidebar";
-import { useEffect, useState } from "react";
-import {
-  deleteCategoryAPI,
-  getAllCategoriesAPI,
-  getSingleCategoryAPI,
-  updateCategoryAPI,
-} from "@/lib/services/categories";
-import DeleteDialog from "../Core/deleteDialog";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { createcategory } from "@/lib/interfaces";
-import { useRouter } from "next/navigation";
-import { prepareQueryParams } from "@/lib/helpers/Core/prepareQueryParams";
+import DeleteDialog from "../Core/deleteDialog";
 import Loading from "../Core/loading";
+import { prepareQueryParams } from "@/lib/helpers/Core/prepareQueryParams";
 import { toast } from "sonner";
-
-export const description =
-  "An orders dashboard with a sidebar navigation. The sidebar has icon navigation. The content area has a breadcrumb and search in the header. The main area has a list of recent orders with a filter and export button. The main area also has a detailed view of a single order with order details, shipping information, billing information, customer information, and payment information.";
 
 export function Categories() {
   const router = useRouter();
 
   const [loading, setLoading] = useState(false);
   const [id, setId] = useState<number>(0);
-  // const [categoryid, setCategoryid] = useState(0);
   const [page, setPage] = useState(1);
   const [open, setOpen] = useState<boolean>(false);
   const [renameOpen, setRenameOpen] = useState<boolean>(false);
@@ -71,19 +44,7 @@ export function Categories() {
   const [noData, setNoData] = useState(false);
   const [errMessages, setErrMessages] = useState<any>({});
 
-  // const infinitescroll = () => {
-  //   window.onscroll = () => {
-  //     if (
-  //       window.innerHeight + document.documentElement.scrollTop ===
-  //       document.documentElement.offsetHeight
-  //     ) {
-  //       if (!noData) {
-  //         getAllCategories(page, true);
-  //       }
-  //     }
-  //   };
-  // };
-
+  // Fetch all categories
   const getAllCategories = async (
     page: number,
     isScrolling: boolean = false
@@ -92,7 +53,6 @@ export function Categories() {
       page: page ? page : 1,
       limit: 10,
     });
-    // setCategoryData([]);
     setLoading(true);
     try {
       const response = await getAllCategoriesAPI(queryParams);
@@ -114,104 +74,9 @@ export function Categories() {
       }
     } catch (err: any) {
       console.error(err);
-      //   toast.error("Failed to load  details.");
     } finally {
       setLoading(false);
     }
-  };
-
-  const deleteCategory = async () => {
-    // setLoading(true);
-    try {
-      const response = await deleteCategoryAPI(deleteid);
-
-      if (response?.status == 200 || response?.status == 201) {
-        // toast.success(response?.data?.message);
-        setOpen(false);
-        await getAllCategories(1, false);
-      } else {
-        throw response;
-      }
-    } catch (err: any) {
-      // errorPopper(err);
-    } finally {
-      // setLoading(false);
-    }
-  };
-
-  const getSingleCategory = async (id: number) => {
-    setLoading(true);
-    try {
-      const response = await getSingleCategoryAPI(id);
-
-      if (response?.status == 200 || response?.status == 201) {
-        // toast.success(response?.data?.message);
-        setData(response?.data?.name);
-      } else {
-        throw response;
-      }
-    } catch (err: any) {
-      // errorPopper(err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const updateCategory = async () => {
-    setLoading(true);
-    try {
-      const payload = {
-        name: data,
-      };
-      const response: any = await updateCategoryAPI(id, payload);
-
-      if (response?.status == 200 || response?.status == 201) {
-        // toast.success(response?.data?.message);
-        setRenameOpen(false);
-        setId(0);
-        await getAllCategories(1, false);
-      } else if (response.status === 422) {
-        setErrMessages(response?.data?.errors);
-      } else {
-        throw response;
-      }
-    } catch (err: any) {
-      console.error(err);
-      toast.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  console.log(errMessages);
-
-  const handleMenu = (id: number) => {
-    setId(id);
-    getSingleCategory(id);
-    setRenameOpen(true);
-  };
-
-  const handleDeleteClick = (id: number) => {
-    setDeleteid(id);
-    setOpen(true);
-  };
-
-  const handleClose = () => {
-    if (id) {
-      setRenameOpen(false);
-      setId(0);
-    } else {
-      setOpen(false);
-    }
-  };
-
-  const handleTextFieldChange = (e: any) => {
-    const { name, value } = e.target;
-    setData(value);
-  };
-
-  const handleCard = (categoryid: number) => {
-    router.push(`/categories/${categoryid}/files`);
   };
 
   const handleScroll = () => {
@@ -225,6 +90,69 @@ export function Categories() {
     }
   };
 
+  // Delete category
+  const deleteCategory = async () => {
+    try {
+      const response = await deleteCategoryAPI(deleteid);
+
+      if (response?.status == 200 || response?.status == 201) {
+        setOpen(false);
+        await getAllCategories(1, false);
+      } else {
+        throw response;
+      }
+    } catch (err: any) {
+      console.error(err);
+    }
+  };
+
+  // Get single category details
+  const getSingleCategory = async (id: number) => {
+    setLoading(true);
+    try {
+      const response = await getSingleCategoryAPI(id);
+      if (response?.status == 200 || response?.status == 201) {
+        setData(response?.data?.name);
+      } else {
+        throw response;
+      }
+    } catch (err: any) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Update category
+  const updateCategory = async () => {
+    setLoading(true);
+    try {
+      const payload = { name: data };
+      const response: any = await updateCategoryAPI(id, payload);
+
+      if (response?.status === 200 || response?.status === 201) {
+        setRenameOpen(false);
+        setId(0);
+        // setErrMessages(response?.errors);
+        await getAllCategories(1, false);
+      } else if (response.status === 422) {
+        setErrMessages(response?.errors);
+      } else {
+        throw response;
+      }
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCard = (categoryid: number) => {
+    router.push(`/categories/${categoryid}/files`);
+  };
+
+  // Attach and remove scroll event listener
   useEffect(() => {
     window.addEventListener("scroll", handleScroll);
     return () => {
@@ -245,24 +173,7 @@ export function Categories() {
         </div>
 
         <div className="flex flex-1 flex-col bg-muted/40">
-          <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
-            <Breadcrumb>
-              <BreadcrumbList>
-                <BreadcrumbItem>
-                  <BreadcrumbLink href="/">Home</BreadcrumbLink>
-                </BreadcrumbItem>
-                <BreadcrumbSeparator />
-                <BreadcrumbItem>
-                  <BreadcrumbLink href="/dashboard">Dashboard</BreadcrumbLink>
-                </BreadcrumbItem>
-                <BreadcrumbSeparator />
-                <BreadcrumbItem>
-                  <BreadcrumbLink href="/categories">Categories</BreadcrumbLink>
-                </BreadcrumbItem>
-              </BreadcrumbList>
-            </Breadcrumb>
-          </header>
-          {/* Main Content Area */}
+          <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:h-auto sm:border-0 sm:bg-transparent sm:px-6"></header>
           <main className="grid flex-1 gap-4 p-4">
             <div className="grid auto-rows-max items-start gap-4 md:gap-8 lg:col-span-2">
               <div>
@@ -274,40 +185,30 @@ export function Categories() {
                     <Card
                       key={index}
                       onClick={() => handleCard(data?.id)}
-                      // onClick={() => handleCard(data?.id)}
                       className="w-60"
                     >
                       <CardHeader className="flex flex-row items-center justify-between pb-2">
                         <Folder className="h-6 w-6 font-medium font-bold" />
-
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <EllipsisVertical
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleMenu(data?.id);
-                              }}
+                              onClick={(e) => e.stopPropagation()}
                             />
                           </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
+                          <DropdownMenuContent
+                            onClick={(e) => e.stopPropagation()}
+                            align="end"
+                          >
                             <DropdownMenuItem
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleMenu(data?.id);
-                              }}
+                              onClick={() => getSingleCategory(data?.id)}
                             >
                               Rename
                             </DropdownMenuItem>
-                            <DropdownMenuSeparator />
                             <DropdownMenuItem
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleDeleteClick(data?.id);
-                              }}
+                              onClick={() => setDeleteid(data?.id)}
                             >
                               Delete
                             </DropdownMenuItem>
-                            <DropdownMenuSeparator />
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </CardHeader>
@@ -326,49 +227,32 @@ export function Categories() {
         </div>
       </div>
 
-      {open ? (
+      {open && (
         <DeleteDialog
           openOrNot={open}
-          onCancelClick={handleClose}
+          onCancelClick={() => setOpen(false)}
           label="Are you sure you want to delete this Category?"
           onOKClick={deleteCategory}
           deleteLoading={loading}
         />
-      ) : (
-        ""
       )}
       <Dialog open={renameOpen}>
         <DialogContent className="bg-white">
           <DialogHeader>
             <DialogTitle>Rename</DialogTitle>
           </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="name" className="text-right">
-                Rename
-              </Label>
-              <Input
-                id="name"
-                name="name"
-                value={data}
-                className="col-span-3"
-                placeholder="Enter another Name for category"
-                onChange={handleTextFieldChange}
-              />
-              <span>
-                {errMessages?.name && (
-                  <p className="text-red-500">{errMessages.name[0]}</p>
-                )}
-              </span>
-            </div>
-          </div>
+          <Input
+            id="name"
+            value={data}
+            onChange={(e) => setData(e.target.value)}
+            placeholder="Enter new category name"
+          />
+          {errMessages?.name && (
+            <p className="text-red-500">{errMessages.name[0]}</p>
+          )}
           <DialogFooter>
-            <Button onClick={handleClose} variant="ghost" type="submit">
-              Cancel
-            </Button>
-            <Button onClick={updateCategory} type="submit">
-              Save
-            </Button>
+            <Button onClick={() => setRenameOpen(false)}>Cancel</Button>
+            <Button onClick={updateCategory}>Save</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

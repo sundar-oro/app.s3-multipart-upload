@@ -26,13 +26,13 @@ export const getAllFilesAPI = async (page :number ,file_id: string | string[]) =
   };
 
 
-  export const getMyFilesAPI = async (page :number) => {
+  export const getMyFilesAPI = async (page :number,access_token : string) => {
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/files?page=${page}&limit=10`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `${process.env.NEXT_PUBLIC_API_TOKEN}`, 
+          "Authorization": `${access_token}`, 
         },
       });
   
