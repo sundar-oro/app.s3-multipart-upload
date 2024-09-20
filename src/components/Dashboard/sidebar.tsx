@@ -149,6 +149,10 @@ export function SideBar({
     }));
   };
 
+  // const handleCategories = () => {
+  //   router.replace("/categories");
+  // };
+
   return (
     <nav className="flex flex-col h-full w-40 bg-white text-gray-800 py-4 px-3 ">
       <div className="flex items-center justify-between mb-6 px-3 border-gray-300 mb-6">
@@ -227,7 +231,7 @@ export function SideBar({
         <ul className="space-y-2 text-gray-600">
           <li>
             <Link
-              href="#"
+              href="/dashboard"
               className="flex items-center space-x-2 p-2 rounded-md hover:text-violet-500 "
             >
               <Image
@@ -243,7 +247,7 @@ export function SideBar({
 
           <li>
             <Link
-              href="#"
+              href="myfiles"
               className="flex items-center space-x-2 p-2 rounded-md hover:text-violet-500 "
             >
               <Image
@@ -259,7 +263,7 @@ export function SideBar({
 
           <li>
             <Link
-              href="#"
+              href="/categories"
               className="flex items-center space-x-2 p-2 rounded-md hover:text-violet-500 "
             >
               <Image
@@ -285,7 +289,7 @@ export function SideBar({
                 height={20}
                 className="transition-all duration-200"
               />
-              <span>Stared</span>
+              <span>Starred</span>
             </Link>
           </li>
 

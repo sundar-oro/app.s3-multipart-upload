@@ -1,5 +1,5 @@
 "use client";
-import { Metadata } from "next";
+// import { Metadata } from "next";
 
 import NavBar from "@/components/Dashboard/navbar";
 import { Providers } from "@/redux/provider";
@@ -8,9 +8,9 @@ import { Toaster } from "sonner";
 import "./globals.css";
 import { SideBar } from "@/components/Dashboard/sidebar";
 
-export const metadata: Metadata = {
-  title: "File Manager",
-};
+// export const metadata: Metadata = {
+//   title: "File Manager",
+// };
 
 export default function RootLayout({
   children,

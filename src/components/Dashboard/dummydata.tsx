@@ -12,11 +12,16 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 import { LabelList, Pie, PieChart } from "recharts";
+import { useSelector } from "react-redux";
+import { RootState } from "@/redux";
 
 const StatsData = () => {
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<any | null>();
   const [error, setError] = useState<string | null>(null);
+
+  const user = useSelector((state: RootState) => state?.user);
+  console.log(user?.access_token);
 
   const chartData = [
     { browser: "Chrome", visitors: 25, fill: "var(--color-chrome)" },
@@ -40,7 +45,7 @@ const StatsData = () => {
   const fetchStatsData = async () => {
     try {
       setLoading(true);
-      const response = await getStatsApi();
+      const response = await getStatsApi(user?.access_token);
       setData(response.data); // Assuming response.data is the actual data object.
     } catch (error) {
       setError("Failed to fetch data");

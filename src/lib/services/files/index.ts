@@ -1,4 +1,9 @@
 import { $fetch } from "@/lib/servicehelpers/fetch";
+import { RootState } from "@/redux";
+import { useSelector } from "react-redux";
+
+
+
 
 export const getAllFilesAPI = async (page :number ,file_id: string | string[]) => {
     try {
@@ -6,7 +11,6 @@ export const getAllFilesAPI = async (page :number ,file_id: string | string[]) =
         method: "GET",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `${process.env.NEXT_PUBLIC_API_TOKEN}`, 
         },
       });
   

@@ -1,10 +1,14 @@
-export const getStatsApi = async () => {
+
+
+
+
+export const getStatsApi = async (access_token : string) => {
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/categories/storage/user`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `${process.env.NEXT_PUBLIC_API_TOKEN}`, 
+          "Authorization": `${access_token}`, 
         },
       });
   

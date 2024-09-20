@@ -269,7 +269,7 @@ export function Categories() {
                   {categorydata?.map((data, index) => (
                     <Card
                       key={index}
-                      onClick={() => handleCard(data?.id)}  
+                      onClick={() => handleCard(data?.id)}
                       className="w-60"
                     >
                       <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -308,9 +308,9 @@ export function Categories() {
                       </CardHeader>
                       <CardContent>
                         <div className="text-2xl font-bold">{data?.name}</div>
-                        <p className="text-xs text-muted-foreground">
+                        {/* <p className="text-xs text-muted-foreground">
                           {data?.id} files
-                        </p>
+                        </p> */}
                       </CardContent>
                     </Card>
                   ))}

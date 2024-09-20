@@ -19,7 +19,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
-import { X } from "lucide-react";
+import { RotateCw, X } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
@@ -37,11 +37,13 @@ const FileUpload = ({
   getAllFiles: (page: number) => void;
 }) => {
   const router = useRouter();
+  const { file_id } = useParams();
 
   const [open, setOpen] = useState(true);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [chunks, setChunks] = useState<Blob[]>([]);
+  const [parts, setParts] = useState(5);
   const [data, setData] = useState({});
   const [size, setSize] = useState({
     size: "",
@@ -51,13 +53,13 @@ const FileUpload = ({
     filetype: "",
   });
   const [filestatus, setFileStatus] = useState<filedetails[]>([]);
-
-  const [uploaddata, setUploadData] = useState({
+  const [etagData, setEtagData] = useState<any[]>([]);
+  const [uploaddata, setUploadData] = useState<any>({
     parts: 0,
+    upload_id: "",
+    file_key: "",
   });
   const [urls, setUrls] = useState([]);
-
-  const { file_id } = useParams();
 
   console.log(chunks);
 
@@ -66,6 +68,29 @@ const FileUpload = ({
 
   const handleToggle = () => {
     setShowFileUpload((prevState: any) => !prevState);
+  };
+
+  const handleParts = (size: number) => {
+    const MB = 1024 * 1024; // 1 MB in bytes
+    const GB = 1024 * MB; // 1 GB in bytes
+
+    if (size < 500 * MB) {
+      setParts(5);
+      return 5;
+    } else if (size >= 500 * MB && size < 1 * GB) {
+      setParts(10);
+      return 10;
+    } else if (size >= 1 * GB && size < 3 * GB) {
+      setParts(20);
+      return 20;
+    } else if (size >= 3 * GB && size < 10 * GB) {
+      setParts(30);
+      return 30;
+    } else {
+      // For any file larger than 10GB
+      setParts(50);
+      return 50;
+    }
   };
 
   const handleCancel = () => {
@@ -93,77 +118,107 @@ const FileUpload = ({
     setSelectedFiles([]);
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setUploadData((prev) => ({ ...prev, [name]: parseInt(value) }));
+  const handleFileTypes = (type: string) => {
+    if (type === "video" || type === "mp4" || type === "mp3") {
+      return "media";
+    } else if (
+      type === "pdf" ||
+      type === "csv" ||
+      type === "docx" ||
+      type === "xlsx"
+    ) {
+      return "document";
+    } else {
+      return "other";
+    }
   };
 
-  const updateFileStatus = (filename: string, status: string) => {
-    setFileStatus((prev) =>
-      prev.map((file) =>
-        file.filename === filename ? { ...file, status } : file
-      )
-    );
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setUploadData((prev: any) => ({ ...prev, [name]: parseInt(value) }));
+  };
+
+  const updateFileStatus = (
+    name: string,
+    size: string | number,
+    type: string,
+    status: string
+  ) => {
+    setFileStatus((prev) => {
+      const filtered = prev.filter((file) => file.name !== name);
+
+      return [
+        ...filtered,
+        { name, size, type, status }, // Add or update the file entry
+      ];
+    });
   };
 
   const handleUpload = async () => {
-    if (size.filesize > 5242880) {
-      await postapi();
-    } else {
-      await getsinglepartpresignedurl();
+    for (const file of selectedFiles) {
+      setSize({
+        size: "",
+        unit: 1024 * 1024,
+        filename: file.name,
+        filesize: file.size,
+        filetype: file.type,
+      });
+
+      if (file.size > 5242880) {
+        await postapi(file);
+      } else {
+        await getsinglepartpresignedurl(file);
+      }
     }
   };
 
   const { getRootProps, getInputProps } = useDropzone({
     onDrop: (files) => {
-      const file = files[0];
-      if (file) {
-        setSelectedFiles([file]);
-        setSize({
-          ...size,
-          filename: file.name,
-          filesize: file.size,
-          filetype: file.type,
-        });
-      }
+      setSelectedFiles(files);
     },
     multiple: true,
     accept: {},
   });
 
   // Single-part upload (file < 5 MB)
-  const getsinglepartpresignedurl = async () => {
+  const getsinglepartpresignedurl = async (file: any) => {
     setOpen(false);
     setUploadProgress(1);
     setFileStatus((prev) => [
       ...prev,
-      { filename: size.filename, status: "uploading" },
+      {
+        name: file.name,
+        size: file.size,
+        type: file.type,
+        status: "uploading",
+      },
     ]);
+
     try {
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/categories/${file_id}/files/generate-presigned-url`,
         {
           method: "POST",
           body: JSON.stringify({
-            file_name: size.filename,
-            file_size: size.filesize,
-            file_type: size.filetype,
+            fileName: file.name,
+            fileSize: file.size,
+            fileType: file.type,
           }),
         }
       );
       const result = await response.json();
 
-      if (result.status === 200 || result.status === 201) {
+      if (response.ok) {
         console.log(result);
         setUploadProgress(33);
         setUploadData(result?.data);
-        s3partfile(result?.data);
+        await s3partfile(result?.data, file); // Upload the file to S3
       } else {
         throw result;
       }
     } catch (error) {
       console.error("Failed to call API", error);
-      updateFileStatus(size.filename, "failed");
+      updateFileStatus(file.name, file.size, file.type, "failed");
       handleClear();
       setTimeout(() => {
         setUploadProgress(0);
@@ -171,24 +226,23 @@ const FileUpload = ({
     }
   };
 
-  const s3partfile = async (data: any) => {
-    console.log(data, "s3");
+  const s3partfile = async (data: any, file: any) => {
     try {
-      const response = await fetch(data?.generateUrl, {
+      const response = await fetch(data?.generate_url, {
         method: "PUT",
-        body: selectedFiles[0],
+        body: file,
       });
 
       if (response.ok) {
         console.log("Single-part file upload successful");
         setUploadProgress(66);
-        addsinglepartfile(data);
+        await addsinglepartfile(data, file); // Save metadata after upload
       } else {
         throw response;
       }
     } catch (error) {
       console.error("Failed to upload single part file", error);
-      updateFileStatus(size.filename, "failed");
+      updateFileStatus(file.name, file.size, file.type, "failed");
       handleClear();
       setTimeout(() => {
         setUploadProgress(0);
@@ -196,7 +250,7 @@ const FileUpload = ({
     }
   };
 
-  const addsinglepartfile = async (data: any) => {
+  const addsinglepartfile = async (data: any, file: File) => {
     try {
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/categories/${file_id}/files`,
@@ -207,7 +261,7 @@ const FileUpload = ({
             size: data.file_size,
             path: data?.path,
             mime_type: data?.file_type,
-            type: data?.file_type?.split("/")[0],
+            type: handleFileTypes(data?.file_type?.split("/")[1]),
             tags: ["image", "sample"],
           }),
           headers: {
@@ -221,7 +275,7 @@ const FileUpload = ({
       if (response.ok) {
         console.log("File metadata saved:", result);
         setUploadProgress(100);
-        updateFileStatus(size.filename, "success");
+        updateFileStatus(file.name, file.size, file.type, "success");
         getAllFiles(1);
         toast.success(result?.message);
         handleClear();
@@ -234,7 +288,7 @@ const FileUpload = ({
     } catch (error) {
       console.error("Failed to save file metadata", error);
       toast.error("Failed to Upload the file");
-      updateFileStatus(size.filename, "failed");
+      updateFileStatus(file.name, file.size, file.type, "failed");
       handleClear();
       setTimeout(() => {
         setUploadProgress(0);
@@ -244,17 +298,22 @@ const FileUpload = ({
     }
   };
 
+  const handleReUpload = (file: any) => {
+    getsinglepartpresignedurl(file);
+  };
+
   // Multi-part upload (file > 5 MB)
-  const postapi = async () => {
+  const postapi = async (file: File) => {
+    // handleParts(file.size);
     try {
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/categories/${file_id}/files/start`,
         {
           method: "POST",
           body: JSON.stringify({
-            original_name: size.filename,
-            file_type: size.filetype,
-            file_size: size.filesize,
+            original_name: file.name,
+            file_type: file.type,
+            file_size: file.size,
           }),
         }
       );
@@ -263,20 +322,23 @@ const FileUpload = ({
       if (response.ok) {
         console.log(result);
         setUploadData(result?.data);
-        getpresignedurl(result?.data);
+        await getpresignedurl(result?.data, file);
       }
     } catch (error) {
       console.error("Failed to start multi-part upload", error);
     }
   };
 
-  const getpresignedurl = async (data: any) => {
+  const getpresignedurl = async (data: any, file: File) => {
     try {
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/categories/${file_id}/files/urls`,
         {
           method: "POST",
-          body: JSON.stringify(data), //should add parts
+          body: JSON.stringify({
+            ...data,
+            parts: handleParts(file.size),
+          }),
         }
       );
 
@@ -284,51 +346,164 @@ const FileUpload = ({
 
       if (response.ok) {
         setUrls(result?.data);
-        uploadDocuments(result?.data);
+        await uploadDocuments(result?.data, file);
       }
     } catch (error) {
       console.error("Failed to fetch presigned URLs", error);
     }
   };
 
-  const uploadDocuments = async (chunkurls: []) => {
-    const chunkSize = size.filesize / uploaddata.parts;
+  const uploadDocuments = async (chunkurls: [], file: File) => {
+    const chunkSize = file.size / parts;
     const chunkArray: Blob[] = [];
 
-    for (const file of selectedFiles) {
-      let start = 0;
-      while (start < file.size) {
-        const chunk = file.slice(start, start + chunkSize);
-        chunkArray.push(chunk);
-        start += chunkSize;
-      }
+    let start = 0;
+    while (start < file.size) {
+      const chunk = file.slice(start, start + chunkSize);
+      chunkArray.push(chunk);
+      start += chunkSize;
     }
 
     setChunks(chunkArray);
     setData((prev) => ({ ...prev, parts: chunkArray.length }));
 
     for (let i = 0; i < chunkArray.length; i++) {
-      await uploadChunk(chunkArray[i], i, chunkurls[i], chunkArray.length);
+      await uploadChunk(chunkArray[i], chunkurls[i], i + 1);
     }
   };
 
-  const uploadChunk = async (
-    chunk: Blob,
-    index: number,
-    url: string,
-    totalChunks: number
-  ) => {
+  const uploadChunk = async (chunk: any, url: any, index: number) => {
     try {
-      await fetch(url, {
+      const response = await fetch(url, {
         method: "PUT",
         body: chunk,
       });
 
-      setUploadProgress(Math.round(((index + 1) / totalChunks) * 100));
+      if (response.ok) {
+        setEtagData((prev) => [
+          ...prev,
+          {
+            ETag: response.headers.get("etag"),
+            PartNumber: index,
+          },
+        ]);
+        console.log("Single-part file upload successful");
+        setUploadProgress(66);
+      } else {
+        throw response;
+      }
     } catch (error) {
-      console.error(`Upload failed for URL ${url}, chunk ${index}`, error);
+      console.error("Failed to upload single part file", error);
+      // updateFileStatus(file.name, file.size, file.type, "failed");
+      handleClear();
+      setTimeout(() => {
+        setUploadProgress(0);
+      }, 10000);
     }
   };
+  console.log(uploaddata);
+  const addMultipartfile = async () => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/categories/${file_id}/files/complete`,
+        {
+          method: "POST",
+          body: JSON.stringify({
+            parts: etagData,
+            file_key: uploaddata?.file_key,
+            upload_id: uploaddata.upload_id,
+          }),
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `${user}`,
+          },
+        }
+      );
+      const result = await response.json();
+
+      if (response.ok) {
+        console.log("File metadata saved:", result);
+        setUploadProgress(100);
+        // updateFileStatus(file.name, file.size, file.type, "success");
+        await addMultipartfiletoDB();
+        toast.success(result?.message);
+        handleClear();
+        setTimeout(() => {
+          setUploadProgress(0);
+        }, 50000);
+      } else {
+        throw result;
+      }
+    } catch (error) {
+      console.error("Failed to save file metadata", error);
+      toast.error("Failed to Upload the file");
+      // updateFileStatus(file.name, file.size, file.type, "failed");
+      handleClear();
+      setTimeout(() => {
+        setUploadProgress(0);
+      }, 10000);
+    } finally {
+      setOpen(true);
+    }
+  };
+
+  const addMultipartfiletoDB = async () => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/categories/${file_id}/files`,
+        {
+          method: "POST",
+          body: JSON.stringify({
+            name: uploaddata.original_name,
+            size: size.filesize,
+            path: uploaddata?.file_key,
+            mime_type: uploaddata?.file_type,
+            type: handleFileTypes(uploaddata?.file_type),
+            tags: ["image", "sample"],
+          }),
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `${user}`,
+          },
+        }
+      );
+      const result = await response.json();
+
+      if (response.ok) {
+        console.log("File metadata saved:", result);
+        setUploadProgress(100);
+        // updateFileStatus(file.name, file.size, file.type, "success");
+        getAllFiles(1);
+        toast.success(result?.message);
+        handleClear();
+        setTimeout(() => {
+          setUploadProgress(0);
+        }, 50000);
+      } else {
+        throw result;
+      }
+    } catch (error) {
+      console.error("Failed to save file metadata", error);
+      toast.error("Failed to Upload the file");
+      // updateFileStatus(file.name, file.size, file.type, "failed");
+      handleClear();
+      setTimeout(() => {
+        setUploadProgress(0);
+      }, 10000);
+    } finally {
+      setOpen(true);
+    }
+  };
+
+  useEffect(() => {
+    if (etagData.length === parts) {
+      const handleMultipartFile = async () => {
+        await addMultipartfile();
+      };
+
+      handleMultipartFile();
+    }
+  }, [etagData, parts]);
 
   return (
     <Card className="sticky h-screen p-6 m-4 bg-white rounded-lg shadow-md">
@@ -342,11 +517,29 @@ const FileUpload = ({
             <input {...getInputProps()} />
             <p>Drag drop a file here, or click to select a file</p>
           </div>
-          {size.filename && (
+          {/* {size.filename && (
             <div className="mt-4">
               <p>File name: {size.filename}</p>
               <p>File size: {size.filesize} bytes</p>
               <p>File Type: {size.filetype}</p>
+            </div>
+          )} */}
+
+          {selectedFiles.length > 0 && (
+            <div className="mt-4">
+              <h3 className="text-lg font-semibold">Selected Files:</h3>
+              <ul className="mt-2">
+                {selectedFiles.map((file, index) => (
+                  <li
+                    key={index}
+                    className="flex justify-between items-center p-2 border-b"
+                  >
+                    <span>File name:{file.name}</span>
+                    <span>File size: {Math.ceil(file.size / 1024)} KB</span>
+                    <span>File Type: {file.type}</span>
+                  </li>
+                ))}
+              </ul>
             </div>
           )}
 
@@ -425,14 +618,17 @@ const FileUpload = ({
               <>
                 <h3>Uploaded Files:</h3>
                 <li key={index} className="flex items-center space-x-4">
-                  <span>{file.filename}</span>
+                  <span>{file.name}</span>
                   <span>
                     {file.status === "success" ? (
                       <span className="text-green-500">Success</span>
                     ) : file.status === "uploading" ? (
                       <span className="text-yellow-500">Uploading</span>
                     ) : (
-                      <span className="text-red-500">Failed</span>
+                      <div className="flex items-center space-x-2">
+                        <span className="text-red-500">Failed</span>
+                        <RotateCw onClick={() => handleReUpload(file)} />
+                      </div>
                     )}
                   </span>
                 </li>
