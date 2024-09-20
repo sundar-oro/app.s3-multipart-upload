@@ -159,7 +159,7 @@ export function SideBar({
 
   return (
     <nav className="flex flex-col h-full w-40 bg-white text-gray-800 py-4 px-3 ">
-      <div className="flex items-center justify-between mb-6 px-3 border-gray-300 mb-6">
+      {/* <div className="flex items-center justify-between mb-6 px-3 border-gray-300 mb-6">
         <div>
           <p className="text-xl font-semibold text-gray-900">
             {user ? user?.full_name : "Username"}
@@ -169,7 +169,7 @@ export function SideBar({
           </p>
         </div>
         <ChevronDown className="h-5 w-5 text-gray-500" />
-      </div>
+      </div> */}
       {/* <div className="mb-6 px-3">
         <h2 className="text-lg font-bold text-gray-800">Storage</h2>
 

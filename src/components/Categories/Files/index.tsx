@@ -109,7 +109,7 @@ const Files = () => {
       if (response?.success) {
         const newPage = page + 1;
         const newFileData = response.data;
-        // const updatedFilesData = [...filesData, ...newFileData];
+        // const updatedFilesData = [...filesData, .::.newFileData];
         setFilesData((prevFilesData) => [...prevFilesData, ...newFileData]);
         setPage(newPage);
 

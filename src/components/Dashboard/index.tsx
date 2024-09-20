@@ -106,7 +106,6 @@ export function Dashboard() {
 
       if (response?.success) {
         // console.log(response?.data?.data);
-        const newPage = page + 1;
         const newData = response?.data?.data;
 
         setCategoryData(newData);
@@ -118,9 +117,6 @@ export function Dashboard() {
         //   // Replace data when not scrolling
         //   setCategoryData(newData);
         // }
-
-        setPage(newPage);
-        if (newData.length === 0) setNoData(true);
       } else {
         throw response;
       }
@@ -150,6 +146,10 @@ export function Dashboard() {
 
   const handleViewAll = () => {
     router.push("/categories");
+  };
+
+  const handleCategories = (id: number) => {
+    router.push(`/categories/${id}/files`);
   };
   return (
     <div className="flex min-h-screen w-full">
@@ -219,7 +219,15 @@ export function Dashboard() {
 
             <div>
               {/* <div className="flex items-center justify-between mb-4"> */}
-              <h3 className="text-xl font-semibold">Folders</h3>
+              <div className="flex justify-between items-center">
+                <h3 className="text-xl font-semibold">Categories</h3>
+                <button
+                  onClick={handleViewAll}
+                  className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                >
+                  View All
+                </button>
+              </div>
 
               <div className="flex flex-row flex-wrap gap-5 mt-4">
                 {categorydata?.map((data, index) => (
@@ -228,19 +236,19 @@ export function Dashboard() {
                     // onClick={() => handleCard(data?.id)}
                     className="h-10 w-60 p-2"
                   >
-                    <CardContent>
+                    <CardContent onClick={() => handleCategories(data?.id)}>
                       {truncateFileName(data?.name, 10)}
                     </CardContent>
                   </Card>
                 ))}
               </div>
 
-              <button
+              {/* <button
                 onClick={handleViewAll}
                 className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
               >
                 View All
-              </button>
+              </button> */}
               {/* </div> */}
 
               <div className="flex flex-row space-x-4 overflow-x-auto">

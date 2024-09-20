@@ -83,9 +83,9 @@ const NavBar = ({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuLabel>MyAccount</DropdownMenuLabel>
-              <p>{user ? `Hello, ${user.full_name}` : "Hello, Guest"}</p>
-
+              <DropdownMenuLabel>
+                {user ? `Hello, ${user.full_name}` : "Hello, Guest"}
+              </DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem>Settings</DropdownMenuItem>
               <DropdownMenuItem>Support</DropdownMenuItem>
