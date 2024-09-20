@@ -92,7 +92,7 @@ const Files = () => {
           setNoData(true);
         }
       } else {
-        // throw new Error(response.message || "Failed to load files");
+        console.log(response);
       }
     } catch (err) {
       console.error("Error fetching files:", err);
