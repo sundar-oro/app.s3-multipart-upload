@@ -127,7 +127,7 @@ const FileUpload = ({
         });
       }
     },
-    multiple: false,
+    multiple: true,
     accept: {},
   });
 
