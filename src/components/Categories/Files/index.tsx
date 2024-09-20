@@ -19,7 +19,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { getAllFilesAPI } from "@/lib/services/files";
+import { getAllFilesAPI, getMyFilesAPI } from "@/lib/services/files";
 import { useEffect, useRef, useState } from "react";
 import FileUpload from "./filesupload";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
@@ -34,7 +34,7 @@ interface FileData {
   url: string;
 }
 
-const truncateFileName = (name: string, maxLength: number) => {
+export const truncateFileName = (name: string, maxLength: number) => {
   // Remove the extension
   const baseName = name.split(".")[0]; // Get the part before the file extension
   if (baseName.length <= maxLength) {
@@ -54,17 +54,6 @@ const Files = () => {
 
   const lastFileRef = useRef<HTMLDivElement>(null);
   const fileListRef = useRef<HTMLDivElement>(null);
-
-  // window.onscroll = () => {
-  //   if (
-  //     window.innerHeight + document.documentElement.scrollTop ===
-  //     document.documentElement.offsetHeight
-  //   ) {
-  //     if (!noData) {
-  //       getAllFiles(page, true);
-  //     }
-  //   }
-  // };
 
   const { file_id } = useParams();
 
@@ -107,6 +96,31 @@ const Files = () => {
     }
   };
 
+  const getAllMyFiles = async (page: number, isScrolling: boolean = false) => {
+    try {
+      setLoading(true);
+      const response = await getMyFilesAPI(page);
+
+      if (response?.success) {
+        const newPage = page + 1;
+        const newFileData = response.data;
+        // const updatedFilesData = [...filesData, ...newFileData];
+        setFilesData((prevFilesData) => [...prevFilesData, ...newFileData]);
+        setPage(newPage);
+
+        if (newFileData.length === 0) {
+          setNoData(true);
+        }
+      } else {
+        // throw new Error(response.message || "Failed to load files");
+      }
+    } catch (err) {
+      console.error("Error fetching files:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (file_id) {
       getAllFiles(page);
@@ -115,17 +129,46 @@ const Files = () => {
     }
   }, []);
 
+  // const handleScrolling = (file_id: any) => {
+  //   const fileListContainer = fileListRef.current;
+
+  //   if (!fileListContainer || noData) return;
+
+  //   const handleScroll = (file_id: any) => {
+  //     if (
+  //       fileListContainer.scrollTop + fileListContainer.clientHeight >=
+  //       fileListContainer.scrollHeight
+  //     ) {
+  //       if (file_id) {
+  //         getAllFiles(page, true); // Load more files
+  //       } else {
+  //         getAllMyFiles(page, true);
+  //       }
+  //     }
+  //   };
+
+  //   fileListContainer.addEventListener("scroll", handleScroll);
+
+  //   return () => {
+  //     fileListContainer.removeEventListener("scroll", handleScroll);
+  //   };
+  // };
+
   useEffect(() => {
     const fileListContainer = fileListRef.current;
 
     if (!fileListContainer || noData) return;
 
-    const handleScroll = () => {
+    const handleScroll = (file_id: any) => {
       if (
         fileListContainer.scrollTop + fileListContainer.clientHeight >=
         fileListContainer.scrollHeight
       ) {
-        getAllFiles(page, true); // Load more files
+        if (file_id) {
+          getAllFiles(page, true); // Load more files
+        } else {
+          getAllMyFiles(page, true);
+        }
       }
     };
 
@@ -134,69 +177,33 @@ const Files = () => {
     return () => {
       fileListContainer.removeEventListener("scroll", handleScroll);
     };
-  }, [page, filesData, noData]);
+  }, [page, filesData, noData, file_id]);
 
-  // useEffect(() => {
-  //   if (!lastFileRef.current || noData) return;
-
-  //   const observer = new IntersectionObserver(
-  //     (entries) => {
-  //       const target = entries[0];
-  //       if (target.isIntersecting) {
-  //         getAllFiles(page, true); // Load more files
-  //       }
-  //     },
-  //     { threshold: 1.0 }
-  //   );
-
-  //   observer.observe(lastFileRef.current);
-
-  //   return () => {
-  //     if (lastFileRef.current) {
-  //       observer.unobserve(lastFileRef.current);
-  //     }
-  //   };
-  // }, [page, filesData, noData]);
-
-  const handleImageError = (
-    event: React.SyntheticEvent<HTMLImageElement, Event>
-  ) => {
-    console.log("fdslafkd9irew");
-    const fileType = event.currentTarget.getAttribute("data-file-type");
-    console.log(fileType, "yestsest");
-
-    if (fileType == "image") {
-      event.currentTarget.src = "/dashboard/stats/image.svg";
-    } else if (fileType === "pdf") {
-      event.currentTarget.src = "/dashboard/stats/pdf.svg";
-    } else if (fileType === "document") {
-      event.currentTarget.src = "/dashboard/stats/docs.svg";
-    } else if (fileType === "video") {
-      event.currentTarget.src = "/dashboard/stats/video.svg";
+  useEffect(() => {
+    if (file_id) {
+      getAllFiles(page, true);
     } else {
-      event.currentTarget.src = "/dashboard/stats/others.svg";
+      getAllMyFiles(page, true);
     }
-  };
+  }, []);
 
   // const handleImageError = (
   //   event: React.SyntheticEvent<HTMLImageElement, Event>
   // ) => {
-  //   const mimeType = event.currentTarget.getAttribute("data-file-type");
+  //   console.log("fdslafkd9irew");
+  //   const fileType = event.currentTarget.getAttribute("data-file-type");
+  //   console.log(fileType, "yestsest");
 
-  //   if (mimeType?.startsWith("image/")) {
-  //     event.currentTarget.src = "/dashboard/stats/image.svg"; // Fallback for images
-  //   } else if (mimeType === "application/pdf") {
-  //     event.currentTarget.src = "/dashboard/stats/pdf.svg"; // Fallback for PDF
-  //   } else if (
-  //     mimeType === "application/msword" ||
-  //     mimeType ===
-  //       "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-  //   ) {
-  //     event.currentTarget.src = "/dashboard/stats/docs.svg"; // Fallback for documents
-  //   } else if (mimeType?.startsWith("video/")) {
-  //     event.currentTarget.src = "/dashboard/stats/video.svg"; // Fallback for videos
+  //   if (fileType == "image") {
+  //     event.currentTarget.src = "/dashboard/stats/image.svg";
+  //   } else if (fileType === "pdf") {
+  //     event.currentTarget.src = "/dashboard/stats/pdf.svg";
+  //   } else if (fileType === "document") {
+  //     event.currentTarget.src = "/dashboard/stats/docs.svg";
+  //   } else if (fileType === "video") {
+  //     event.currentTarget.src = "/dashboard/stats/video.svg";
   //   } else {
-  //     event.currentTarget.src = "/dashboard/stats/others.svg"; // Fallback for other file types
+  //     event.currentTarget.src = "/dashboard/stats/others.svg";
   //   }
   // };
 
@@ -389,14 +396,18 @@ const Files = () => {
         </div>
 
         {/* Upload Button */}
-        <div className="fixed bottom-20 right-20">
-          <button
-            onClick={handleToggle}
-            className="bg-blue-500 text-white p-3 rounded-full hover:bg-blue-700 focus:outline-none"
-          >
-            +
-          </button>
-        </div>
+        {file_id ? (
+          <div className="fixed bottom-20 right-20">
+            <button
+              onClick={handleToggle}
+              className="bg-blue-500 text-white p-3 rounded-full hover:bg-blue-700 focus:outline-none"
+            >
+              +
+            </button>
+          </div>
+        ) : (
+          ""
+        )}
       </div>
     </div>
   );

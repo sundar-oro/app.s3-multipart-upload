@@ -12,6 +12,14 @@ export const getAllCategoriesAPI = async (params :Partial<apiPropsForQuaryParams
   }
 };
 
+export const getDashCategoriesApi = async (params :Partial<apiPropsForQuaryParams>) => {
+  try{
+    return await $fetch.get("/categories", params);
+  }catch (err){
+    throw err;
+  }
+}
+
 export const getAllReviewsAPI: any = async (params: any) => {
   try {
     return await $fetch.get("/review", params);

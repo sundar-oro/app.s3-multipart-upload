@@ -203,9 +203,9 @@ export function Categories() {
     setData(value);
   };
 
-  const handleCard = (categoryid: number) => {
-    router.push(`/categories/${categoryid}/files`);
-  };
+  // const handleCard = (categoryid: number) => {
+  //   router.push(`/categories/${categoryid}/files`);
+  // };
 
   useEffect(() => {
     getAllCategories(page, false);
@@ -247,7 +247,7 @@ export function Categories() {
                   {categorydata?.map((data, index) => (
                     <Card
                       key={index}
-                      onClick={() => handleCard(data?.id)}  
+                      // onClick={() => handleCard(data?.id)}
                       className="w-60"
                     >
                       <CardHeader className="flex flex-row items-center justify-between pb-2">

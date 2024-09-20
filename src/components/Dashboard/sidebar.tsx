@@ -103,6 +103,10 @@ export function SideBar({
   });
   const user = useSelector((state: RootState) => state?.user?.user_details);
 
+  const handleCard = () => {
+    router.push(`/myfiles`);
+  };
+
   const handleCreate = () => {
     setOpen(true);
   };
@@ -227,7 +231,7 @@ export function SideBar({
         <ul className="space-y-2 text-gray-600">
           <li>
             <Link
-              href="#"
+              href="/dashboard"
               className="flex items-center space-x-2 p-2 rounded-md hover:text-violet-500 "
             >
               <Image
@@ -243,7 +247,7 @@ export function SideBar({
 
           <li>
             <Link
-              href="#"
+              href="/myfiles"
               className="flex items-center space-x-2 p-2 rounded-md hover:text-violet-500 "
             >
               <Image
@@ -253,13 +257,15 @@ export function SideBar({
                 height={20}
                 className="transition-all duration-200"
               />
-              <span>MyFiles</span>
+              <span>
+                MyFiles
+              </span>
             </Link>
           </li>
 
           <li>
             <Link
-              href="#"
+              href="/categories"
               className="flex items-center space-x-2 p-2 rounded-md hover:text-violet-500 "
             >
               <Image
