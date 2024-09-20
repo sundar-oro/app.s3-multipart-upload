@@ -43,6 +43,16 @@ export const truncateFileName = (name: string, maxLength: number) => {
   return `${baseName.substring(0, maxLength)}...`; // Truncate after maxLength and add '...'
 };
 
+export const formatSize = (sizeInBytes: number) => {
+  if (sizeInBytes < 1048576) {
+    // Less than 1 MB and 1048576bytes
+    return `${(sizeInBytes / 1024).toFixed(2)} KB`;
+  } else {
+    // 1 MB or more
+    return `${(sizeInBytes / 1048576).toFixed(2)} MB`;
+  }
+};
+
 const Files = () => {
   const router = useRouter();
   const [page, setPage] = useState(1);
@@ -56,16 +66,6 @@ const Files = () => {
   const fileListRef = useRef<HTMLDivElement>(null);
 
   const { file_id } = useParams();
-
-  const formatSize = (sizeInBytes: number) => {
-    if (sizeInBytes < 1048576) {
-      // Less than 1 MB and 1048576bytes
-      return `${(sizeInBytes / 1024).toFixed(2)} KB`;
-    } else {
-      // 1 MB or more
-      return `${(sizeInBytes / 1048576).toFixed(2)} MB`;
-    }
-  };
 
   const handleToggle = () => {
     setShowFileUpload((prevState: any) => !prevState);
@@ -107,6 +107,8 @@ const Files = () => {
         // const updatedFilesData = [...filesData, ...newFileData];
         setFilesData((prevFilesData) => [...prevFilesData, ...newFileData]);
         setPage(newPage);
+        console.log(newPage);
+        console.log(setFilesData);
 
         if (newFileData.length === 0) {
           setNoData(true);
@@ -121,13 +123,13 @@ const Files = () => {
     }
   };
 
-  useEffect(() => {
-    if (file_id) {
-      getAllFiles(page);
-      const id = Array.isArray(file_id) ? file_id[0] : file_id;
-      setCategoryId(parseInt(id));
-    }
-  }, []);
+  // useEffect(() => {
+  //   if (file_id) {
+  //     getAllFiles(page);
+  //     const id = Array.isArray(file_id) ? file_id[0] : file_id;
+  //     setCategoryId(parseInt(id));
+  //   }
+  // }, []);
 
   // const handleScrolling = (file_id: any) => {
   //   const fileListContainer = fileListRef.current;
@@ -186,26 +188,6 @@ const Files = () => {
       getAllMyFiles(page, true);
     }
   }, []);
-
-  // const handleImageError = (
-  //   event: React.SyntheticEvent<HTMLImageElement, Event>
-  // ) => {
-  //   console.log("fdslafkd9irew");
-  //   const fileType = event.currentTarget.getAttribute("data-file-type");
-  //   console.log(fileType, "yestsest");
-
-  //   if (fileType == "image") {
-  //     event.currentTarget.src = "/dashboard/stats/image.svg";
-  //   } else if (fileType === "pdf") {
-  //     event.currentTarget.src = "/dashboard/stats/pdf.svg";
-  //   } else if (fileType === "document") {
-  //     event.currentTarget.src = "/dashboard/stats/docs.svg";
-  //   } else if (fileType === "video") {
-  //     event.currentTarget.src = "/dashboard/stats/video.svg";
-  //   } else {
-  //     event.currentTarget.src = "/dashboard/stats/others.svg";
-  //   }
-  // };
 
   const renderFilePreview = (file: FileData) => {
     const mimeType = file.mime_type;

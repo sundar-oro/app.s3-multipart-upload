@@ -86,10 +86,21 @@ import { truncateFileName } from "../Categories/Files";
 export const description =
   "An orders dashboard with a sidebar navigation. The sidebar has icon navigation. The content area has a breadcrumb and search in the header. The main area has a list of recent orders with a filter and export button. The main area also has a detailed view of a single order with order details, shipping information, billing information, customer information, and payment information.";
 
+interface FileData {
+  id: string;
+  name: string;
+  mime_type: string;
+  type: string;
+  size: number;
+  status: string;
+  url: string;
+}
+
 export function Dashboard() {
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const [categorydata, setCategoryData] = useState<any[]>([]);
+  const [filesData, setFilesData] = useState<FileData[]>([]);
   const [noData, setNoData] = useState(false);
   const dispatch = useDispatch();
   const user = useSelector((state: RootState) => state?.user?.user_details);
@@ -97,7 +108,7 @@ export function Dashboard() {
   const getAllCategories = async (page: number) => {
     let queryParams = prepareQueryParams({
       page: page ? page : 1,
-      limit: 3,
+      limit: 4,
     });
     // setCategoryData([]);
     try {
@@ -110,14 +121,6 @@ export function Dashboard() {
         const newData = response?.data?.data;
 
         setCategoryData(newData);
-
-        // if (isScrolling) {
-        //   // Concatenate only when fetching more data on scroll
-        //   setCategoryData((prevData) => prevData.concat(newData));
-        // } else {
-        //   // Replace data when not scrolling
-        //   setCategoryData(newData);
-        // }
 
         setPage(newPage);
         if (newData.length === 0) setNoData(true);
@@ -151,6 +154,79 @@ export function Dashboard() {
   const handleViewAll = () => {
     router.push("/categories");
   };
+
+  const renderFilePreview = (file: FileData) => {
+    const mimeType = file.mime_type;
+
+    if (mimeType.includes("image")) {
+      return (
+        <img
+          src={"/dashboard/stats/image.svg"}
+          alt={file.name}
+          data-file-type="image"
+          width={60}
+          height={60}
+          className="rounded-lg"
+        />
+      );
+    }
+
+    if (mimeType.includes("video/")) {
+      return (
+        <>
+          {/* <video width={60} height={60} controls>
+            <source src={file.url} type={mimeType} />
+            Your browser does not support the video tag.
+          </video> */}
+          <img
+            src={"/dashboard/stats/video.svg"}
+            alt={file.name}
+            data-file-type="video"
+            width={60}
+            height={60}
+          />
+        </>
+      );
+    }
+
+    if (mimeType == "application/pdf") {
+      return (
+        <img
+          src="/dashboard/stats/pdf.svg"
+          alt={file.name}
+          data-file-type="pdf"
+          width={60}
+          height={60}
+          className="rounded-lg"
+        />
+      );
+    }
+
+    if (mimeType === "application/msword") {
+      return (
+        <img
+          src="/dashboard/stats/docs.svg"
+          alt={file.name}
+          data-file-type="document"
+          width={60}
+          height={60}
+          className="rounded-lg"
+        />
+      );
+    }
+
+    return (
+      <img
+        src="/dashboard/stats/others.svg"
+        alt={file.name}
+        data-file-type="others"
+        width={60}
+        height={60}
+        className="rounded-lg"
+      />
+    );
+  };
+
   return (
     <div className="flex min-h-screen w-full">
       <div className="sticky flex-shrink-0 w-50">
@@ -188,45 +264,18 @@ export function Dashboard() {
 
         <main className="grid flex-1 items-start gap-4 ps-0 sm:px-6 sm:py-0 md:gap-8 lg:grid-cols-3 xl:grid-cols-3">
           <div className="grid auto-rows-max items-start gap-4 md:gap-8 lg:col-span-2">
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {/* {statsData.map((data, index) => (
-                <Card key={index} className="w-full">
-                  {" "}
-                  <CardHeader className="flex items-center space-x-4 pb-2">
-                    {" "}
-                    <Image
-                      src={data?.path}
-                      width={36}
-                      height={36}
-                      alt="drive"
-                      className="overflow-hidden rounded-full"
-                    />
-                    <CardTitle className="text-4xl">{data?.name}</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-xs text-muted-foreground">
-                      {data?.total}
-                    </div>
-                  </CardContent>
-                  <CardFooter>
-                    <Progress value={25} aria-label="25%" />
-                  </CardFooter>
-                </Card>
-              ))} */}
-            </div>
-
             {/* folders */}
 
             <div>
-              {/* <div className="flex items-center justify-between mb-4"> */}
+              {/* <div className="grid auto-rows-max items-start gap-4 md:gap-8 lg:col-span-2"> */}
               <h3 className="text-xl font-semibold">Folders</h3>
 
-              <div className="flex flex-row flex-wrap gap-5 mt-4">
+              <div className="flex flex-row flex-wrap items-start gap-10 mt-4 ">
                 {categorydata?.map((data, index) => (
                   <Card
                     key={index}
                     // onClick={() => handleCard(data?.id)}
-                    className="h-10 w-60 p-2"
+                    className="h-10 w-40 p-2"
                   >
                     <CardContent>
                       {truncateFileName(data?.name, 10)}
@@ -273,6 +322,7 @@ export function Dashboard() {
                   </CardContent>
                 </Card> */}
               </div>
+              {/* </div> */}
             </div>
 
             <DashboardTable />
