@@ -322,6 +322,7 @@ const FileUpload = ({
       if (response.ok) {
         console.log(result);
         setUploadData(result?.data);
+        setUploadProgress(5);
         await getpresignedurl(result?.data, file);
       }
     } catch (error) {
@@ -346,6 +347,7 @@ const FileUpload = ({
 
       if (response.ok) {
         setUrls(result?.data);
+        setUploadProgress(20);
         await uploadDocuments(result?.data, file);
       }
     } catch (error) {
@@ -365,6 +367,7 @@ const FileUpload = ({
     }
 
     setChunks(chunkArray);
+    setUploadProgress(43);
     setData((prev) => ({ ...prev, parts: chunkArray.length }));
 
     for (let i = 0; i < chunkArray.length; i++) {
@@ -388,7 +391,7 @@ const FileUpload = ({
           },
         ]);
         console.log("Single-part file upload successful");
-        setUploadProgress(66);
+        setUploadProgress(60);
       } else {
         throw response;
       }
@@ -430,7 +433,7 @@ const FileUpload = ({
         handleClear();
         setTimeout(() => {
           setUploadProgress(0);
-        }, 50000);
+        }, 5000);
       } else {
         throw result;
       }
