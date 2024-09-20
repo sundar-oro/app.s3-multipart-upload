@@ -138,13 +138,13 @@ const Files = () => {
     }
   };
 
-  // useEffect(() => {
-  //   if (file_id) {
-  //     getAllFiles(page);
-  //     const id = Array.isArray(file_id) ? file_id[0] : file_id;
-  //     setCategoryId(parseInt(id));
-  //   }
-  // }, []);
+  useEffect(() => {
+    if (file_id) {
+      getAllFiles(page);
+      const id = Array.isArray(file_id) ? file_id[0] : file_id;
+      setCategoryId(parseInt(id));
+    }
+  }, []);
 
   // const handleScrolling = (file_id: any) => {
   //   const fileListContainer = fileListRef.current;
