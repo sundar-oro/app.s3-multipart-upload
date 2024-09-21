@@ -153,10 +153,10 @@ export function Dashboard() {
   };
   return (
     <div className="flex min-h-screen w-full">
-      <div className="sticky flex-shrink-0 w-50">
+      {/* <div className="sticky flex-shrink-0 w-50">
         {" "}
         <SideBar />
-      </div>
+      </div> */}
       {/* <div>
         <Navbar />
       </div> */}

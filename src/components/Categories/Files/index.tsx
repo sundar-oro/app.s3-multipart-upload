@@ -25,6 +25,7 @@ import FileUpload from "./filesupload";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux";
+import CategoriesSideBar from "@/components/Dashboard/categoriesSidebar";
 
 interface FileData {
   id: string;
@@ -287,9 +288,14 @@ const Files = () => {
   return (
     <div className="flex min-h-screen w-full">
       {/* Sidebar - sticky */}
-      <div className="sticky top-0 left-0 h-screen w-50 bg-white">
+      {/* <div className="sticky top-0 left-0 h-screen w-50 bg-white">
         <SideBar categoryid={categoryId} />
-      </div>
+      </div> */}
+      {/* {file_id && (
+        <div className="w-60 ">
+          <CategoriesSideBar />
+        </div>
+      )} */}
 
       {/* Main Content */}
       <div className="flex flex-1 flex-col bg-muted/40">

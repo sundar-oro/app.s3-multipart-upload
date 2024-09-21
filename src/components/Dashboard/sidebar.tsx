@@ -21,6 +21,8 @@ import {
   Settings,
   ShoppingCart,
   Users2,
+  Cloud,
+  ChevronRight,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -40,15 +42,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import {
@@ -78,22 +71,44 @@ import {
 import { Label } from "@/components/ui/label";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { postCreateCategoryAPI } from "@/lib/services/categories";
+import { usePathname, useRouter } from "next/navigation";
+import {
+  getAllCategoriesAPI,
+  postCreateCategoryAPI,
+} from "@/lib/services/categories";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { RootState } from "@/redux";
 import { useSelector } from "react-redux";
+import CategoriesSideBar from "./categoriesSidebar";
+import { prepareQueryParams } from "@/lib/helpers/Core/prepareQueryParams";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuPortal,
+  DropdownMenuSeparator,
+  DropdownMenuShortcut,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export function SideBar({
   categoryid,
   getAllCategories,
   setCategoryId,
+  children,
 }: {
   categoryid?: number | null;
   getAllCategories?: (page: number, value: boolean) => void;
   setCategoryId?: Dispatch<SetStateAction<number>>;
+  children?: React.ReactNode;
 }) {
   const router = useRouter();
+  const pathname = usePathname();
 
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
@@ -101,6 +116,8 @@ export function SideBar({
     name: "",
     description: "",
   });
+  const [recentCategoryId, setRecentCategoryId] = useState(0);
+  const [categoryOpen, setCategoryOpen] = useState(false);
   const user = useSelector((state: RootState) => state?.user?.user_details);
 
   const handleCard = () => {
@@ -113,6 +130,25 @@ export function SideBar({
 
   const handleClose = () => {
     setOpen(false);
+  };
+
+  const getRecentCategory = async (page: number) => {
+    let queryParams = prepareQueryParams({ page: page || 1, limit: 1 });
+    setLoading(true);
+    try {
+      const response = await getAllCategoriesAPI(queryParams);
+      if (response?.success) {
+        const newData = response?.data?.data;
+        console.log(newData[0].id);
+        setRecentCategoryId(newData[0].id);
+      } else {
+        throw response;
+      }
+    } catch (err: any) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const createCategories = async () => {
@@ -153,97 +189,61 @@ export function SideBar({
     }));
   };
 
-  // const handleCategories = () => {
-  //   router.replace("/categories");
+  const handleCategorySidebar = () => {
+    router.push(`/categories/${recentCategoryId}/files`);
+    setCategoryOpen(true);
+  };
+
+  const isActive = (href: string) => pathname.includes(href);
+
+  // const handleCategories = (categoryid: number) => {
+  //   router.push(`/categories/${categoryid}/files`);
   // };
+  console.log(categoryOpen, "CATEGORY");
+  useEffect(() => {
+    getRecentCategory(1);
+  }, []);
 
   return (
-    <nav className="flex flex-col h-full w-40 bg-white text-gray-800 py-4 px-3 ">
-      {/* <div className="flex items-center justify-between mb-6 px-3 border-gray-300 mb-6">
-        <div>
-          <p className="text-xl font-semibold text-gray-900">
-            {user ? user?.full_name : "Username"}
-          </p>
-          <p className="text-sm text-gray-500">
-            {user ? user?.email : "email"}
-          </p>
+    <div className="flex">
+      <nav className="flex flex-col h-full w-60 bg-white text-gray-800 py-4 px-3">
+        <div className="mb-6">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button className="flex items-center justify-center w-full py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                <span>+ New</span>
+              </Button>
+              {/* <Button variant="outline">Open</Button> */}
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-56">
+              <DropdownMenuGroup>
+                <DropdownMenuItem onClick={handleCreate}>
+                  <Folder className="mr-2 h-4 w-4" />
+                  <span>New Category</span>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem>
+                  <File className="mr-2 h-4 w-4" />
+                  <span>File Upload</span>
+                </DropdownMenuItem>
+              </DropdownMenuGroup>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
-        <ChevronDown className="h-5 w-5 text-gray-500" />
-      </div> */}
-      {/* <div className="mb-6 px-3">
-        <h2 className="text-lg font-bold text-gray-800">Storage</h2>
 
-        <h4 className="text-lg font-bold text-blue-500">My Files</h4>
-        <ul className="mt-4 space-y-2 text-gray-600">
-          <li>
-            <Link
-              href="#"
-              className="flex items-center space-x-2 hover:text-gray-900"
-            >
-              <Folder className="h-5 w-5" />
-              <span>Analytics</span>
-            </Link>
-          </li>
-          <li>
-            <Link
-              href="#"
-              className="flex items-center space-x-2 hover:text-gray-900"
-            >
-              <Folder className="h-5 w-5" />
-              <span>Assets</span>
-            </Link>
-          </li>
-          <li>
-            <Link
-              href="#"
-              className="flex items-center space-x-2 hover:text-gray-900"
-            >
-              <Folder className="h-5 w-5" />
-              <span>Marketing</span>
-            </Link>
-          </li>
-          <li>
-            <Link
-              href="#"
-              className="flex items-center space-x-2 hover:text-gray-900"
-            >
-              <Folder className="h-5 w-5" />
-              <span>Templates</span>
-            </Link>
-          </li>
-          <li>
-            <Link
-              href="#"
-              className="flex items-center space-x-2 hover:text-gray-900"
-            >
-              <Folder className="h-5 w-5" />
-              <span>Projects</span>
-            </Link>
-          </li>
-          <li>
-            <Link
-              href="#"
-              className="flex items-center space-x-2 hover:text-gray-900"
-            >
-              <Folder className="h-5 w-5" />
-              <span>Projector Courses</span>
-            </Link>
-          </li>
-        </ul>
-      </div> */}
-      <div className="mb-6 px-3">
-        <ul className="space-y-2 text-gray-600">
+        <ul className="space-y-4 text-gray-600">
           <li>
             <Link
               href="/dashboard"
-              className="flex items-center space-x-2 p-2 rounded-md hover:text-violet-500 "
+              className={`flex items-center space-x-3 p-2 rounded-md ${
+                isActive("/dashboard") ? "bg-gray-200" : "hover:bg-gray-200"
+              }`}
             >
               <Image
                 src="/dashboard/dashboard.svg"
                 alt="dashboard"
                 width={20}
                 height={20}
-                className="transition-all duration-200"
               />
               <span>Dashboard</span>
             </Link>
@@ -252,147 +252,120 @@ export function SideBar({
           <li>
             <Link
               href="/myfiles"
-              className="flex items-center space-x-2 p-2 rounded-md hover:text-violet-500 "
+              className={`flex items-center space-x-3 p-2 rounded-md ${
+                isActive("/myfiles") ? "bg-gray-200" : "hover:bg-gray-200"
+              }`}
             >
               <Image
                 src="/dashboard/MyFiles.svg"
-                alt="MyFiles"
+                alt="My Files"
                 width={20}
                 height={20}
-                className="transition-all duration-200"
               />
-              <span>MyFiles</span>
+              <span>My Files</span>
             </Link>
           </li>
 
           <li>
-            <Link
-              href="/categories"
-              className="flex items-center space-x-2 p-2 rounded-md hover:text-violet-500 "
+            <a
+              onClick={handleCategorySidebar}
+              className={`flex items-center space-x-3 p-2 rounded-md ${
+                isActive(`/categories`) ? "bg-gray-200" : "hover:bg-gray-200"
+              }`}
             >
               <Image
                 src="/dashboard/Categories.svg"
                 alt="Categories"
                 width={20}
                 height={20}
-                className="transition-all duration-200"
               />
-              <span>Categories</span>
-            </Link>
-          </li>
-
-          <li>
-            <Link
-              href="#"
-              className="flex items-center space-x-2 p-2 rounded-md hover:text-violet-500 "
-            >
-              <Image
-                src="/dashboard/Stared.svg"
-                alt="Stared"
-                width={20}
-                height={20}
-                className="transition-all duration-200"
-              />
-              <span>Starred</span>
-            </Link>
-          </li>
-
-          <li>
-            <Link
-              href="#"
-              className="flex items-center space-x-2 p-2 rounded-md hover:text-violet-500 "
-            >
-              <Image
-                src="/dashboard/Trash.svg"
-                alt="Trash"
-                width={20}
-                height={20}
-                className="transition-all duration-200"
-              />
-              <span>Trash</span>
-            </Link>
-          </li>
-
-          <li>
-            <Link
-              href="#"
-              className="flex items-center space-x-2 p-2 rounded-md hover:text-violet-500 "
-            >
-              <Image
-                src="/dashboard/Setting.svg"
-                alt="Settings"
-                width={20}
-                height={20}
-                className="transition-all duration-200"
-              />
-              <span>Settings</span>
-            </Link>
-          </li>
-        </ul>
-      </div>
-      {/* Divider
-      <hr className="border-gray-300 mb-6" /> */}
-      <div className="mt-auto px-3">
-        {!categoryid && (
-          <Button
-            onClick={handleCreate}
-            className="flex items-center justify-center w-full py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-          >
-            <span>Create new</span>
-            <span className="ml-2">
-              <FilePlus className="h-5 w-5" />
-            </span>
-          </Button>
-        )}
-        <Dialog open={open}>
-          <DialogContent className="bg-white">
-            <DialogHeader>
-              <DialogTitle>Create Categories</DialogTitle>
-              <DialogDescription>
-                You can create your new Categories Here.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="name" className="text-right">
-                  Category Name
-                </Label>
-                <Input
-                  id="name"
-                  value={data?.name}
-                  // defaultValue="Pedro Duarte"
-                  className="col-span-3"
-                  name="name"
-                  placeholder="Enter the Category Name"
-                  onChange={handleTextFieldChange}
-                />
+              <div className="flex justify-between items-center">
+                <span>Categories</span>
+                {categoryOpen ? <ChevronRight /> : ""}
               </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="username" className="text-right">
-                  Description
-                </Label>
-                <Input
-                  id="username"
-                  // defaultValue="@peduarte"
-                  name="description"
-                  value={data?.description}
-                  className="col-span-3"
-                  placeholder="Enter the Description"
-                  onChange={handleTextFieldChange}
-                />
+            </a>
+          </li>
+
+          {/* <li>
+          onClick={handleCategorySidebar}
+            className={`flex items-center space-x-3 p-2 rounded-md ${
+              isActive(`/categories`) ? "bg-gray-200" : "hover:bg-gray-200"
+            }`}
+          <Link
+            href="/settings"
+            className="flex items-center space-x-3 p-2 hover:bg-gray-200 rounded-md"
+          >
+            <Image
+              src="/icons/settings.svg"
+              alt="Settings"
+              width={20}
+              height={20}
+            />
+            <span>Settings</span>
+          </Link>
+        </li> */}
+          {/* <li>
+            <div className="mt-auto text-gray-500 text-xs px-3">
+              <div className="flex items-center">
+                {" "}
+                <Cloud />
+                <span className="ml-2 text-sm"> Storage (87% full)</span>
+              </div>
+
+              <div className="w-full bg-gray-300 rounded-full h-2 mt-1">
+                <div
+                  className="bg-blue-500 h-full rounded-full"
+                  style={{ width: "87%" }}
+                ></div>
+                <span className="mt-3"> 13 GB used</span>
               </div>
             </div>
+          </li> */}
+        </ul>
+        {/* <CategoriesSideBar /> */}
+
+        <Dialog open={open} onOpenChange={handleClose}>
+          <DialogContent
+            className="bg-white"
+            onClick={() => console.log("close")}
+          >
+            <DialogHeader>
+              <DialogTitle>New Category</DialogTitle>
+            </DialogHeader>
+            <div>
+              <Input
+                id="name"
+                value={data?.name}
+                // defaultValue="Pedro Duarte"
+                className="col-span-3"
+                name="name"
+                placeholder="Enter the Category Name"
+                onChange={handleTextFieldChange}
+              />
+            </div>
             <DialogFooter>
-              <Button onClick={handleClose} variant="ghost" type="submit">
+              <Button
+                onClick={handleClose}
+                // className="bg-grey-700"
+                // variant="outline"
+                variant="secondary"
+                type="submit"
+              >
                 Cancel
               </Button>
               <Button onClick={createCategories} type="submit">
-                Submit
+                Create
               </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
-      </div>
-    </nav>
+      </nav>
+      {pathname.includes("/categories") && (
+        <div className="w-60 ">
+          <CategoriesSideBar />
+        </div>
+      )}
+      <div className="flex-grow">{children}</div>
+    </div>
   );
 }

@@ -23,11 +23,7 @@ import { RootState } from "@/redux";
 import { logout } from "@/redux/Modules/userlogin/userlogin.slice";
 import { usePathname, useRouter } from "next/navigation";
 
-const NavBar = ({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) => {
+const NavBar = () => {
   const router = useRouter();
   const pathname = usePathname();
 
@@ -44,7 +40,7 @@ const NavBar = ({
 
   return (
     <div>
-      <div className="flex  w-full flex-col ">
+      <div className="flex sticky w-full flex-col ">
         <header className="sticky top-0 flex h-16 items-center gap-4 border-b bg-gray-700 px-4 md:px-6">
           <Link
             href="#"
@@ -95,7 +91,6 @@ const NavBar = ({
           </DropdownMenu>
         </header>
       </div>
-      {children}
     </div>
   );
 };

@@ -52,6 +52,7 @@ import { useRouter } from "next/navigation";
 import { prepareQueryParams } from "@/lib/helpers/Core/prepareQueryParams";
 import Loading from "../Core/loading";
 import { toast } from "sonner";
+import CategoriesSideBar from "../Dashboard/categoriesSidebar";
 
 export const description =
   "An orders dashboard with a sidebar navigation. The sidebar has icon navigation. The content area has a breadcrumb and search in the header. The main area has a list of recent orders with a filter and export button. The main area also has a detailed view of a single order with order details, shipping information, billing information, customer information, and payment information.";
@@ -240,8 +241,11 @@ export function Categories() {
   return (
     <>
       <div className="flex min-h-screen w-full">
-        <div className="sticky top-0 left-0 h-screen w-50 bg-white">
+        {/* <div className="sticky top-0 left-0 h-screen w-50 bg-white">
           <SideBar getAllCategories={getAllCategories} />
+        </div> */}
+        <div className="w-60 ">
+          <CategoriesSideBar />
         </div>
 
         <div className="flex flex-1 flex-col bg-muted/40">

@@ -23,7 +23,17 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <Providers>
-          {pathname == "/" ? children : <NavBar>{children}</NavBar>}
+          {pathname == "/" ? (
+            children
+          ) : (
+            <>
+              {" "}
+              <NavBar />{" "}
+              <div className="sticky top-0 left-0 h-screen w-50 bg-white">
+                <SideBar>{children}</SideBar>
+              </div>
+            </>
+          )}
         </Providers>
         <Toaster richColors closeButton position="top-right" />
       </body>
