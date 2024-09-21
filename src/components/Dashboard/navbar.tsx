@@ -40,8 +40,8 @@ const NavBar = () => {
 
   return (
     <div>
-      <div className="flex sticky w-full flex-col ">
-        <header className="sticky top-0 flex h-16 items-center gap-4 border-b bg-gray-700 px-4 md:px-6">
+      <div className="flex  w-full flex-col ">
+        <header className="fixed bg-blue-600 shadow-md  z-50 w-full px-5 py-2 flex justify-between items-center">
           <Link
             href="#"
             className="text-white font-bold-200 transition-colors hover:text-foreground "

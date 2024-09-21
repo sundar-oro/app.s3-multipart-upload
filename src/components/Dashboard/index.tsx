@@ -77,60 +77,34 @@ import { RootState } from "@/redux";
 import { useRouter } from "next/navigation";
 import { logout } from "@/redux/Modules/userlogin/userlogin.slice";
 import Navbar from "./navbar";
-import StatsData from "./dummydata";
+// import StatsData from "./dummydata";
 import { useEffect, useState } from "react";
 import { prepareQueryParams } from "@/lib/helpers/Core/prepareQueryParams";
 import { getDashCategoriesApi } from "@/lib/services/categories";
 import { truncateFileName } from "../Categories/Files";
+import StatsData from "./dummydata";
 
 export const description =
   "An orders dashboard with a sidebar navigation. The sidebar has icon navigation. The content area has a breadcrumb and search in the header. The main area has a list of recent orders with a filter and export button. The main area also has a detailed view of a single order with order details, shipping information, billing information, customer information, and payment information.";
+
+interface FileData {
+  id: string;
+  name: string;
+  mime_type: string;
+  type: string;
+  size: number;
+  status: string;
+  url: string;
+}
 
 export function Dashboard() {
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const [categorydata, setCategoryData] = useState<any[]>([]);
+  const [filesData, setFilesData] = useState<FileData[]>([]);
   const [noData, setNoData] = useState(false);
   const dispatch = useDispatch();
   const user = useSelector((state: RootState) => state?.user?.user_details);
-
-  const getAllCategories = async (page: number) => {
-    let queryParams = prepareQueryParams({
-      page: page ? page : 1,
-      limit: 3,
-    });
-    // setCategoryData([]);
-    try {
-      setLoading(true);
-      const response = await getDashCategoriesApi(queryParams);
-
-      if (response?.success) {
-        // console.log(response?.data?.data);
-        const newData = response?.data?.data;
-
-        setCategoryData(newData);
-
-        // if (isScrolling) {
-        //   // Concatenate only when fetching more data on scroll
-        //   setCategoryData((prevData) => prevData.concat(newData));
-        // } else {
-        //   // Replace data when not scrolling
-        //   setCategoryData(newData);
-        // }
-      } else {
-        throw response;
-      }
-    } catch (err: any) {
-      console.error(err);
-      //   toast.error("Failed to load  details.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    getAllCategories(page);
-  }, []);
 
   const handleLogout = () => {
     // Dispatch the logout action
@@ -161,7 +135,8 @@ export function Dashboard() {
         <Navbar />
       </div> */}
 
-      <div className="flex flex-1 flex-col bg-muted/40">
+      <div className="flex flex-1 flex-col bg-muted/40 overflow-y-auto">
+        {/* <div className="flex flex-1 flex-col bg-muted/40"> */}
         <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
           <Sheet>
             <SheetTrigger asChild>
@@ -186,110 +161,18 @@ export function Dashboard() {
           </Breadcrumb>
         </header>
 
+        <div>
+          <h2 className="text-xl font-semibold mb-4">Storage Stats</h2>
+          {/* Include the StatsData component */}
+          <StatsData />
+        </div>
+
         <main className="grid flex-1 items-start gap-4 ps-0 sm:px-6 sm:py-0 md:gap-8 lg:grid-cols-3 xl:grid-cols-3">
           <div className="grid auto-rows-max items-start gap-4 md:gap-8 lg:col-span-2">
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {/* {statsData.map((data, index) => (
-                <Card key={index} className="w-full">
-                  {" "}
-                  <CardHeader className="flex items-center space-x-4 pb-2">
-                    {" "}
-                    <Image
-                      src={data?.path}
-                      width={36}
-                      height={36}
-                      alt="drive"
-                      className="overflow-hidden rounded-full"
-                    />
-                    <CardTitle className="text-4xl">{data?.name}</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-xs text-muted-foreground">
-                      {data?.total}
-                    </div>
-                  </CardContent>
-                  <CardFooter>
-                    <Progress value={25} aria-label="25%" />
-                  </CardFooter>
-                </Card>
-              ))} */}
-            </div>
-
-            {/* folders */}
-
-            <div>
-              {/* <div className="flex items-center justify-between mb-4"> */}
-              <div className="flex justify-between items-center">
-                <h3 className="text-xl font-semibold">Categories</h3>
-                <button
-                  onClick={handleViewAll}
-                  className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-                >
-                  View All
-                </button>
-              </div>
-
-              <div className="flex flex-row flex-wrap gap-5 mt-4">
-                {categorydata?.map((data, index) => (
-                  <Card
-                    key={index}
-                    // onClick={() => handleCard(data?.id)}
-                    className="h-10 w-60 p-2"
-                  >
-                    <CardContent onClick={() => handleCategories(data?.id)}>
-                      {truncateFileName(data?.name, 10)}
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-
-              {/* <button
-                onClick={handleViewAll}
-                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-              >
-                View All
-              </button> */}
-              {/* </div> */}
-
-              <div className="flex flex-row space-x-4 overflow-x-auto">
-                {/* <Card className="flex-shrink-0 w-60">
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <Folder className="h-6 w-6 font-medium font-bold" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">Analytics</div>
-                    <p className="text-xs text-muted-foreground">15 files</p>
-                  </CardContent>
-                </Card>
-                <Card className="flex-shrink-0 w-60">
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <Folder className="h-6 w-6 font-medium font-bold" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">Assets</div>
-                    <p className="text-xs text-muted-foreground">345 files</p>
-                  </CardContent>
-                </Card> */}
-
-                {/* <Card className="flex-shrink-0 w-40">
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <Folder className="h-6 w-6 font-medium font-bold" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">Marketing</div>
-                    <p className="text-xs text-muted-foreground">143 files</p>
-                  </CardContent>
-                </Card> */}
-              </div>
-            </div>
-
             <DashboardTable />
           </div>
-
-          <div>
-            <StatsData />
-          </div>
         </main>
+        {/* </div> */}
       </div>
     </div>
   );
