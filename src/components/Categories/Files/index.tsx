@@ -27,15 +27,6 @@ import { useSelector } from "react-redux";
 import { RootState } from "@/redux";
 import CategoriesSideBar from "@/components/Dashboard/categoriesSidebar";
 
-interface FileData {
-  id: string;
-  name: string;
-  mime_type: string;
-  type: string;
-  size: number;
-  status: string;
-  url: string;
-}
 import MyListFiles from "./mylistfiles";
 import { FileData } from "@/lib/interfaces/files";
 import Loading from "@/components/Core/loading";
