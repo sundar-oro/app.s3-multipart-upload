@@ -20,7 +20,7 @@ export default function RootLayout({
   const pathname = usePathname();
 
   return (
-    <html lang="en">
+    <html lang="eng">
       <body>
         <Providers>
           {pathname == "/" ? children : <NavBar>{children}</NavBar>}

@@ -154,79 +154,20 @@ export function SideBar({
   };
 
   return (
-    <nav className="flex flex-col h-full w-40 bg-white text-gray-800 py-4 px-3 ">
+    <nav className="flex flex-col h-full w-40 bg-white text-gray-800 py-4 px-3 fixed top-0 left-0 z-50">
+      {" "}
+      {/* // fixed height */}
       <div className="flex items-center justify-between mb-6 px-3 border-gray-300 mb-6">
-        <div>
+        {/* <div>
           <p className="text-xl font-semibold text-gray-900">
             {user ? user?.full_name : "Username"}
           </p>
           <p className="text-sm text-gray-500">
             {user ? user?.email : "email"}
           </p>
-        </div>
+        </div> */}
         <ChevronDown className="h-5 w-5 text-gray-500" />
       </div>
-      {/* <div className="mb-6 px-3">
-        <h2 className="text-lg font-bold text-gray-800">Storage</h2>
-
-        <h4 className="text-lg font-bold text-blue-500">My Files</h4>
-        <ul className="mt-4 space-y-2 text-gray-600">
-          <li>
-            <Link
-              href="#"
-              className="flex items-center space-x-2 hover:text-gray-900"
-            >
-              <Folder className="h-5 w-5" />
-              <span>Analytics</span>
-            </Link>
-          </li>
-          <li>
-            <Link
-              href="#"
-              className="flex items-center space-x-2 hover:text-gray-900"
-            >
-              <Folder className="h-5 w-5" />
-              <span>Assets</span>
-            </Link>
-          </li>
-          <li>
-            <Link
-              href="#"
-              className="flex items-center space-x-2 hover:text-gray-900"
-            >
-              <Folder className="h-5 w-5" />
-              <span>Marketing</span>
-            </Link>
-          </li>
-          <li>
-            <Link
-              href="#"
-              className="flex items-center space-x-2 hover:text-gray-900"
-            >
-              <Folder className="h-5 w-5" />
-              <span>Templates</span>
-            </Link>
-          </li>
-          <li>
-            <Link
-              href="#"
-              className="flex items-center space-x-2 hover:text-gray-900"
-            >
-              <Folder className="h-5 w-5" />
-              <span>Projects</span>
-            </Link>
-          </li>
-          <li>
-            <Link
-              href="#"
-              className="flex items-center space-x-2 hover:text-gray-900"
-            >
-              <Folder className="h-5 w-5" />
-              <span>Projector Courses</span>
-            </Link>
-          </li>
-        </ul>
-      </div> */}
       <div className="mb-6 px-3">
         <ul className="space-y-2 text-gray-600">
           <li>

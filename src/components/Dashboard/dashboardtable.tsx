@@ -75,11 +75,15 @@ import {
 } from "@/components/ui/tooltip";
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { getAllFilesAPI } from "@/lib/services/files";
-import { truncateFileName } from "../Categories/Files";
+
+import { formatSize, truncateFileName } from "../Categories/Files";
+import { getMyFilesAPI } from "@/lib/services/files";
+import { useSelector } from "react-redux";
+import { RootState } from "@/redux";
 // import { StorageStats } from "./storagestats";
 
 interface FileData {
+  title: string;
   uploaded_at: number;
   category_id: number;
   id: string;
@@ -91,6 +95,19 @@ interface FileData {
   url: string;
 }
 
+export const convertToLocalDate = (utcDateString: string | number | Date) => {
+  const date = new Date(utcDateString);
+  return date.toLocaleString(undefined, {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    //timeZoneName: "short",
+  });
+};
+
 export function DashboardTable() {
   const [page, setPage] = useState(1);
   const [showFileUpload, setShowFileUpload] = useState(false);
@@ -99,34 +116,20 @@ export function DashboardTable() {
   const [loading, setLoading] = useState(false);
   const [noData, setNoData] = useState(false);
 
-  const { file_id } = useParams();
+  const user = useSelector((state: RootState) => state?.user);
+  console.log(user?.access_token);
 
-  const formatSize = (sizeInBytes: number) => {
-    if (sizeInBytes < 1048576) {
-      // Less than 1 MB and 1048576bytes
-      return `${(sizeInBytes / 1024).toFixed(2)} KB`;
-    } else {
-      // 1 MB or more
-      return `${(sizeInBytes / 1048576).toFixed(2)} MB`;
-    }
-  };
-
-  const getAllFiles = async (page: number) => {
+  const getAllMyFiles = async (page: number, isScroll: boolean = false) => {
     try {
       setLoading(true);
-      const response = await getAllFilesAPI(page, file_id);
+      const response = await getMyFilesAPI(page, user?.access_token);
 
       if (response?.success) {
         const newPage = page + 1;
         const newFileData = response.data;
-        // const updatedFilesData = [...filesData, ...newFileData];
-        //  setFilesData((prevFilesData) => [...prevFilesData, ...newFileData]);
+
         setFilesData(newFileData);
         setPage(newPage);
-
-        if (newFileData.length === 0) {
-          setNoData(true);
-        }
       } else {
         // throw new Error(response.message || "Failed to load files");
       }
@@ -138,39 +141,41 @@ export function DashboardTable() {
   };
 
   useEffect(() => {
-    getAllFiles(page);
+    getAllMyFiles(page);
   }, []);
 
   return (
-    <Card>
-      <CardHeader className="px-7">
-        <CardTitle>Recent Files</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <Table>
-          <TableBody>
-            {filesData.length > 0 ? (
-              filesData.map((file) => (
-                <TableRow key={file.id}>
-                  <TableCell>
-                    <div className="font-medium">
-                      {truncateFileName(file.name, 10)}
-                    </div>
-                    {/* <div className="text-sm text-muted-foreground">
+    <div className="ml-40 mt-10 flex-grow flex flex-col justify-between p-6 w-[140%]">
+      <Card className="h-full">
+        {/* <CardHeader className="px-7">
+          <CardTitle>Recent Files</CardTitle>
+        </CardHeader> */}
+        <CardContent>
+          <Table>
+            <TableBody>
+              {filesData.length > 0 ? (
+                filesData.map((file) => (
+                  <TableRow key={file.id}>
+                    <TableCell>
+                      <div className="font-medium">
+                        {truncateFileName(file.title, 10)}
+                      </div>
+                      {/* <div className="text-sm text-muted-foreground">
                       {truncateFileName(file.mime_type, 10)}
                     </div> */}
-                  </TableCell>
-                  <TableCell className="hidden sm:table-cell">
-                    {file.uploaded_at}
-                  </TableCell>
+                    </TableCell>
+                    <TableCell className="hidden sm:table-cell">
+                      {convertToLocalDate(file.uploaded_at)}
+                    </TableCell>
 
-                  <TableCell className="hidden md:table-cell">
-                    folder {file.category_id}
-                  </TableCell>
-                  <TableCell className="hidden md:table-cell">
-                    {formatSize(file.size)}
-                  </TableCell>
-                  {/* <TableCell className="text-right">
+                    <TableCell className="hidden md:table-cell">
+                      categorie {file.category_id}
+                    </TableCell>
+                    <TableCell className="hidden md:table-cell">
+                      {formatSize(file.size)}
+                    </TableCell>
+
+                    {/* <TableCell className="text-right">
                     <a
                       href={file.url}
                       target="_blank"
@@ -179,18 +184,19 @@ export function DashboardTable() {
                       View File
                     </a>
                   </TableCell> */}
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center">
+                    {loading ? "Loading..." : "No files available"}
+                  </TableCell>
                 </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={5} className="text-center">
-                  {loading ? "Loading..." : "No files available"}
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </CardContent>
-    </Card>
+              )}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+    </div>
   );
 }

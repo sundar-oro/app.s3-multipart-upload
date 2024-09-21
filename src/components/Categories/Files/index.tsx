@@ -1,5 +1,5 @@
 "use client";
-import { PanelLeft } from "lucide-react";
+import { ListOrdered, PanelLeft } from "lucide-react";
 
 import { SideBar } from "@/components/Dashboard/sidebar";
 import {
@@ -25,16 +25,10 @@ import FileUpload from "./filesupload";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux";
-
-interface FileData {
-  id: string;
-  name: string;
-  mime_type: string;
-  type: string;
-  size: number;
-  status: string;
-  url: string;
-}
+import MyListFiles from "./mylistfiles";
+import { FileData } from "@/lib/interfaces/files";
+import Loading from "@/components/Core/loading";
+import { Table2 } from "lucide-react";
 
 export const truncateFileName = (name: string, maxLength: number) => {
   // Remove the extension
@@ -63,6 +57,7 @@ const Files = () => {
   const [categoryId, setCategoryId] = useState<number | null>(null); // Keep track of category ID
   const [loading, setLoading] = useState(false);
   const [noData, setNoData] = useState(false);
+  const [listView, setListView] = useState(false);
 
   const lastFileRef = useRef<HTMLDivElement>(null);
   const fileListRef = useRef<HTMLDivElement>(null);
@@ -111,7 +106,7 @@ const Files = () => {
     }
   };
 
-  const getAllMyFiles = async (page: number, isScrolling: boolean = false) => {
+  const getAllMyFiles = async (page: number, isScroll: boolean = false) => {
     try {
       setLoading(true);
       const response = await getMyFilesAPI(page, user?.access_token);
@@ -145,31 +140,6 @@ const Files = () => {
       setCategoryId(parseInt(id));
     }
   }, []);
-
-  // const handleScrolling = (file_id: any) => {
-  //   const fileListContainer = fileListRef.current;
-
-  //   if (!fileListContainer || noData) return;
-
-  //   const handleScroll = (file_id: any) => {
-  //     if (
-  //       fileListContainer.scrollTop + fileListContainer.clientHeight >=
-  //       fileListContainer.scrollHeight
-  //     ) {
-  //       if (file_id) {
-  //         getAllFiles(page, true); // Load more files
-  //       } else {
-  //         getAllMyFiles(page, true);
-  //       }
-  //     }
-  //   };
-
-  //   fileListContainer.addEventListener("scroll", handleScroll);
-
-  //   return () => {
-  //     fileListContainer.removeEventListener("scroll", handleScroll);
-  //   };
-  // };
 
   useEffect(() => {
     const fileListContainer = fileListRef.current;
@@ -277,62 +247,69 @@ const Files = () => {
   };
 
   return (
-    <div className="flex min-h-screen w-full">
-      {/* Sidebar - sticky */}
-      <div className="sticky top-0 left-0 h-screen w-50 bg-white">
-        <SideBar categoryid={categoryId} />
-      </div>
+    <>
+      <div className="flex min-h-screen w-full">
+        {/* Sidebar - sticky */}
+        <div className="sticky top-0 left-0 h-screen w-50 bg-white">
+          <SideBar categoryid={categoryId} />
+        </div>
 
-      {/* Main Content */}
-      <div className="flex flex-1 flex-col bg-muted/40">
-        {/* Header */}
-        <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
-          <Sheet>
-            <SheetTrigger asChild>
-              <Button size="icon" variant="outline" className="sm:hidden">
-                <PanelLeft className="h-5 w-5" />
-                <span className="sr-only">Toggle Menu</span>
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="left" className="sm:max-w-xs"></SheetContent>
-          </Sheet>
-          <Breadcrumb>
-            <BreadcrumbList>
-              <BreadcrumbItem>
-                <BreadcrumbLink href="/">Home</BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator />
-              <BreadcrumbItem>
-                <BreadcrumbLink href="/dashboard">Dashboard</BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator />
-              <BreadcrumbItem>
-                <BreadcrumbLink href="/dashboard">Categories</BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator />
-              <BreadcrumbItem>
-                <BreadcrumbLink href="/files"> Files</BreadcrumbLink>
-              </BreadcrumbItem>
-            </BreadcrumbList>
-          </Breadcrumb>
-        </header>
+        {/* Main Content */}
+        <div className="flex flex-1 flex-col bg-muted/40">
+          {/* Header */}
 
-        <div className="flex">
-          {/* File List */}
-          <div
-            ref={fileListRef} // Ref for scrolling
-            className={`grid gap-10 transition-all duration-300 ${
-              showFileUpload ? "grid-cols-3" : "grid-cols-4"
-            } flex-grow h-[calc(100vh-5rem)] overflow-y-auto p-4`}
-          >
-            {filesData.length > 0 ? (
-              filesData.map((file, index) => (
-                <div
-                  key={file.id}
-                  ref={index === filesData.length - 1 ? lastFileRef : null} // load more file when reach to last
-                  className="flex flex-col items-center space-y-2"
-                >
-                  {/* <img
+          <header className=" sticky  ml-40 top-[10%] z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button size="icon" variant="outline" className="sm:hidden">
+                  <PanelLeft className="h-5 w-5" />
+                  <span className="sr-only">Toggle Menu</span>
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="left" className="sm:max-w-xs"></SheetContent>
+            </Sheet>
+            <Breadcrumb>
+              <BreadcrumbList>
+                <BreadcrumbItem>
+                  <BreadcrumbLink href="/">Home</BreadcrumbLink>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator />
+                <BreadcrumbItem>
+                  <BreadcrumbLink href="/dashboard">Dashboard</BreadcrumbLink>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator />
+                <BreadcrumbItem>
+                  <BreadcrumbLink href="/dashboard">Categories</BreadcrumbLink>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator />
+                <BreadcrumbItem>
+                  <BreadcrumbLink href="/files"> Files</BreadcrumbLink>
+                </BreadcrumbItem>
+              </BreadcrumbList>
+            </Breadcrumb>
+            <span className="flex justify-between items-center ml-90">
+              <Table2 onClick={() => setListView(true)} />
+              <ListOrdered onClick={() => setListView(false)} />
+            </span>
+          </header>
+
+          {listView ? (
+            <div className="ml-40 mt-10 flex-grow flex flex-col justify-between p-6 ">
+              {/* File List */}
+              <div
+                ref={fileListRef} // Ref for scrolling
+                className={`grid gap-10 transition-all duration-300 ${
+                  showFileUpload ? "grid-cols-3" : "grid-cols-4"
+                } flex-grow h-[calc(100vh-5rem)] overflow-y-auto p-4`}
+              >
+                {filesData.length > 0 ? (
+                  filesData.map((file, index) => (
+                    <div
+                      key={file.id}
+                      ref={index === filesData.length - 1 ? lastFileRef : null} // load more file when reach to last
+                      className="flex flex-col items-center space-y-2"
+                    >
+                      {/* <img
                     src={file.url}
                     alt={file.name}
                     data-file-type={file.type}
@@ -342,71 +319,75 @@ const Files = () => {
                     className="rounded-lg"
                   /> */}
 
-                  <Card className="w-[200px] rounded-lg border border-[#8E8EFC] shadow-none flex flex-col flex items-center ">
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <a
-                            href={file.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="w-12 h-12 "
-                          >
-                            {renderFilePreview(file)}
-                          </a>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>Name :{file.name}</p>
-                          <p>Size :{formatSize(file.size)}</p>
-                          <p>Type :{file.mime_type}</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
+                      <Card className="w-[200px] rounded-lg border border-[#8E8EFC] shadow-none flex flex-col flex items-center ">
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <a
+                                href={file.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="w-12 h-12 "
+                              >
+                                {renderFilePreview(file)}
+                              </a>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Name :{file.name}</p>
+                              <p>Size :{formatSize(file.size)}</p>
+                              <p>Type :{file.mime_type}</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
 
-                    {/* {renderFilePreview(file)} */}
-                    <CardFooter className="bg-[#F5F5F5] py-2 w-full flex items-center justify-center">
-                      <span className="text-sm font-medium flex ">
-                        {truncateFileName(file.name, 10)}
-                      </span>
-                    </CardFooter>
-                  </Card>
+                        {/* {renderFilePreview(file)} */}
+                        <CardFooter className="bg-[#F5F5F5] py-2 w-full flex items-center justify-center">
+                          <span className="text-sm font-medium flex ">
+                            {truncateFileName(file.name, 10)}
+                          </span>
+                        </CardFooter>
+                      </Card>
+                    </div>
+                  ))
+                ) : (
+                  <div></div>
+                )}
+              </div>
+
+              {/* File Upload Section */}
+              {showFileUpload && (
+                <div
+                  className=" right-0 top-0 w-85 h-20   transition-all duration-300"
+                  style={{ zIndex: 1000 }}
+                >
+                  <FileUpload
+                    showFileUpload={showFileUpload}
+                    setShowFileUpload={setShowFileUpload}
+                    getAllFiles={getAllFiles}
+                  />
                 </div>
-              ))
-            ) : (
-              <div></div>
-            )}
-          </div>
-
-          {/* File Upload Section */}
-          {showFileUpload && (
-            <div
-              className=" right-0 top-0 w-85 h-20   transition-all duration-300"
-              style={{ zIndex: 1000 }}
-            >
-              <FileUpload
-                showFileUpload={showFileUpload}
-                setShowFileUpload={setShowFileUpload}
-                getAllFiles={getAllFiles}
-              />
+              )}
             </div>
+          ) : (
+            <MyListFiles filesData={filesData} />
+          )}
+          {/* Upload Button */}
+          {file_id ? (
+            <div className="fixed bottom-20 right-20">
+              <button
+                onClick={handleToggle}
+                className="bg-blue-500 text-white p-3 rounded-full hover:bg-blue-700 focus:outline-none"
+              >
+                +
+              </button>
+            </div>
+          ) : (
+            ""
           )}
         </div>
-
-        {/* Upload Button */}
-        {file_id ? (
-          <div className="fixed bottom-20 right-20">
-            <button
-              onClick={handleToggle}
-              className="bg-blue-500 text-white p-3 rounded-full hover:bg-blue-700 focus:outline-none"
-            >
-              +
-            </button>
-          </div>
-        ) : (
-          ""
-        )}
       </div>
-    </div>
+      <Loading loading={loading} />
+    </>
   );
 };
 

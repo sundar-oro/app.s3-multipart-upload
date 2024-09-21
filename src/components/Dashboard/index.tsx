@@ -77,11 +77,12 @@ import { RootState } from "@/redux";
 import { useRouter } from "next/navigation";
 import { logout } from "@/redux/Modules/userlogin/userlogin.slice";
 import Navbar from "./navbar";
-import StatsData from "./dummydata";
+// import StatsData from "./dummydata";
 import { useEffect, useState } from "react";
 import { prepareQueryParams } from "@/lib/helpers/Core/prepareQueryParams";
 import { getDashCategoriesApi } from "@/lib/services/categories";
 import { truncateFileName } from "../Categories/Files";
+import StatsData from "./dummydata";
 
 export const description =
   "An orders dashboard with a sidebar navigation. The sidebar has icon navigation. The content area has a breadcrumb and search in the header. The main area has a list of recent orders with a filter and export button. The main area also has a detailed view of a single order with order details, shipping information, billing information, customer information, and payment information.";
@@ -105,40 +106,6 @@ export function Dashboard() {
   const dispatch = useDispatch();
   const user = useSelector((state: RootState) => state?.user?.user_details);
 
-  const getAllCategories = async (page: number) => {
-    let queryParams = prepareQueryParams({
-      page: page ? page : 1,
-      limit: 4,
-    });
-    // setCategoryData([]);
-    try {
-      setLoading(true);
-      const response = await getDashCategoriesApi(queryParams);
-
-      if (response?.success) {
-        // console.log(response?.data?.data);
-        const newPage = page + 1;
-        const newData = response?.data?.data;
-
-        setCategoryData(newData);
-
-        setPage(newPage);
-        if (newData.length === 0) setNoData(true);
-      } else {
-        throw response;
-      }
-    } catch (err: any) {
-      console.error(err);
-      //   toast.error("Failed to load  details.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    getAllCategories(page);
-  }, []);
-
   const handleLogout = () => {
     // Dispatch the logout action
     dispatch(logout());
@@ -155,89 +122,15 @@ export function Dashboard() {
     router.push("/categories");
   };
 
-  const renderFilePreview = (file: FileData) => {
-    const mimeType = file.mime_type;
-
-    if (mimeType.includes("image")) {
-      return (
-        <img
-          src={"/dashboard/stats/image.svg"}
-          alt={file.name}
-          data-file-type="image"
-          width={60}
-          height={60}
-          className="rounded-lg"
-        />
-      );
-    }
-
-    if (mimeType.includes("video/")) {
-      return (
-        <>
-          {/* <video width={60} height={60} controls>
-            <source src={file.url} type={mimeType} />
-            Your browser does not support the video tag.
-          </video> */}
-          <img
-            src={"/dashboard/stats/video.svg"}
-            alt={file.name}
-            data-file-type="video"
-            width={60}
-            height={60}
-          />
-        </>
-      );
-    }
-
-    if (mimeType == "application/pdf") {
-      return (
-        <img
-          src="/dashboard/stats/pdf.svg"
-          alt={file.name}
-          data-file-type="pdf"
-          width={60}
-          height={60}
-          className="rounded-lg"
-        />
-      );
-    }
-
-    if (mimeType === "application/msword") {
-      return (
-        <img
-          src="/dashboard/stats/docs.svg"
-          alt={file.name}
-          data-file-type="document"
-          width={60}
-          height={60}
-          className="rounded-lg"
-        />
-      );
-    }
-
-    return (
-      <img
-        src="/dashboard/stats/others.svg"
-        alt={file.name}
-        data-file-type="others"
-        width={60}
-        height={60}
-        className="rounded-lg"
-      />
-    );
-  };
-
   return (
     <div className="flex min-h-screen w-full">
-      <div className="sticky flex-shrink-0 w-50">
+      <div className="h-screen w-50 sticky top-0">
         {" "}
         <SideBar />
       </div>
-      {/* <div>
-        <Navbar />
-      </div> */}
 
-      <div className="flex flex-1 flex-col bg-muted/40">
+      <div className="flex flex-1 flex-col bg-muted/40 overflow-y-auto">
+        {/* <div className="flex flex-1 flex-col bg-muted/40"> */}
         <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
           <Sheet>
             <SheetTrigger asChild>
@@ -262,76 +155,18 @@ export function Dashboard() {
           </Breadcrumb>
         </header>
 
+        <div>
+          <h2 className="text-xl font-semibold mb-4">Storage Stats</h2>
+          {/* Include the StatsData component */}
+          <StatsData />
+        </div>
+
         <main className="grid flex-1 items-start gap-4 ps-0 sm:px-6 sm:py-0 md:gap-8 lg:grid-cols-3 xl:grid-cols-3">
           <div className="grid auto-rows-max items-start gap-4 md:gap-8 lg:col-span-2">
-            {/* folders */}
-
-            <div>
-              {/* <div className="grid auto-rows-max items-start gap-4 md:gap-8 lg:col-span-2"> */}
-              <h3 className="text-xl font-semibold">Folders</h3>
-
-              <div className="flex flex-row flex-wrap items-start gap-10 mt-4 ">
-                {categorydata?.map((data, index) => (
-                  <Card
-                    key={index}
-                    // onClick={() => handleCard(data?.id)}
-                    className="h-10 w-40 p-2"
-                  >
-                    <CardContent>
-                      {truncateFileName(data?.name, 10)}
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-
-              <button
-                onClick={handleViewAll}
-                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-              >
-                View All
-              </button>
-              {/* </div> */}
-
-              <div className="flex flex-row space-x-4 overflow-x-auto">
-                {/* <Card className="flex-shrink-0 w-60">
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <Folder className="h-6 w-6 font-medium font-bold" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">Analytics</div>
-                    <p className="text-xs text-muted-foreground">15 files</p>
-                  </CardContent>
-                </Card>
-                <Card className="flex-shrink-0 w-60">
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <Folder className="h-6 w-6 font-medium font-bold" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">Assets</div>
-                    <p className="text-xs text-muted-foreground">345 files</p>
-                  </CardContent>
-                </Card> */}
-
-                {/* <Card className="flex-shrink-0 w-40">
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <Folder className="h-6 w-6 font-medium font-bold" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">Marketing</div>
-                    <p className="text-xs text-muted-foreground">143 files</p>
-                  </CardContent>
-                </Card> */}
-              </div>
-              {/* </div> */}
-            </div>
-
             <DashboardTable />
           </div>
-
-          <div>
-            <StatsData />
-          </div>
         </main>
+        {/* </div> */}
       </div>
     </div>
   );
