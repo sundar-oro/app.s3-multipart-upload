@@ -26,7 +26,7 @@ const MyListFiles = ({
   };
 
   return (
-    <div className="ml-6 mt-4 p-6 flex-grow  max-h-[60vh]">
+    <div className="ml-6 mt-6 p-6  flex-grow overflow-auto max-h-[70vh]">
       <div className="overflow-x-auto">
         <TanStackTable
           columns={FilesTableColumns()}
