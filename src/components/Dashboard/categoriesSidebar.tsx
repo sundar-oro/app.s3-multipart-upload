@@ -38,6 +38,12 @@ import { Label } from "../ui/label";
 import { Button } from "../ui/button";
 import Loading from "../Core/loading";
 import { Loader2 } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 const CategoriesSideBar = () => {
   const router = useRouter();
@@ -270,10 +276,23 @@ const CategoriesSideBar = () => {
                   />
                   <ContextMenu>
                     <ContextMenuTrigger>
-                      <span className="cursor-pointer">
-                        {data?.name.charAt(0).toUpperCase() +
-                          data?.name.slice(1).toLowerCase()}
-                      </span>{" "}
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span className="cursor-pointer">
+                              {data?.name.length > 7
+                                ? `${data?.name.slice(0, 7)}...`
+                                : data?.name.charAt(0).toUpperCase() +
+                                  data?.name.slice(1).toLowerCase()}
+                            </span>
+                          </TooltipTrigger>
+                          <TooltipContent>{data?.name}</TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+
+                      {/* <Tooltip content={data?.name}> */}
+
+                      {/* </Tooltip> */}
                     </ContextMenuTrigger>
                     <ContextMenuContent>
                       <ContextMenuItem
@@ -296,17 +315,14 @@ const CategoriesSideBar = () => {
           )}
         </div>
       </div>
-      {open ? (
-        <DeleteDialog
-          openOrNot={open}
-          onCancelClick={handleClose}
-          label="Are you sure you want to delete this Category?"
-          onOKClick={deleteCategory}
-          deleteLoading={loading}
-        />
-      ) : (
-        ""
-      )}
+
+      <DeleteDialog
+        openOrNot={open}
+        onCancelClick={handleClose}
+        label="Are you sure you want to delete this Category?"
+        onOKClick={deleteCategory}
+        deleteLoading={loading}
+      />
 
       <Dialog open={renameOpen} onOpenChange={handleRenameClose}>
         <DialogContent className="bg-white">
