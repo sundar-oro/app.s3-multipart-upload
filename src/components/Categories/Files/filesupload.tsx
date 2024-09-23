@@ -270,7 +270,11 @@ const FileUpload = ({
       if (response.ok) {
         setUploadProgress(100);
         updateFileStatus(file.name, file.size, file.type, "success");
-        getAllFiles && getAllFiles(1);
+        if (file_id) {
+          getAllFiles && getAllFiles(1);
+        } else {
+          router.push("/myfiles");
+        }
         toast.success(result?.message);
         handleClear();
         setTimeout(() => {
