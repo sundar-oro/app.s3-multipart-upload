@@ -95,9 +95,9 @@ const TanStackTable: FC<pageProps> = ({
   };
 
   return (
-    <div className="overflow-x-auto w-full">
-      <div className="max-h-[500px] overflow-y-auto">
-        <table className="min-w-full border-collapse border border-gray-300">
+    <div>
+      <div>
+        <table className="w-[9%] border-collapse border border-gray-300">
           <thead className="bg-gray-200 sticky top-0">
             {table.getHeaderGroups().map((headerGroup) => {
               if (

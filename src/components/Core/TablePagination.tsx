@@ -33,10 +33,11 @@ export const TablePaginationComponent = ({
   limitOptionsFromProps?: { title: string; value: number }[] | any;
   limitValue?: number;
 }) => {
-  const params = useSearchParams();
   const [pageValue, setPageValue] = useState<number>(+paginationDetails?.page);
   const [totalPages, setTotalPages] = useState(0);
   const [limitOptions, setLimitOptions] = useState<any[]>([]);
+
+  const maxVisiblePages = 10; // Set this to your desired number of pages to display
 
   const handlePageRowChange = (value: string) => {
     const numberValue = parseInt(value, 10);
@@ -54,7 +55,6 @@ export const TablePaginationComponent = ({
 
   useEffect(() => {
     setPageValue(paginationDetails?.page || 1);
-
     setTotalPages(+paginationDetails?.total_pages || 0);
   }, [paginationDetails]);
 
@@ -72,9 +72,19 @@ export const TablePaginationComponent = ({
     );
   }, [limitOptionsFromProps]);
 
+  // Create pagination range logic
+  const getVisiblePages = () => {
+    const start = Math.max(
+      2,
+      paginationDetails.page - Math.floor(maxVisiblePages / 2)
+    ); // Start from 2 since 1 is handled separately
+    const end = Math.min(totalPages, start + maxVisiblePages - 1);
+    return Array.from({ length: end - start + 1 }, (_, i) => start + i);
+  };
+
   return (
-    <Card className="flex justify-center items-center p-2 sticky bottom-0 left-0 w-full">
-      <p className="text-sm font-normal mr-4 text-gray-600 w-[15%]">
+    <Card className="flex justify-center items-center p-2 sticky bottom-0 left-0 ">
+      <p className="text-sm font-normal mr-4 text-gray-600 ">
         Total {paginationDetails?.total || paginationDetails?.count || ""}
       </p>
 
@@ -82,7 +92,7 @@ export const TablePaginationComponent = ({
         onValueChange={handlePageRowChange}
         value={paginationDetails?.limit}
       >
-        <SelectTrigger className="w-[180px]">
+        <SelectTrigger>
           <SelectValue placeholder="Select a Limit" />
         </SelectTrigger>
         <SelectContent>
@@ -106,26 +116,56 @@ export const TablePaginationComponent = ({
               }}
             />
           </PaginationItem>
-          {Array.from(
-            { length: +paginationDetails?.total_pages },
-            (_, index) => (
-              <PaginationItem key={index}>
+
+          {paginationDetails.page > 1 && (
+            <>
+              <PaginationItem>
                 <PaginationLink
                   href="#"
-                  isActive={index + 1 === paginationDetails.page}
                   onClick={(e) => {
                     e.preventDefault();
-                    capturePageNum(index + 1);
+                    capturePageNum(1);
                   }}
                 >
-                  {index + 1}
+                  1
                 </PaginationLink>
               </PaginationItem>
-            )
+              {paginationDetails.page > 2}
+            </>
           )}
-          <PaginationItem>
-            <PaginationEllipsis />
-          </PaginationItem>
+
+          {getVisiblePages().map((number) => (
+            <PaginationItem key={number}>
+              <PaginationLink
+                href="#"
+                isActive={number === paginationDetails.page}
+                onClick={(e) => {
+                  e.preventDefault();
+                  capturePageNum(number);
+                }}
+              >
+                {number}
+              </PaginationLink>
+            </PaginationItem>
+          ))}
+
+          {paginationDetails.page < totalPages && (
+            <>
+              {paginationDetails.page < totalPages - 1}
+              <PaginationItem>
+                <PaginationLink
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    capturePageNum(totalPages);
+                  }}
+                >
+                  {totalPages}
+                </PaginationLink>
+              </PaginationItem>
+            </>
+          )}
+
           <PaginationItem>
             <PaginationNext
               onClick={(e) => {
@@ -139,7 +179,7 @@ export const TablePaginationComponent = ({
         </PaginationContent>
       </Pagination>
 
-      <div className="flex items-center gap-2 w-[15%]">
+      <div className="flex items-center gap-2 ">
         <p className="text-sm font-medium text-gray-600">Go to</p>
         <Input
           type="number"
@@ -147,7 +187,6 @@ export const TablePaginationComponent = ({
           onChange={(e) => setPageValue(Number(e.target.value))}
           onKeyDown={onKeyDownChange}
           onWheel={(e) => e.currentTarget.blur()}
-          className="w-16 text-center text-sm"
           min={1}
         />
       </div>
