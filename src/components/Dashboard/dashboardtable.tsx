@@ -7,6 +7,9 @@ import { useSelector } from "react-redux";
 import { RootState } from "@/redux";
 import { getMyFilesAPI } from "@/lib/services/files";
 import { formatSize, truncateFileName } from "../Categories/Files";
+import TanStackTable from "../Core/TanstackTable";
+import { FilesTableColumns } from "./FilesTableColoumns";
+import { useSearchParams } from "next/navigation";
 
 export const convertToLocalDate = (utcDateString: string | number | Date) => {
   const date = new Date(utcDateString);
@@ -35,15 +38,25 @@ interface FileData {
 
 export function DashboardTable() {
   const [page, setPage] = useState(1);
-  const [filesData, setFilesData] = useState<FileData[]>([]); // State for file list
-  const [loading, setLoading] = useState(false);
+  const params = useSearchParams();
 
+  const [filesData, setFilesData] = useState<FileData[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [searchParams, setSearchParams] = useState(
+    Object.fromEntries(new URLSearchParams(Array.from(params.entries())))
+  );
   const user = useSelector((state: RootState) => state?.user);
 
   const getAllMyFiles = async (page: number) => {
     try {
       setLoading(true);
-      const response = await getMyFilesAPI(page, user?.access_token);
+      const response = await getMyFilesAPI({
+        page: 1,
+        limit: 10,
+        order_by: "uploaded_at",
+        order_type: "desc",
+        search_string: "",
+      });
       if (response?.success) {
         setFilesData(response.data);
         setPage(page + 1);
@@ -65,37 +78,14 @@ export function DashboardTable() {
         <CardContent>
           <h2 className="text-xl font-semibold mt-4 mb-4"> Recent Files</h2>
 
-          <div className="overflow-x-auto max-h-[400px]">
-            <Table>
-              <TableBody>
-                {filesData.length > 0 ? (
-                  filesData.map((file) => (
-                    <TableRow key={file.id}>
-                      <TableCell>
-                        <div className="font-semibold text-gray-800">
-                          {truncateFileName(file.title, 12)}
-                        </div>
-                      </TableCell>
-                      <TableCell className="hidden sm:table-cell">
-                        {convertToLocalDate(file.uploaded_at)}
-                      </TableCell>
-                      <TableCell className="hidden md:table-cell">
-                        Category {file.category_id}
-                      </TableCell>
-                      <TableCell className="hidden md:table-cell">
-                        {formatSize(file.size)}
-                      </TableCell>
-                    </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={4} className="text-center">
-                      {loading ? "Loading..." : "No files available"}
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
+          <div className="overflow-x-auto">
+            <TanStackTable
+              columns={FilesTableColumns()}
+              data={filesData}
+              loading={loading}
+              searchParams={searchParams}
+              getData={getAllMyFiles}
+            />
           </div>
         </CardContent>
       </Card>
