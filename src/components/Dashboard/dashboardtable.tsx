@@ -1,15 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import { Card, CardContent } from "@/components/ui/card";
-import { useSelector } from "react-redux";
-import { RootState } from "@/redux";
 import { getMyFilesAPI } from "@/lib/services/files";
-import { formatSize, truncateFileName } from "../Categories/Files";
+import { RootState } from "@/redux";
+import { useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 import TanStackTable from "../Core/TanstackTable";
 import { FilesTableColumns } from "./FilesTableColoumns";
-import { useSearchParams } from "next/navigation";
 
 export const convertToLocalDate = (utcDateString: string | number | Date) => {
   const date = new Date(utcDateString);

@@ -1,21 +1,8 @@
 "use client";
 
-import { PanelLeft } from "lucide-react";
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
-import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-
-import { RootState } from "@/redux";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import { DashboardTable } from "./dashboardtable";
 
-import { logout } from "@/redux/Modules/userlogin/userlogin.slice";
 import { useRouter } from "next/navigation";
 // import StatsData from "./dummydata";
 import { useState } from "react";
@@ -34,7 +21,7 @@ interface FileData {
   url: string;
 }
 
-export function Dashboard() {
+const DashBoard = () => {
   const router = useRouter();
   const dispatch = useDispatch();
 
@@ -59,4 +46,5 @@ export function Dashboard() {
       </div>
     </div>
   );
-}
+};
+export default DashBoard;

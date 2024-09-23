@@ -15,7 +15,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Card } from "../ui/card";
 import { Input } from "../ui/input";
@@ -33,7 +32,6 @@ export const TablePaginationComponent = ({
   limitOptionsFromProps?: { title: string; value: number }[] | any;
   limitValue?: number;
 }) => {
-  const params = useSearchParams();
   const [pageValue, setPageValue] = useState<number>(+paginationDetails?.page);
   const [totalPages, setTotalPages] = useState(0);
   const [limitOptions, setLimitOptions] = useState<any[]>([]);

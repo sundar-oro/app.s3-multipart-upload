@@ -267,7 +267,7 @@ const CategoriesComponent = () => {
                       className="w-60"
                     >
                       <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <Folder className="h-6 w-6 font-medium font-bold" />
+                        <Folder className="h-6 w-6 font-medium " />
 
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>

@@ -1,11 +1,10 @@
-import { Dashboard } from "@/components/Dashboard";
-import Image from "next/image";
+import DashBoard from "@/components/Dashboard";
 import { Suspense } from "react";
 
 export default function DashboardPage() {
   return (
     <Suspense>
-      <Dashboard />
+      <DashBoard />
     </Suspense>
   );
 }
