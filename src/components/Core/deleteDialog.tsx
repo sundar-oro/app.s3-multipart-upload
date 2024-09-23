@@ -8,7 +8,6 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-// import CircularProgress from "@mui/material/CircularProgress";
 import { Spinner } from "../ui/spinner";
 import { Loader2 } from "lucide-react";
 
@@ -37,13 +36,6 @@ const DeleteDialog = ({
             className="bg-red-500 text-white"
             onClick={onOKClick}
           >
-            {/* {deleteLoading ? (
-              // <CircularProgress size={24} sx={{ color: "#fff" }} />
-            ) : (
-              "Yes! Delete"
-            )} */}
-            {/* <div>{deleteLoading ? <Loader2 /> : "Yes! Delete"}</div> */}
-
             {deleteLoading ? (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             ) : (

@@ -227,7 +227,14 @@ const CategoriesSideBar = () => {
 
   useEffect(() => {
     getAllCategories(1, false, search);
-  }, [search, file_id]);
+  }, [file_id]);
+
+  useEffect(() => {
+    let debounce = setTimeout(() => {
+      getAllCategories(1, false, search);
+    }, 500);
+    return () => clearInterval(debounce);
+  }, [search]);
 
   return (
     <>
