@@ -95,7 +95,7 @@ export function SideBar({
       console.log(response, "dfsfsd");
       if (response?.status == 200 || response?.status == 201) {
         setOpen(false);
-        router.push(`/categories/${response?.data.data.id}/files`);
+        router.replace(`/categories/${response?.data.data.id}/files`);
         setData({ name: "", description: "" });
         await getRecentCategory(1);
         toast.success(response?.data?.message);

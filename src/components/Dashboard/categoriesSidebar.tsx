@@ -39,25 +39,17 @@ import { Button } from "../ui/button";
 import Loading from "../Core/loading";
 import { Loader2 } from "lucide-react";
 
-const CategoriesSideBar = ({
-  categoryid,
-  setCategoryId,
-}: {
-  categoryid?: number | null;
-  setCategoryId?: Dispatch<SetStateAction<number>>;
-}) => {
+const CategoriesSideBar = () => {
   const router = useRouter();
   const params = useSearchParams();
   const pathname = usePathname();
-  const categorySideBarRef = useRef<HTMLDivElement>(null); // Correct useRef
-
   const { file_id } = useParams();
+  const categorySideBarRef = useRef<HTMLDivElement>(null);
 
   const [loading, setLoading] = useState(false);
   const [categoryData, setCategoryData] = useState<any[]>([]);
   const [page, setPage] = useState(1);
   const [id, setId] = useState<number>(0);
-
   const [noData, setNoData] = useState(false);
   const [open, setOpen] = useState(false);
   const [renameOpen, setRenameOpen] = useState<boolean>(false);
@@ -65,25 +57,9 @@ const CategoriesSideBar = ({
   const [search, setSearch] = useState(""); // Search field state
   const [name, setName] = useState("");
   const [recentCategoryId, setRecentCategoryId] = useState(0);
+  const [errMessages, setErrMessages] = useState<any>({});
 
-  // Search handler
-  const handleSearchChange = (e: any) => {
-    setSearch(e.target.value.toLowerCase());
-  };
-
-  const handleCreate = () => {
-    setOpen(true);
-  };
-
-  const handleClose = () => {
-    setOpen(false);
-  };
-
-  const handleRenameClose = () => {
-    setRenameOpen(false);
-    setId(0);
-    setName("");
-  };
+  // API Calls
 
   const getSingleCategory = async (id: number) => {
     setLoading(true);
@@ -116,13 +92,13 @@ const CategoriesSideBar = ({
       const response: any = await updateCategoryAPI(id, payload);
 
       if (response?.status == 200 || response?.status == 201) {
-        // toast.success(response?.data?.message);
+        toast.success(response?.data?.message);
         setRenameOpen(false);
         setId(0);
         setName("");
         await getAllCategories(1, false);
       } else if (response.status === 422) {
-        // setErrMessages(response?.data?.errors);
+        setErrMessages(response?.data?.errors);
       } else {
         throw response;
       }
@@ -186,11 +162,29 @@ const CategoriesSideBar = ({
     } catch (err: any) {
     } finally {
       setLoading(false);
+      setSearch("");
     }
   };
 
-  const handleTextFieldChange = (e: any) => {
-    const { name, value } = e.target;
+  // Functions Used
+
+  // Search handler
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearch(e.target.value.toLowerCase());
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+  };
+
+  const handleRenameClose = () => {
+    setRenameOpen(false);
+    setId(0);
+    setName("");
+  };
+
+  const handleTextFieldChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { value } = e.target;
     setName(value);
   };
 
@@ -219,20 +213,6 @@ const CategoriesSideBar = ({
     setOpen(true);
   };
 
-  // const handleMenu = (id: number) => {
-  //   setId(id);
-  //   getSingleCategory(id);
-  // };
-
-  // const handleClose = () => {
-  //   if (file_id) {
-  //     // setRenameOpen(false);
-  //     // setId(0);
-  //   } else {
-  //     setOpen(false);
-  //   }
-  // };
-
   useEffect(() => {
     const categorySideBar = categorySideBarRef.current;
     if (categorySideBar) {
@@ -247,7 +227,7 @@ const CategoriesSideBar = ({
 
   useEffect(() => {
     getAllCategories(1, false, search);
-  }, [search]);
+  }, [search, file_id]);
 
   return (
     <>
@@ -262,10 +242,7 @@ const CategoriesSideBar = ({
           />
         </div>
 
-        <div
-          ref={categorySideBarRef} // Use ref here to target scrollable div
-          className="flex-1 overflow-y-auto"
-        >
+        <div ref={categorySideBarRef} className="flex-1 overflow-y-auto">
           {categoryData.length > 0 ? (
             categoryData.map((data, index) => (
               <ul key={index} className="space-y-2 text-gray-600">
@@ -330,7 +307,6 @@ const CategoriesSideBar = ({
             <DialogTitle>Rename Category</DialogTitle>
           </DialogHeader>
           <div className="grid gap-4 py-4">
-            {/* <div className="grid grid-cols-4 items-center gap-4"> */}
             <Input
               id="name"
               name="name"
@@ -339,12 +315,11 @@ const CategoriesSideBar = ({
               placeholder="Enter another Name for category"
               onChange={handleTextFieldChange}
             />
-            {/* <span>
-                {errMessages?.name && (
-                  <p className="text-red-500">{errMessages.name[0]}</p>
-                )}
-              </span> */}
-            {/* </div> */}
+            <span>
+              {errMessages && (
+                <p className="text-red-500">{errMessages?.name}</p>
+              )}
+            </span>
           </div>
           <DialogFooter>
             <Button onClick={handleRenameClose} variant="ghost" type="submit">
