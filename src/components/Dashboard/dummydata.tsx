@@ -23,29 +23,35 @@ const StatsData = () => {
       const response = await getStatsApi(user?.access_token);
       setData(response.data);
 
+      // Step 1: Create chartData from storageBreakdown
       const chartData = response.data
-        ? Object?.entries(response.data.storageBreakdown).map(
-            ([key, value]) => ({
+        ? Object.entries(response.data.storageBreakdown).map(
+            ([key, value]: any) => ({
               name: key,
-              value: value,
-              fill: `var(--color-${key.toLowerCase()})`,
+              value: +value?.storage, // Convert to number
+              fill: `var(--color-${key.toLowerCase()})`, // Dynamic fill color
             })
           )
         : [];
-      setShowPieData(chartData);
-      const chartConfig = response.data
-        ? Object?.entries(response.data.storageBreakdown).reduce(
-            (acc, [key]) => {
-              acc[key] = {
-                label: key,
-                color: `var(--color-${key.toLowerCase()})`,
-              };
-              return acc;
-            },
-            {} as Record<string, { label: string; color: string }>
-          )
-        : {};
-      setChartConfig(chartConfig);
+
+      const transformedShowPieData = chartData.map(({ name, value, fill }) => ({
+        name,
+        value: +bytesToGB(value),
+        fill,
+      }));
+
+      setShowPieData(transformedShowPieData);
+
+      // Step 3: Create chartConfig from chartData
+      const newChartConfig = chartData.reduce((acc, { name }) => {
+        acc[name] = {
+          label: name,
+          color: `var(--color-${name.toLowerCase()})`,
+        };
+        return acc;
+      }, {} as Record<string, { label: string; color: string }>);
+
+      setChartConfig(newChartConfig);
     } catch (error) {
       setError("Failed to fetch data");
     } finally {
@@ -67,15 +73,17 @@ const StatsData = () => {
           <div className="w-1/5 flex justify-start">
             <ChartContainer
               config={chartConfig}
-              className="aspect-square max-h-[190px]"
+              className="mx-auto aspect-square max-h-[250px]"
             >
               <PieChart>
                 <ChartTooltip
-                  content={<ChartTooltipContent nameKey="name" hideLabel />}
+                  cursor={false}
+                  content={<ChartTooltipContent hideLabel />}
                 />
                 <Pie
                   data={showPieData}
                   dataKey="value"
+                  nameKey="name"
                   cx="50%"
                   cy="50%"
                   outerRadius={60}
