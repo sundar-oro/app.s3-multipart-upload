@@ -72,7 +72,6 @@ const Files = () => {
   );
   const handleToggle = () => {
     setShowFileUpload((prevState: any) => !prevState);
-    setShowMultipartUpload((prevState) => !prevState);
   };
 
   const handleMultipartUploadToggle = () => {
@@ -247,13 +246,13 @@ const Files = () => {
                   >
                     +
                   </Button>
-                  <Button
+                  {/* <Button
                     variant="outline"
                     className="shadow-lg"
                     onClick={handleMultipartUploadToggle}
                   >
                     Multipart Upload
-                  </Button>
+                  </Button> */}
                 </div>
               ) : (
                 ""

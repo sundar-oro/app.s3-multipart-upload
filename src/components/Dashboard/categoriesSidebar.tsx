@@ -280,8 +280,8 @@ const CategoriesSideBar = () => {
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <span className="cursor-pointer">
-                              {data?.name.length > 7
-                                ? `${data?.name.slice(0, 7)}...`
+                              {data?.name.length > 15
+                                ? `${data?.name.slice(0, 15)}...`
                                 : data?.name.charAt(0).toUpperCase() +
                                   data?.name.slice(1).toLowerCase()}
                             </span>
@@ -289,10 +289,6 @@ const CategoriesSideBar = () => {
                           <TooltipContent>{data?.name}</TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
-
-                      {/* <Tooltip content={data?.name}> */}
-
-                      {/* </Tooltip> */}
                     </ContextMenuTrigger>
                     <ContextMenuContent>
                       <ContextMenuItem

@@ -58,7 +58,7 @@ export function DashboardTable() {
         search_string: "",
       });
       if (response?.success) {
-        setFilesData(response.data);
+        setFilesData(response?.data?.data);
         setPage(page + 1);
       }
     } catch (err) {
