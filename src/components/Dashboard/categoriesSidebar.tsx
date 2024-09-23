@@ -1,31 +1,19 @@
 "use client";
-import Image from "next/image";
-import { FilePlus } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { prepareQueryParams } from "@/lib/helpers/Core/prepareQueryParams";
+import { prepareURLEncodedParams } from "@/lib/helpers/prepareUrlEncodedParams";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import Link from "next/link";
+  getAllCategoriesAPI,
+  postCreateCategoryAPI,
+} from "@/lib/services/categories";
+import Image from "next/image";
 import {
   useParams,
   usePathname,
   useRouter,
   useSearchParams,
 } from "next/navigation";
-import {
-  getAllCategoriesAPI,
-  postCreateCategoryAPI,
-} from "@/lib/services/categories";
 import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
-import { prepareQueryParams } from "@/lib/helpers/Core/prepareQueryParams";
-import { prepareURLEncodedParams } from "@/lib/helpers/prepareUrlEncodedParams";
 
 const CategoriesSideBar = ({
   categoryid,
@@ -159,10 +147,11 @@ const CategoriesSideBar = ({
 
   return (
     <div className="flex flex-col h-screen w-60 bg-gray text-gray-800 p-4">
-      <div className="mb-4">
+      <div className="mt-14">
         <Input
           placeholder="Search categories..."
           value={search}
+          type="search"
           onChange={handleSearchChange}
           className="w-full"
         />
@@ -177,7 +166,7 @@ const CategoriesSideBar = ({
             <ul key={index} className="space-y-2 text-gray-600">
               <li
                 onClick={() => handleCategoryFiles(data?.id)}
-                className={`flex items-center space-x-2 p-2 rounded-md ${
+                className={`flex items-center space-x-2 p-2 rounded-md cursor-pointer ${
                   isActive(`${data?.id}`)
                     ? "text-violet-500"
                     : "hover:text-violet-500"

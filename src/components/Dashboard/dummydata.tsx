@@ -1,52 +1,51 @@
 "use client";
 
-import { getStatsApi } from "@/lib/services/dashboard";
-import React, { useEffect, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
-import Image from "next/image";
-
-import {
-  ChartConfig,
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-} from "@/components/ui/chart";
-import { LabelList, Pie, PieChart } from "recharts";
+import { useEffect, useState } from "react";
+import { Card } from "../ui/card";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux";
+import { getStatsApi } from "@/lib/services/dashboard";
+import { Pie, PieChart, LabelList } from "recharts";
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "../ui/chart";
 
 const StatsData = () => {
   const [loading, setLoading] = useState(false);
-  const [data, setData] = useState<any | null>();
+  const [data, setData] = useState<any>({});
   const [error, setError] = useState<string | null>(null);
+  const [showPieData, setShowPieData] = useState<any>();
+  const [chartConfig, setChartConfig] = useState<any>({});
 
   const user = useSelector((state: RootState) => state?.user);
-  console.log(user?.access_token);
-
-  const chartData = [
-    { browser: "Chrome", visitors: 25, fill: "var(--color-chrome)" },
-    { browser: "Safari  ", visitors: 200, fill: "var(--color-safari)" },
-  ];
-
-  const chartConfig = {
-    visitors: {
-      label: "Visitors",
-    },
-    chrome: {
-      label: "Chrome",
-      color: "hsl(var(--chart-1))",
-    },
-    safari: {
-      label: "Safari",
-      color: "hsl(var(--chart-2))",
-    },
-  } satisfies ChartConfig;
 
   const fetchStatsData = async () => {
     try {
       setLoading(true);
       const response = await getStatsApi(user?.access_token);
-      setData(response.data); // Assuming response.data is the actual data object.
+      setData(response.data);
+
+      const chartData = response.data
+        ? Object?.entries(response.data.storageBreakdown).map(
+            ([key, value]) => ({
+              name: key,
+              value: value,
+              fill: `var(--color-${key.toLowerCase()})`,
+            })
+          )
+        : [];
+      setShowPieData(chartData);
+      const chartConfig = response.data
+        ? Object?.entries(response.data.storageBreakdown).reduce(
+            (acc, [key]) => {
+              acc[key] = {
+                label: key,
+                color: `var(--color-${key.toLowerCase()})`,
+              };
+              return acc;
+            },
+            {} as Record<string, { label: string; color: string }>
+          )
+        : {};
+      setChartConfig(chartConfig);
     } catch (error) {
       setError("Failed to fetch data");
     } finally {
@@ -58,115 +57,81 @@ const StatsData = () => {
     fetchStatsData();
   }, []);
 
-  const bytesToMB = (bytes: number) => (bytes / (1024 * 1024)).toFixed(2);
+  const bytesToGB = (bytes: number) =>
+    (bytes / (1024 * 1024 * 1024)).toFixed(2);
 
   return (
-    <div className="ml-40 mt-0 flex-grow flex flex-col justify-between p-0   w-[90%] h-full">
-      <Card className="overflow-hidden mb-0 w-130 mt-0 mr-0 bg-white shadow-lg p-4  px-3">
-        {/* <CardHeader>
-          <CardTitle>Storage Stats</CardTitle>
-        </CardHeader> */}
-        <CardContent>
-          <div className="flex flex-row  items-start gap-4 ">
-            <div className="w-1/5 flex-justify-start  ">
-              <ChartContainer
-                config={chartConfig}
-                className="aspect-square max-h-[230px]  "
-              >
-                <PieChart>
-                  <ChartTooltip
-                    content={
-                      <ChartTooltipContent nameKey="visitors" hideLabel />
-                    }
+    <div className="bg-gray-100 flex justify-center">
+      <Card className="w-full bg-white shadow-lg rounded-lg p-6 h-[40%]">
+        <div className="flex flex-col lg:flex-row justify-between items-center">
+          <div className="w-1/5 flex justify-start">
+            <ChartContainer
+              config={chartConfig}
+              className="aspect-square max-h-[190px]"
+            >
+              <PieChart>
+                <ChartTooltip
+                  content={<ChartTooltipContent nameKey="name" hideLabel />}
+                />
+                <Pie
+                  data={showPieData}
+                  dataKey="value"
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={60}
+                >
+                  <LabelList
+                    dataKey="name"
+                    className="fill-background"
+                    stroke="none"
+                    fontSize={12}
                   />
-                  <Pie data={chartData} dataKey="visitors">
-                    <LabelList
-                      dataKey="browser"
-                      className="fill-background"
-                      stroke="none"
-                      fontSize={12}
-                      formatter={(value: keyof typeof chartConfig) =>
-                        chartConfig[value]?.label
-                      }
-                    />
-                  </Pie>
-                </PieChart>
-              </ChartContainer>
-            </div>
-
-            <div className=" w-2/3 flex flex-row justify-between gap-4 p-6">
-              {/* Images Card */}
-              <div className="bg-white shadow-md rounded-lg p-2 w-1/4">
-                <li className="flex justify-between items-center">
-                  <div>
-                    <h2 className="font-semibold text-gray-700">Images</h2>
-                    <div className="text-sm text-gray-500">
-                      {data?.storageBreakdown?.image?.count || 0} files
-                    </div>
-                  </div>
-                  <span className="text-lg font-medium text-blue-600">
-                    {bytesToMB(data?.storageBreakdown?.image?.storage || 0)} MB
-                  </span>
-                </li>
-              </div>
-
-              {/* Media Card */}
-              <div className="bg-white shadow-md rounded-lg p-4 w-full md:w-1/4">
-                <li className="flex justify-between items-center">
-                  <div>
-                    <h2 className="font-semibold text-gray-700">Media</h2>
-                    <div className="text-sm text-gray-500">
-                      {data?.storageBreakdown?.media?.count || 0} files
-                    </div>
-                  </div>
-                  <span className="text-lg font-medium text-blue-600">
-                    {bytesToMB(data?.storageBreakdown?.media?.storage || 0)} MB
-                  </span>
-                </li>
-              </div>
-
-              {/* Documents Card */}
-              <div className="bg-white shadow-md rounded-lg p-4 w-full md:w-1/4">
-                <li className="flex justify-between items-center">
-                  <div>
-                    <h2 className="font-semibold text-gray-700">Documents</h2>
-                    <div className="text-sm text-gray-500">
-                      {data?.storageBreakdown?.document?.count || 0} files
-                    </div>
-                  </div>
-                  <span className="text-lg font-medium text-blue-600">
-                    {bytesToMB(data?.storageBreakdown?.document?.storage || 0)}{" "}
-                    MB
-                  </span>
-                </li>
-              </div>
-
-              {/* Other Files Card */}
-              <div className="bg-white shadow-md rounded-lg p-4 w-full md:w-1/4">
-                <li className="flex justify-between items-center">
-                  <div className="flex items-center space-x-2">
-                    <Image
-                      src="/dashboard/dashboard.svg"
-                      alt="dashboard"
-                      width={20}
-                      height={20}
-                      className="transition-all duration-200"
-                    />
-                    <div className="flex flex-col">
-                      <span>Other</span>
-                      <span>
-                        {data?.storageBreakdown?.other?.count || 0} files
-                      </span>
-                    </div>
-                  </div>
-                  <span className="text-lg font-medium text-blue-600">
-                    {bytesToMB(data?.storageBreakdown?.other?.storage || 0)} MB
-                  </span>
-                </li>
-              </div>
-            </div>
+                </Pie>
+              </PieChart>
+            </ChartContainer>
           </div>
-        </CardContent>
+
+          {/* Storage Breakdown Section */}
+          <div className="lg:w-2/3 grid grid-cols-4 gap-4 h-24">
+            {[
+              {
+                label: "Images",
+                value: bytesToGB(data?.storageBreakdown?.image?.storage || 0),
+                count: data?.storageBreakdown?.image?.count || 0,
+                color: "bg-blue-100",
+              },
+              {
+                label: "Documents",
+                value: bytesToGB(
+                  data?.storageBreakdown?.document?.storage || 0
+                ),
+                count: data?.storageBreakdown?.document?.count || 0,
+                color: "bg-green-100",
+              },
+              {
+                label: "Media Files",
+                value: bytesToGB(data?.storageBreakdown?.media?.storage || 0),
+                count: data?.storageBreakdown?.media?.count || 0,
+                color: "bg-orange-100",
+              },
+              {
+                label: "Other Files",
+                value: bytesToGB(data?.storageBreakdown?.other?.storage || 0),
+                count: data?.storageBreakdown?.other?.count || 0,
+                color: "bg-yellow-100",
+              },
+            ].map((item, index) => (
+              <div
+                key={index}
+                className={`p-4 ${item.color} rounded-lg shadow`}
+              >
+                <h3 className="font-semibold text-gray-700">{item.label}</h3>
+                <p className="text-lg font-bold">{item.value} GB</p>
+                <p className="text-sm text-gray-600">{item.count} files</p>
+              </div>
+            ))}
+          </div>
+        </div>
       </Card>
     </div>
   );

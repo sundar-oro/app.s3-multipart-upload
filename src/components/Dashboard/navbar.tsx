@@ -46,7 +46,7 @@ const NavBar = () => {
             href="#"
             className="text-white font-bold-200 transition-colors hover:text-foreground "
           >
-            <b>Logo</b>
+            <b>Ashika</b>
           </Link>
           {/* // search box */}
           <div className="flex w-full items-center gap-4 md:ml-auto md:gap-2 lg:gap-4">

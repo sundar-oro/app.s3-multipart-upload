@@ -1,100 +1,36 @@
 "use client";
-import Image from "next/image";
-import {
-  Folder,
-  Users,
-  ChevronDown,
-  FilePlus,
-  FileText,
-  Film,
-  Grid,
-  MoreHorizontal,
-  File,
-  Home,
-  LineChart,
-  ListFilter,
-  Package,
-  Package2,
-  PanelLeft,
-  PlusCircle,
-  Search,
-  Settings,
-  ShoppingCart,
-  Users2,
-  Cloud,
-  ChevronRight,
-} from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { ChevronRight, File, Folder, Loader2 } from "lucide-react";
+import Image from "next/image";
 
-import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import {
-  getAllCategoriesAPI,
-  postCreateCategoryAPI,
-} from "@/lib/services/categories";
-import { Dispatch, SetStateAction, useEffect, useState } from "react";
-import { RootState } from "@/redux";
-import { useSelector } from "react-redux";
-import CategoriesSideBar from "./categoriesSidebar";
-import { prepareQueryParams } from "@/lib/helpers/Core/prepareQueryParams";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuPortal,
   DropdownMenuSeparator,
-  DropdownMenuShortcut,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { prepareQueryParams } from "@/lib/helpers/Core/prepareQueryParams";
+import {
+  getAllCategoriesAPI,
+  postCreateCategoryAPI,
+} from "@/lib/services/categories";
+import { RootState } from "@/redux";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
+import { useSelector } from "react-redux";
+import CategoriesSideBar from "./categoriesSidebar";
+import { toast } from "sonner";
 
 export function SideBar({
   categoryid,
@@ -116,13 +52,11 @@ export function SideBar({
     name: "",
     description: "",
   });
+
+  const [errMessages, setErrMessages] = useState<any>();
   const [recentCategoryId, setRecentCategoryId] = useState(0);
   const [categoryOpen, setCategoryOpen] = useState(false);
   const user = useSelector((state: RootState) => state?.user?.user_details);
-
-  const handleCard = () => {
-    router.push(`/myfiles`);
-  };
 
   const handleCreate = () => {
     setOpen(true);
@@ -130,6 +64,8 @@ export function SideBar({
 
   const handleClose = () => {
     setOpen(false);
+    setData({ name: "", description: "" });
+    setErrMessages({});
   };
 
   const getRecentCategory = async (page: number) => {
@@ -139,7 +75,6 @@ export function SideBar({
       const response = await getAllCategoriesAPI(queryParams);
       if (response?.success) {
         const newData = response?.data?.data;
-        console.log(newData[0].id);
         setRecentCategoryId(newData[0].id);
       } else {
         throw response;
@@ -156,15 +91,17 @@ export function SideBar({
     try {
       const payload = { ...data };
       const response = await postCreateCategoryAPI(payload);
-
+      console.log(response, "dfsfsd");
       if (response?.status == 200 || response?.status == 201) {
         setOpen(false);
-        router.push("/categories");
-
+        router.push(`/categories/${response?.data.data.id}/files`);
+        setData({ name: "", description: "" });
         getAllCategories && getAllCategories(1, false);
-
-        // toast.success(response?.data?.message);
+        toast.success(response?.data?.message);
+        setErrMessages({});
         // setDeleteid(false);
+      } else if (response?.status === 422 || response?.status === 409) {
+        setErrMessages(response?.data?.errors);
       } else {
         throw response;
       }
@@ -199,15 +136,14 @@ export function SideBar({
   // const handleCategories = (categoryid: number) => {
   //   router.push(`/categories/${categoryid}/files`);
   // };
-  console.log(categoryOpen, "CATEGORY");
   useEffect(() => {
     getRecentCategory(1);
   }, []);
 
   return (
     <div className="flex">
-      <nav className="flex flex-col h-full w-60 bg-white text-gray-800 py-4 px-3">
-        <div className="mb-6">
+      <nav className="flex flex-col h-full w-60 bg-white text-gray-800 py-4 px-3 gap-9">
+        <div className="mt-[20%]">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button className="flex items-center justify-center w-full py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
@@ -343,6 +279,11 @@ export function SideBar({
                 onChange={handleTextFieldChange}
               />
             </div>
+            {errMessages ? (
+              <span className="text-red-500">{errMessages?.name}</span>
+            ) : (
+              ""
+            )}
             <DialogFooter>
               <Button
                 onClick={handleClose}
@@ -353,7 +294,16 @@ export function SideBar({
               >
                 Cancel
               </Button>
-              <Button onClick={createCategories} type="submit">
+              <Button
+                onClick={createCategories}
+                type="submit"
+                disabled={loading ? true : false}
+              >
+                {loading ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  ""
+                )}
                 Create
               </Button>
             </DialogFooter>
