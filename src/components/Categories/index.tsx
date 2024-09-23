@@ -1,63 +1,48 @@
 "use client";
-import Image from "next/image";
-import {
-  EllipsisVertical,
-  Folder,
-  Menu,
-  MenuIcon,
-  PanelLeft,
-  Search,
-} from "lucide-react";
 import {
   Breadcrumb,
   BreadcrumbItem,
   BreadcrumbLink,
   BreadcrumbList,
-  BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { SideBar } from "../Dashboard/sidebar";
-import { useEffect, useState } from "react";
+import { Label } from "@/components/ui/label";
+import { prepareQueryParams } from "@/lib/helpers/Core/prepareQueryParams";
 import {
   deleteCategoryAPI,
   getAllCategoriesAPI,
   getSingleCategoryAPI,
   updateCategoryAPI,
 } from "@/lib/services/categories";
-import DeleteDialog from "../Core/deleteDialog";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { createcategory } from "@/lib/interfaces";
+import { EllipsisVertical, Folder } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { prepareQueryParams } from "@/lib/helpers/Core/prepareQueryParams";
-import Loading from "../Core/loading";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import DeleteDialog from "../Core/deleteDialog";
+import Loading from "../Core/loading";
 import CategoriesSideBar from "../Dashboard/categoriesSidebar";
 
 export const description =
   "An orders dashboard with a sidebar navigation. The sidebar has icon navigation. The content area has a breadcrumb and search in the header. The main area has a list of recent orders with a filter and export button. The main area also has a detailed view of a single order with order details, shipping information, billing information, customer information, and payment information.";
 
-export function Categories() {
+const CategoriesComponent = () => {
   const router = useRouter();
 
   const [loading, setLoading] = useState(false);
@@ -379,4 +364,5 @@ export function Categories() {
       <Loading loading={loading} />
     </>
   );
-}
+};
+export default CategoriesComponent;

@@ -1,40 +1,26 @@
 "use client";
-import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
-import { useDropzone } from "react-dropzone";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
-import { RotateCw, X } from "lucide-react";
-import { useParams, useRouter } from "next/navigation";
-import { Card } from "@/components/ui/card";
-import { toast } from "sonner";
 import { filedetails } from "@/lib/interfaces";
-import { useSelector } from "react-redux";
 import { RootState } from "@/redux";
+import { RotateCw } from "lucide-react";
+import { useParams, useRouter } from "next/navigation";
+import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
+import { useDropzone } from "react-dropzone";
+import { useSelector } from "react-redux";
+import { toast } from "sonner";
 
 const FileUpload = ({
   showFileUpload,
   setShowFileUpload,
   getAllFiles,
 }: {
-  showFileUpload: boolean;
-  setShowFileUpload: Dispatch<SetStateAction<boolean>>;
-  getAllFiles: (page: number) => void;
+  showFileUpload?: boolean;
+  setShowFileUpload?: Dispatch<SetStateAction<boolean>>;
+  getAllFiles?: (page: number) => void;
 }) => {
   const router = useRouter();
   const { file_id } = useParams();
@@ -61,14 +47,7 @@ const FileUpload = ({
   });
   const [urls, setUrls] = useState([]);
 
-  console.log(chunks);
-
   const user = useSelector((state: RootState) => state?.user?.access_token);
-  // const access_token = user?.access_token;
-
-  const handleToggle = () => {
-    setShowFileUpload((prevState: any) => !prevState);
-  };
 
   const handleParts = (size: number) => {
     const MB = 1024 * 1024; // 1 MB in bytes
@@ -94,7 +73,9 @@ const FileUpload = ({
   };
 
   const handleCancel = () => {
-    setShowFileUpload(false);
+    {
+      setShowFileUpload && setShowFileUpload(false);
+    }
     setSize({
       size: "",
       unit: 1024 * 1024,
@@ -135,7 +116,7 @@ const FileUpload = ({
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setUploadData((prev: any) => ({ ...prev, [name]: parseInt(value) }));
+    setUploadData((prev: any) => ({ ...prev, [name]: value }));
   };
 
   const updateFileStatus = (
@@ -177,7 +158,19 @@ const FileUpload = ({
       setSelectedFiles(files);
     },
     multiple: true,
-    accept: {},
+    accept: {
+      "application/pdf": [".pdf"],
+      "image/*": [],
+      "application/msword": [".doc"],
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
+        [".docx"],
+      "application/vnd.ms-excel": [".xls"],
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": [
+        ".xlsx",
+      ],
+      "text/csv": [".csv"],
+      "video/*": [],
+    },
   });
 
   // Single-part upload (file < 5 MB)
@@ -212,7 +205,7 @@ const FileUpload = ({
         console.log(result);
         setUploadProgress(33);
         setUploadData(result?.data);
-        await s3partfile(result?.data, file); // Upload the file to S3
+        await s3partfile(result?.data, file);
       } else {
         throw result;
       }
@@ -236,7 +229,7 @@ const FileUpload = ({
       if (response.ok) {
         console.log("Single-part file upload successful");
         setUploadProgress(66);
-        await addsinglepartfile(data, file); // Save metadata after upload
+        await addsinglepartfile(data, file);
       } else {
         throw response;
       }
@@ -257,6 +250,8 @@ const FileUpload = ({
         {
           method: "POST",
           body: JSON.stringify({
+            title: `${uploaddata.title} 
+          (${selectedFiles.findIndex((e) => e.name === file.name)})`,
             name: data.file_name,
             size: data.file_size,
             path: data?.path,
@@ -273,10 +268,9 @@ const FileUpload = ({
       const result = await response.json();
 
       if (response.ok) {
-        console.log("File metadata saved:", result);
         setUploadProgress(100);
         updateFileStatus(file.name, file.size, file.type, "success");
-        getAllFiles(1);
+        getAllFiles && getAllFiles(1);
         toast.success(result?.message);
         handleClear();
         setTimeout(() => {
@@ -404,7 +398,6 @@ const FileUpload = ({
       }, 10000);
     }
   };
-  console.log(uploaddata);
   const addMultipartfile = async () => {
     try {
       const response = await fetch(
@@ -473,10 +466,9 @@ const FileUpload = ({
       const result = await response.json();
 
       if (response.ok) {
-        console.log("File metadata saved:", result);
         setUploadProgress(100);
         // updateFileStatus(file.name, file.size, file.type, "success");
-        getAllFiles(1);
+        getAllFiles && getAllFiles(1);
         toast.success(result?.message);
         handleClear();
         setTimeout(() => {
@@ -509,8 +501,8 @@ const FileUpload = ({
   }, [etagData, parts]);
 
   return (
-    <Card className="sticky h-screen p-6 m-4 bg-white rounded-lg shadow-md">
-      <div className="flex flex-col h-full justify-between">
+    <Card className="sticky p-6 m-4 bg-white rounded-lg shadow-md w-full">
+      <div className="flex flex-col h-full justify-between gap-4">
         <div>
           <h2 className="text-xl font-semibold mb-4">Upload Documents</h2>
           <div
@@ -520,13 +512,6 @@ const FileUpload = ({
             <input {...getInputProps()} />
             <p>Drag drop a file here, or click to select a file</p>
           </div>
-          {/* {size.filename && (
-            <div className="mt-4">
-              <p>File name: {size.filename}</p>
-              <p>File size: {size.filesize} bytes</p>
-              <p>File Type: {size.filetype}</p>
-            </div>
-          )} */}
 
           {selectedFiles.length > 0 && (
             <div className="mt-4">
@@ -535,37 +520,16 @@ const FileUpload = ({
                 {selectedFiles.map((file, index) => (
                   <li
                     key={index}
-                    className="flex justify-between items-center p-2 border-b"
+                    className="flex flex-col justify-between items-center p-2 border-b "
                   >
-                    <span>File name:{file.name}</span>
-                    <span>File size: {Math.ceil(file.size / 1024)} KB</span>
-                    <span>File Type: {file.type}</span>
+                    <p>File name:{file.name.slice(0, 20)}</p>
+                    <p>File size: {Math.ceil(file.size / 1024)} KB</p>
+                    <p>File Type: {file.type}</p>
                   </li>
                 ))}
               </ul>
             </div>
           )}
-
-          {/* Show Chunk Size only if file is > 5MB */}
-          {size.filesize > 5242880 && (
-            <div className="mt-4">
-              <Label htmlFor="parts">Chunk Size</Label>
-              <Input
-                name="parts"
-                value={uploaddata && uploaddata?.parts}
-                placeholder="Enter chunk size"
-                onChange={(e) =>
-                  setUploadData({
-                    ...uploaddata,
-                    parts: parseInt(e.target.value),
-                  })
-                }
-                type="number"
-                className="mt-2"
-              />
-            </div>
-          )}
-
           {uploadProgress > 0 && (
             <div className="mt-4">
               <Progress value={uploadProgress} />
@@ -584,36 +548,17 @@ const FileUpload = ({
               />
             </div>
           )}
-          {/* <div className="mt-4">
-              <Label htmlFor="size">Chunk Size</Label>
-              <Input
-                name="size"
-                value={size.size}
-                placeholder="Enter chunk size"
-                onChange={handleChange}
-                type="number"
-                className="mt-2"
-              />
-
-              <Label htmlFor="unit" className="mt-4">
-                Units
-              </Label>
-              <Select
-                onValueChange={(value: any) =>
-                  setSize((prev) => ({ ...prev, unit: Number(value) }))
-                }
-                value={String(size.unit)}
-              >
-                <SelectTrigger className="mt-2">
-                  <SelectValue placeholder="Select unit" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="1048576">MB</SelectItem>
-                  <SelectItem value="1073741824">GB</SelectItem>
-                  <SelectItem value="1099511627776">TB</SelectItem>
-                </SelectContent>
-              </Select>
-            </div> */}
+          <div className="mt-4">
+            <Label htmlFor="size">Title</Label>
+            <Input
+              name="title"
+              value={uploaddata?.title}
+              disabled={selectedFiles?.length ? false : true}
+              placeholder="Enter File Name"
+              onChange={handleChange}
+              className="mt-2"
+            />
+          </div>
         </div>
         <div>
           <ul>
@@ -645,7 +590,13 @@ const FileUpload = ({
             <Button variant="ghost" onClick={handleCancel}>
               Cancel
             </Button>
-            <Button onClick={handleUpload} className="ml-2">
+            <Button
+              onClick={handleUpload}
+              className="ml-2"
+              disabled={
+                selectedFiles?.length && uploaddata?.title ? false : true
+              }
+            >
               Upload
             </Button>
           </div>

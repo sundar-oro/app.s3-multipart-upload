@@ -21,6 +21,7 @@ import {
   resumeUploadAPI,
   startUploadMultipartFileAPI,
 } from "@/lib/services/multipart";
+import axios from "axios";
 
 const MultiPartUploadComponent: React.FC = () => {
   const [multipleFiles, setMultipleFiles] = useState<File[]>([]);
@@ -154,13 +155,12 @@ const MultiPartUploadComponent: React.FC = () => {
     index: number,
     key: string,
     chunkSize: number,
-    totalChunks: number,
-    unuploadedParts?: number[] | any
-  ) => {
+    totalChunks: number
+  ): Promise<void> => {
     const etags: { ETag: string; PartNumber: number }[] = [];
 
     try {
-      const presignedUrls = await fetchPresignedUrls(
+      const presignedUrls: string[] = await fetchPresignedUrls(
         index,
         uploadId,
         key,
@@ -171,38 +171,47 @@ const MultiPartUploadComponent: React.FC = () => {
         async (_, chunkIndex) => {
           const start = chunkIndex * chunkSize;
           const end = Math.min(start + chunkSize, file.size);
-          const chunk = file.slice(start, end);
           const url = presignedUrls[chunkIndex];
 
           try {
-            const res = await fetch(url, {
-              method: "PUT",
-              body: chunk,
-            });
-            if (!res.ok) {
-              throw new Error(`Failed to upload chunk ${chunkIndex + 1}`);
-            }
-            const etag = res.headers.get("Etag")?.replace(/"/g, "") || "";
-            etags.push({ ETag: etag, PartNumber: chunkIndex + 1 });
+            const { etag } = await uploadChunk(
+              url,
+              file,
+              chunkIndex + 1,
+              start,
+              end,
+              file.size,
+              (partNumber, chunkProgress) => {
+                // Calculate overall progress using chunkProgress
+                const overallProgress =
+                  ((chunkIndex * chunkSize +
+                    (chunkProgress / 100) * chunkSize) /
+                    file.size) *
+                  100;
 
-            const progress = (((chunkIndex + 1) / totalChunks) * 100).toFixed(
-              2
+                // Update overall progress based on chunk upload
+                setFileProgress((prev) => ({
+                  ...prev,
+                  [index]: parseFloat(overallProgress.toFixed(2)),
+                }));
+
+                console.log(
+                  `Chunk ${partNumber} progress: ${chunkProgress.toFixed(2)}%`
+                );
+              }
             );
-            setFileProgress((prev) => ({
-              ...prev,
-              [index]: parseFloat(progress),
-            }));
-          } catch (err) {
+
+            etags.push({ ETag: etag, PartNumber: chunkIndex + 1 });
+          } catch (error) {
             setFileErrors((prev) => [
               ...prev,
-              { file, reason: (err as Error).message },
+              { file, reason: (error as Error).message },
             ]);
           }
         }
       );
 
       await Promise.all(uploadPromises);
-
       await mergeFileChunks(uploadId, key, etags, index);
       setPresignedUrlsMap((prev) => {
         const newMap = { ...prev };
@@ -215,6 +224,31 @@ const MultiPartUploadComponent: React.FC = () => {
         { file, reason: (error as Error).message },
       ]);
     }
+  };
+
+  const uploadChunk = async (
+    url: string,
+    file: File,
+    partNumber: number,
+    start: number,
+    end: number,
+    totalFileSize: number,
+    progressCallback: (partNumber: number, chunkProgress: number) => void
+  ): Promise<{ etag: string }> => {
+    const chunk = file.slice(start, end);
+
+    const response = await axios.put(url, chunk, {
+      headers: {
+        "Content-Type": "application/octet-stream",
+      },
+      onUploadProgress: (progressEvent: any) => {
+        const chunkProgress = (progressEvent.loaded / chunk.size) * 100; // Progress for the current chunk
+        progressCallback(partNumber, chunkProgress);
+      },
+    });
+
+    const etag = response.headers["etag"]; // Retrieve the ETag from the response headers
+    return { etag }; // Return the ETag
   };
 
   const mergeFileChunks = async (
@@ -265,8 +299,7 @@ const MultiPartUploadComponent: React.FC = () => {
         index,
         uploadFileDetails[0]?.file_key,
         +fileFormData.chunkSizeInBytes,
-        +fileFormData.totalChunksParts,
-        unuploadedParts
+        +fileFormData.totalChunksParts
       );
     } catch (error) {
       console.error(error);

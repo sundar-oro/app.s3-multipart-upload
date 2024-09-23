@@ -1,7 +1,10 @@
-import { Categories } from "@/components/Categories";
 import Files from "@/components/Categories/Files";
-import Image from "next/image";
+import { Suspense } from "react";
 
-export default function Home() {
-  return <Files />;
+export default function FilesPage() {
+  return (
+    <Suspense>
+      <Files />
+    </Suspense>
+  );
 }

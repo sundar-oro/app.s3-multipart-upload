@@ -32,7 +32,7 @@ import { useSelector } from "react-redux";
 import CategoriesSideBar from "./categoriesSidebar";
 import { toast } from "sonner";
 
-export function SideBar({
+const SideBar = ({
   categoryid,
   getAllCategories,
   setCategoryId,
@@ -42,7 +42,7 @@ export function SideBar({
   getAllCategories?: (page: number, value: boolean) => void;
   setCategoryId?: Dispatch<SetStateAction<number>>;
   children?: React.ReactNode;
-}) {
+}) => {
   const router = useRouter();
   const pathname = usePathname();
 
@@ -318,4 +318,5 @@ export function SideBar({
       <div className="flex-grow">{children}</div>
     </div>
   );
-}
+};
+export default SideBar;

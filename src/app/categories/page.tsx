@@ -1,5 +1,10 @@
-import { Categories } from "@/components/Categories";
+import CategoriesComponent from "@/components/Categories";
+import { Suspense } from "react";
 
-export default function Home() {
-  return <Categories />;
+export default function CategoriesPage() {
+  return (
+    <Suspense>
+      <CategoriesComponent />;
+    </Suspense>
+  );
 }

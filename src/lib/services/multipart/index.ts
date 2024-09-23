@@ -49,7 +49,7 @@ export const mergeAllChunksAPI = async (body: any) => {
 export const resumeUploadAPI = async (body: any) => {
   try {
     const { data, success } = await $fetch.post(
-      `/multipart-upload/list-incomplete-parts`,
+      `/categories/5/files/list-incomplete-parts`,
       body
     );
     if (!success) {

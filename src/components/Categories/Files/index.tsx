@@ -1,6 +1,4 @@
 "use client";
-import { ListOrdered, PanelLeft, Table2, Plus } from "lucide-react";
-import { SideBar } from "@/components/Dashboard/sidebar";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -10,21 +8,13 @@ import {
 } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { ListOrdered, PanelLeft, Table2 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { getAllFilesAPI, getMyFilesAPI } from "@/lib/services/files";
-import { useEffect, useRef, useState } from "react";
-import FileUpload from "./filesupload";
-import { Card, CardFooter } from "@/components/ui/card";
-import { useSelector } from "react-redux";
 import { RootState } from "@/redux";
-import CategoriesSideBar from "@/components/Dashboard/categoriesSidebar";
+import { useEffect, useRef, useState } from "react";
+import { useSelector } from "react-redux";
 
 interface FileData {
   id: string;
@@ -36,9 +26,15 @@ interface FileData {
   url: string;
 }
 
-import MyListFiles from "./mylistfiles";
-import Loading from "@/components/Core/loading";
 import MultiPartUploadComponent from "@/components/MultipartUpload/MultiPartUpload";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import FileUpload from "./filesupload";
+import MyListFiles from "./mylistfiles";
 
 // Helper functions for file name truncation and size formatting
 export const truncateFileName = (name: string, maxLength: number) => {
@@ -57,13 +53,13 @@ export const formatSize = (sizeInBytes: number) => {
 const Files = () => {
   const router = useRouter();
   const [page, setPage] = useState(1);
-  const [showFileUpload, setShowFileUpload] = useState(false);
+  const [showFileUpload, setShowFileUpload] = useState<any>(false);
   const [filesData, setFilesData] = useState<FileData[]>([]);
   const [categoryId, setCategoryId] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [noData, setNoData] = useState(false);
-  const [listView, setListView] = useState(true); // Start with list view by default
-  const [showMultipartUpload, setShowMultipartUpload] = useState(false); // Multipart Upload State
+  const [listView, setListView] = useState(true);
+  const [showMultipartUpload, setShowMultipartUpload] = useState(false);
 
   const lastFileRef = useRef<HTMLDivElement>(null);
   const fileListRef = useRef<HTMLDivElement>(null);
@@ -72,10 +68,12 @@ const Files = () => {
 
   const handleToggle = () => {
     setShowFileUpload((prevState: any) => !prevState);
+    setShowMultipartUpload((prevState) => !prevState);
   };
 
   const handleMultipartUploadToggle = () => {
     setShowMultipartUpload((prevState) => !prevState);
+    handleToggle();
   };
 
   const getAllFiles = async (page: number, isScrolling: boolean = false) => {
@@ -84,9 +82,9 @@ const Files = () => {
       const response = await getAllFilesAPI(page, file_id);
 
       if (response?.success) {
-        setFilesData((prevFilesData) => [...prevFilesData, ...response.data]);
+        setFilesData(response.data);
         setPage(page + 1);
-
+        showFileUpload(false);
         if (response.data.length === 0) {
           setNoData(true);
         }
@@ -230,7 +228,6 @@ const Files = () => {
             ""
           )}
         </div>
-
         <div className="fixed bottom-6 right-6 space-x-4 flex">
           <Button
             variant="outline"
@@ -247,22 +244,26 @@ const Files = () => {
             Multipart Upload
           </Button>
         </div>
-
-        {/* File Upload Section */}
-        {showFileUpload && (
-          <div className="fixed inset-0 bg-white z-50 p-6">
-            {/* <FileUpload /> */}
-            <Button onClick={handleToggle}>Close</Button>
-          </div>
-        )}
-
-        {/* Multipart Upload Section */}
-        {showMultipartUpload && (
-          <div className="fixed inset-0 bg-white z-50 p-6">
-            <MultiPartUploadComponent />
-            <Button onClick={handleMultipartUploadToggle}>Close</Button>
-          </div>
-        )}
+        <div>
+          <Dialog
+            open={showFileUpload}
+            onOpenChange={() => setShowFileUpload(false)}
+          >
+            <DialogContent className="bg-white w-[80%]">
+              <DialogTitle>New FileUpload</DialogTitle>
+              {showMultipartUpload ? (
+                <MultiPartUploadComponent />
+              ) : (
+                <FileUpload
+                  showFileUpload={showFileUpload}
+                  setShowFileUpload={setShowFileUpload}
+                  getAllFiles={getAllFiles}
+                />
+              )}
+              <DialogFooter></DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
     </>
   );

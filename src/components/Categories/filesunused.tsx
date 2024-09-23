@@ -1,7 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { SideBar } from "../Dashboard/sidebar";
 import {
   getAllCategoriesAPI,
   deleteCategoryAPI,
@@ -29,6 +28,7 @@ import DeleteDialog from "../Core/deleteDialog";
 import Loading from "../Core/loading";
 import { prepareQueryParams } from "@/lib/helpers/Core/prepareQueryParams";
 import { toast } from "sonner";
+import SideBar from "../Dashboard/sidebar";
 
 export function Categories() {
   const router = useRouter();
@@ -188,7 +188,7 @@ export function Categories() {
                       className="w-60"
                     >
                       <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <Folder className="h-6 w-6 font-medium font-bold" />
+                        <Folder className="h-6 w-6  font-bold" />
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <EllipsisVertical
