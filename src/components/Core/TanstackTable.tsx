@@ -96,7 +96,7 @@ const TanStackTable: FC<pageProps> = ({
 
   return (
     <div className="overflow-x-auto w-full">
-      <div className="max-h-[600px] overflow-y-auto">
+      <div className="max-h-[500px] overflow-y-auto">
         <table className="min-w-full border-collapse border border-gray-300">
           <thead className="bg-gray-200 sticky top-0">
             {table.getHeaderGroups().map((headerGroup) => {
@@ -248,10 +248,10 @@ const TanStackTable: FC<pageProps> = ({
                 </tr>
               ))
             ) : !loading ? (
-              <tr>
-                <td colSpan={columns.length} className="text-center py-8">
+              <tr className="flex justify-center items-center w-full">
+                <td colSpan={6} className="text-center py-8">
                   <Image
-                    src="/NoDataImageAnalytics.svg"
+                    src="/No-Files.jpg"
                     alt="No Data"
                     height={150}
                     width={250}

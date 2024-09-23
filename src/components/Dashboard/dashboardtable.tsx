@@ -50,7 +50,13 @@ export function DashboardTable() {
   const getAllMyFiles = async (page: number) => {
     try {
       setLoading(true);
-      const response = await getMyFilesAPI(page, user?.access_token);
+      const response = await getMyFilesAPI({
+        page: 1,
+        limit: 10,
+        order_by: "uploaded_at",
+        order_type: "desc",
+        search_string: "",
+      });
       if (response?.success) {
         setFilesData(response.data);
         setPage(page + 1);

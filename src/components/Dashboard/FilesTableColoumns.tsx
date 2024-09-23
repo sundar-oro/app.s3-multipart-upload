@@ -23,7 +23,7 @@ export const FilesTableColumns = () => {
       maxWidth: "220px",
       minWidth: "220px",
       cell: (info: any) => {
-        return <span>{info.getValue()}</span>;
+        return <span>{info.getValue() || "--"}</span>;
       },
     },
     {
@@ -35,7 +35,11 @@ export const FilesTableColumns = () => {
       maxWidth: "220px",
       minWidth: "220px",
       cell: (info: any) => {
-        return <span>{convertToLocalDate(info.getValue())}</span>;
+        return (
+          <span>
+            {info.getValue() ? convertToLocalDate(info.getValue()) : "N/A"}
+          </span>
+        );
       },
     },
     {
@@ -47,7 +51,7 @@ export const FilesTableColumns = () => {
       maxWidth: "220px",
       minWidth: "220px",
       cell: (info: any) => {
-        return <span>{info.getValue()}</span>;
+        return <span>{info.getValue() || "---"}</span>;
       },
     },
     {
@@ -59,7 +63,7 @@ export const FilesTableColumns = () => {
       maxWidth: "220px",
       minWidth: "220px",
       cell: (info: any) => {
-        return <span>{formatSize(info.getValue())}</span>;
+        return <span>{formatSize(info.getValue() || 0)}</span>;
       },
     },
   ];

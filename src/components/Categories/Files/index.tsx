@@ -9,7 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { ListOrdered, PanelLeft, Table2 } from "lucide-react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 
 import { getAllFilesAPI, getMyFilesAPI } from "@/lib/services/files";
 import { RootState } from "@/redux";
@@ -52,6 +52,7 @@ export const formatSize = (sizeInBytes: number) => {
 
 const Files = () => {
   const router = useRouter();
+  const params = useSearchParams();
   const [page, setPage] = useState(1);
   const [showFileUpload, setShowFileUpload] = useState<any>(false);
   const [filesData, setFilesData] = useState<FileData[]>([]);
@@ -60,12 +61,15 @@ const Files = () => {
   const [noData, setNoData] = useState(false);
   const [listView, setListView] = useState(true);
   const [showMultipartUpload, setShowMultipartUpload] = useState(false);
+  const [paginationDetails, setPaginationDetails] = useState({});
 
   const lastFileRef = useRef<HTMLDivElement>(null);
   const fileListRef = useRef<HTMLDivElement>(null);
   const { file_id } = useParams();
   const user = useSelector((state: RootState) => state?.user);
-
+  const [searchParams, setSearchParams] = useState(
+    Object.fromEntries(new URLSearchParams(Array.from(params.entries())))
+  );
   const handleToggle = () => {
     setShowFileUpload((prevState: any) => !prevState);
     setShowMultipartUpload((prevState) => !prevState);
@@ -76,18 +80,36 @@ const Files = () => {
     handleToggle();
   };
 
-  const getAllFiles = async (page: number, isScrolling: boolean = false) => {
+  const getAllFiles = async ({
+    page = params.get("page") as string,
+    limit = params.get("limit") as string,
+    orderBy = params.get("order_by") as string,
+    orderType = params.get("order_type") as string,
+    searchValue = params.get("search_string") as string,
+  }: any) => {
+    let queryParams: any = {
+      page: page ? page : 1,
+      limit: limit ? limit : 10,
+    };
+    if (searchValue) {
+      queryParams["search_string"] = searchValue;
+    }
+    if (orderBy) {
+      queryParams["order_by"] = orderBy;
+    }
+    if (orderType) {
+      queryParams["order_type"] = orderType;
+    }
     try {
       setLoading(true);
-      const response = await getAllFilesAPI(page, file_id);
+      const response = await getAllFilesAPI(queryParams, file_id);
 
       if (response?.success) {
-        setFilesData(response.data);
-        setPage(page + 1);
+        console.log(response, "Fsdk883282");
+        let { data, ...rest } = response.data;
+        setPaginationDetails(rest);
+        setFilesData(data);
         showFileUpload(false);
-        if (response.data.length === 0) {
-          setNoData(true);
-        }
       }
     } catch (err) {
       console.error("Error fetching files:", err);
@@ -96,18 +118,33 @@ const Files = () => {
     }
   };
 
-  const getAllMyFiles = async (page: number, isScroll: boolean = false) => {
+  const getAllMyFiles = async ({
+    page = params.get("page") as string,
+    limit = params.get("limit") as string,
+    orderBy = params.get("order_by") as string,
+    orderType = params.get("order_type") as string,
+    searchValue = params.get("search_string") as string,
+  }: any) => {
     try {
+      let queryParams: any = {
+        page: page ? page : 1,
+        limit: limit ? limit : 10,
+      };
+      if (searchValue) {
+        queryParams["search_string"] = searchValue;
+      }
+      if (orderBy) {
+        queryParams["order_by"] = orderBy;
+      }
+      if (orderType) {
+        queryParams["order_type"] = orderType;
+      }
       setLoading(true);
-      const response = await getMyFilesAPI(page, user?.access_token);
-
+      const response = await getMyFilesAPI(queryParams);
       if (response?.success) {
-        setFilesData((prevFilesData) => [...prevFilesData, ...response.data]);
-        setPage(page + 1);
-
-        if (response.data.length === 0) {
-          setNoData(true);
-        }
+        let { data, ...rest } = response.data;
+        setPaginationDetails(rest);
+        setFilesData(data);
       }
     } catch (err) {
       console.error("Error fetching files:", err);
@@ -118,10 +155,10 @@ const Files = () => {
 
   useEffect(() => {
     if (file_id) {
-      getAllFiles(page);
+      getAllFiles({});
       setCategoryId(parseInt(Array.isArray(file_id) ? file_id[0] : file_id));
     } else {
-      getAllMyFiles(page);
+      getAllMyFiles({});
     }
   }, []);
 
@@ -134,7 +171,7 @@ const Files = () => {
         fileListContainer.scrollTop + fileListContainer.clientHeight >=
         fileListContainer.scrollHeight
       ) {
-        file_id ? getAllFiles(page, true) : getAllMyFiles(page, true);
+        file_id ? getAllFiles({ page }) : getAllMyFiles({ page });
       }
     };
 
@@ -186,26 +223,6 @@ const Files = () => {
               <SheetContent side="left"></SheetContent>
             </Sheet>
 
-            <Breadcrumb>
-              <BreadcrumbList>
-                <BreadcrumbItem>
-                  <BreadcrumbLink href="/">Home</BreadcrumbLink>
-                </BreadcrumbItem>
-                <BreadcrumbSeparator />
-                <BreadcrumbItem>
-                  <BreadcrumbLink href="/dashboard">Dashboard</BreadcrumbLink>
-                </BreadcrumbItem>
-                <BreadcrumbSeparator />
-                <BreadcrumbItem>
-                  <BreadcrumbLink href="/dashboard">Categories</BreadcrumbLink>
-                </BreadcrumbItem>
-                <BreadcrumbSeparator />
-                <BreadcrumbItem>
-                  <BreadcrumbLink href="/files">Files</BreadcrumbLink>
-                </BreadcrumbItem>
-              </BreadcrumbList>
-            </Breadcrumb>
-
             <div className="ml-auto flex space-x-4">
               <Table2
                 onClick={() => setListView(true)}
@@ -221,29 +238,39 @@ const Files = () => {
           {listView ? (
             <div>
               <h2 className="text-xl font-bold  ml-14">My Files</h2>
-
-              <MyListFiles filesData={filesData} />
+              {file_id ? (
+                <div className="fixed  right-6 space-x-4 flex">
+                  <Button
+                    variant="outline"
+                    className="shadow-lg"
+                    onClick={handleToggle}
+                  >
+                    +
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="shadow-lg"
+                    onClick={handleMultipartUploadToggle}
+                  >
+                    Multipart Upload
+                  </Button>
+                </div>
+              ) : (
+                ""
+              )}
+              <MyListFiles
+                filesData={filesData}
+                loading={loading}
+                searchParams={searchParams}
+                getAllMyFiles={file_id ? getAllFiles : getAllMyFiles}
+                paginationDetails={paginationDetails}
+              />
             </div>
           ) : (
             ""
           )}
         </div>
-        <div className="fixed bottom-6 right-6 space-x-4 flex">
-          <Button
-            variant="outline"
-            className="shadow-lg"
-            onClick={handleToggle}
-          >
-            +
-          </Button>
-          <Button
-            variant="outline"
-            className="shadow-lg"
-            onClick={handleMultipartUploadToggle}
-          >
-            Multipart Upload
-          </Button>
-        </div>
+
         <div>
           <Dialog
             open={showFileUpload}

@@ -69,7 +69,6 @@ const SideBar = ({
   };
 
   const getRecentCategory = async (page: number) => {
-    console.log("sss");
     let queryParams = prepareQueryParams({ page: page || 1, limit: 20 });
     setLoading(true);
     try {
@@ -135,9 +134,6 @@ const SideBar = ({
 
   const isActive = (href: string) => pathname.includes(href);
 
-  // const handleCategories = (categoryid: number) => {
-  //   router.push(`/categories/${categoryid}/files`);
-  // };
   useEffect(() => {
     getRecentCategory(1);
   }, []);
