@@ -11,7 +11,12 @@ import {
 } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { useParams, useRouter } from "next/navigation";
+import {
+  useParams,
+  usePathname,
+  useRouter,
+  useSearchParams,
+} from "next/navigation";
 
 import {
   Tooltip,
@@ -31,6 +36,15 @@ import MyListFiles from "./mylistfiles";
 import { FileData } from "@/lib/interfaces/files";
 import Loading from "@/components/Core/loading";
 import { Table2 } from "lucide-react";
+import { prepareQueryParams } from "@/lib/helpers/Core/prepareQueryParams";
+import { prepareURLEncodedParams } from "@/lib/helpers/prepareUrlEncodedParams";
+
+export interface fileapiprops {
+  page: number;
+  limit: number;
+  sort_by: string;
+  sort_type: string;
+}
 
 export const truncateFileName = (name: string, maxLength: number) => {
   // Remove the extension
@@ -53,6 +67,9 @@ export const formatSize = (sizeInBytes: number) => {
 
 const Files = () => {
   const router = useRouter();
+  const params = useSearchParams();
+  const pathname = usePathname();
+
   const [page, setPage] = useState(1);
   const [showFileUpload, setShowFileUpload] = useState(false);
   const [filesData, setFilesData] = useState<FileData[]>([]); // State for file list
@@ -108,10 +125,24 @@ const Files = () => {
     }
   };
 
-  const getAllMyFiles = async (page: number, isScroll: boolean = false) => {
+  const getAllMyFiles = async ({
+    page = Number(params.get("page")) || 1,
+    limit = Number(params.get("limit")) || 10,
+    sort_by = params.get("sort_by") as string,
+    sort_type = params.get("sort_type") as string,
+  }: // isScroll: boolean = false,
+  Partial<fileapiprops>) => {
     try {
+      const queryParams = prepareQueryParams({
+        page,
+        limit,
+        sort_by,
+        sort_type,
+      });
+      router.replace(prepareURLEncodedParams(pathname, queryParams));
+
       setLoading(true);
-      const response = await getMyFilesAPI(page, user?.access_token);
+      const response = await getMyFilesAPI(queryParams, user?.access_token);
 
       if (response?.success) {
         const newPage = page + 1;
@@ -156,7 +187,7 @@ const Files = () => {
         if (file_id) {
           getAllFiles(page, true); // Load more files
         } else {
-          getAllMyFiles(page, true);
+          getAllMyFiles({ page });
         }
       }
     };
@@ -172,7 +203,7 @@ const Files = () => {
     if (file_id) {
       getAllFiles(page, true);
     } else {
-      getAllMyFiles(page, true);
+      getAllMyFiles({ page });
     }
   }, []);
 
@@ -265,7 +296,7 @@ const Files = () => {
         <div className="flex flex-1 flex-col bg-muted/40">
           {/* Header */}
 
-          <header className=" sticky  ml-40 top-[10%] z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
+          <header className=" sticky  top-[10%] z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
             <Sheet>
               <SheetTrigger asChild>
                 <Button size="icon" variant="outline" className="sm:hidden">
@@ -295,13 +326,13 @@ const Files = () => {
               </BreadcrumbList>
             </Breadcrumb>
             <span className="flex justify-between items-center ml-90">
-              <Table2 onClick={() => setListView(true)} />
-              <ListOrdered onClick={() => setListView(false)} />
+              {/* <Table2 onClick={() => setListView(true)} />
+              <ListOrdered onClick={() => setListView(false)} /> */}
             </span>
           </header>
 
           {listView ? (
-            <div className="ml-40 mt-10 flex-grow flex flex-col justify-between p-6 ">
+            <div className=" mt-10 flex-grow flex flex-col justify-between p-6 ">
               {/* File List */}
               <div
                 ref={fileListRef} // Ref for scrolling

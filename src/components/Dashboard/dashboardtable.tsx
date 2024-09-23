@@ -145,13 +145,34 @@ export function DashboardTable() {
   }, []);
 
   return (
-    <div className="ml-40 mt-10 flex-grow flex flex-col justify-between p-6 w-[140%]">
+    <div className=" mt-10 flex-grow flex flex-col justify-between p-6 w-[140%]">
+      <h1>Recent Files</h1>
+      <br />
       <Card className="h-full">
         {/* <CardHeader className="px-7">
           <CardTitle>Recent Files</CardTitle>
         </CardHeader> */}
         <CardContent>
           <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>
+                  <strong>Title</strong>
+                </TableHead>
+                <TableHead>
+                  <strong>Uploaded Date</strong>
+                </TableHead>
+                <TableHead>
+                  <strong>Categories</strong>
+                </TableHead>
+                <TableHead>
+                  <strong>Type</strong>
+                </TableHead>
+                <TableHead>
+                  <strong>Size</strong>
+                </TableHead>
+              </TableRow>
+            </TableHeader>
             <TableBody>
               {filesData.length > 0 ? (
                 filesData.map((file) => (
@@ -170,6 +191,9 @@ export function DashboardTable() {
 
                     <TableCell className="hidden md:table-cell">
                       categorie {file.category_id}
+                    </TableCell>
+                    <TableCell className="hidden md:table-cell">
+                      {file.type}
                     </TableCell>
                     <TableCell className="hidden md:table-cell">
                       {formatSize(file.size)}

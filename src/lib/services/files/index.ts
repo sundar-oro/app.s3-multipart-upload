@@ -1,3 +1,4 @@
+import { prepareURLEncodedParams } from "@/lib/helpers/prepareUrlEncodedParams";
 import { $fetch } from "@/lib/servicehelpers/fetch";
 import { RootState } from "@/redux";
 import { useSelector } from "react-redux";
@@ -26,9 +27,13 @@ export const getAllFilesAPI = async (page :number ,file_id: string | string[]) =
   };
 
 
-  export const getMyFilesAPI = async (page :number,access_token : string) => {
+  export const getMyFilesAPI = async (queryParams: any,access_token : string) => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/files?page=${page}&limit=10`, {
+       const url = prepareURLEncodedParams(
+      `${process.env.NEXT_PUBLIC_API_URL}/files`,
+      queryParams
+    );
+      const res = await fetch(url, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",

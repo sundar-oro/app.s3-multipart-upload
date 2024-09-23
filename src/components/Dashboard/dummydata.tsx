@@ -61,7 +61,7 @@ const StatsData = () => {
   const bytesToMB = (bytes: number) => (bytes / (1024 * 1024)).toFixed(2);
 
   return (
-    <div className="ml-40 mt-0 flex-grow flex flex-col justify-between p-0   w-[90%] h-full">
+    <div className=" mt-0 flex-grow flex flex-col justify-between p-0   w-[90%] h-full">
       <Card className="overflow-hidden mb-0 w-130 mt-0 mr-0 bg-white shadow-lg p-4  px-3">
         {/* <CardHeader>
           <CardTitle>Storage Stats</CardTitle>
