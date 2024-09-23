@@ -3,8 +3,11 @@ import { Input } from "@/components/ui/input";
 import { prepareQueryParams } from "@/lib/helpers/Core/prepareQueryParams";
 import { prepareURLEncodedParams } from "@/lib/helpers/prepareUrlEncodedParams";
 import {
+  deleteCategoryAPI,
   getAllCategoriesAPI,
+  getSingleCategoryAPI,
   postCreateCategoryAPI,
+  updateCategoryAPI,
 } from "@/lib/services/categories";
 import Image from "next/image";
 import {
@@ -13,7 +16,28 @@ import {
   useRouter,
   useSearchParams,
 } from "next/navigation";
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+} from "@/components/ui/context-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
+import DeleteDialog from "../Core/deleteDialog";
+import { toast } from "sonner";
+import { Label } from "../ui/label";
+import { Button } from "../ui/button";
+import Loading from "../Core/loading";
+import { Loader2 } from "lucide-react";
 
 const CategoriesSideBar = ({
   categoryid,
@@ -32,10 +56,15 @@ const CategoriesSideBar = ({
   const [loading, setLoading] = useState(false);
   const [categoryData, setCategoryData] = useState<any[]>([]);
   const [page, setPage] = useState(1);
+  const [id, setId] = useState<number>(0);
+
   const [noData, setNoData] = useState(false);
   const [open, setOpen] = useState(false);
+  const [renameOpen, setRenameOpen] = useState<boolean>(false);
+  const [deleteid, setDeleteid] = useState<number>(0);
   const [search, setSearch] = useState(""); // Search field state
-  const [data, setData] = useState({ name: "", description: "" });
+  const [name, setName] = useState("");
+  const [recentCategoryId, setRecentCategoryId] = useState(0);
 
   // Search handler
   const handleSearchChange = (e: any) => {
@@ -50,20 +79,56 @@ const CategoriesSideBar = ({
     setOpen(false);
   };
 
-  const createCategories = async () => {
+  const handleRenameClose = () => {
+    setRenameOpen(false);
+    setId(0);
+    setName("");
+  };
+
+  const getSingleCategory = async (id: number) => {
     setLoading(true);
     try {
-      const payload = { ...data };
-      const response = await postCreateCategoryAPI(payload);
+      const response = await getSingleCategoryAPI(id);
+
       if (response?.status == 200 || response?.status == 201) {
-        setOpen(false);
-        router.push("/categories");
-        getAllCategories(1, false);
+        // toast.success(response?.data?.message);
+        console.log(response?.data?.data?.name);
+        setName(response?.data?.data?.name);
+        setId(id);
+        setRenameOpen(true);
+      } else {
+        throw response;
+      }
+    } catch (err: any) {
+      // errorPopper(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updateCategory = async () => {
+    setLoading(true);
+    try {
+      const payload = {
+        name: name,
+      };
+
+      const response: any = await updateCategoryAPI(id, payload);
+
+      if (response?.status == 200 || response?.status == 201) {
+        // toast.success(response?.data?.message);
+        setRenameOpen(false);
+        setId(0);
+        setName("");
+        await getAllCategories(1, false);
+      } else if (response.status === 422) {
+        // setErrMessages(response?.data?.errors);
       } else {
         throw response;
       }
     } catch (err: any) {
       console.error(err);
+      toast.error(err);
     } finally {
       setLoading(false);
     }
@@ -87,6 +152,7 @@ const CategoriesSideBar = ({
       if (response?.success) {
         const newPage = page + 1;
         const newData = response?.data?.data;
+        setRecentCategoryId(newData[0].id);
         if (isScrolling) {
           setCategoryData((prevData) => prevData.concat(newData));
         } else {
@@ -104,9 +170,28 @@ const CategoriesSideBar = ({
     }
   };
 
+  const deleteCategory = async () => {
+    setLoading(true);
+    try {
+      const response = await deleteCategoryAPI(deleteid);
+
+      if (response?.status == 200 || response?.status == 201) {
+        toast.success(response?.data?.message);
+        setOpen(false);
+        await getAllCategories(1, false);
+        router.replace(`/categories/${recentCategoryId}/files`);
+      } else {
+        throw response;
+      }
+    } catch (err: any) {
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleTextFieldChange = (e: any) => {
     const { name, value } = e.target;
-    setData((prev: any) => ({ ...prev, [name]: value }));
+    setName(value);
   };
 
   const handleCategoryFiles = (id: number) => {
@@ -129,6 +214,25 @@ const CategoriesSideBar = ({
     }
   };
 
+  const handleDeleteClick = (id: number) => {
+    setDeleteid(id);
+    setOpen(true);
+  };
+
+  // const handleMenu = (id: number) => {
+  //   setId(id);
+  //   getSingleCategory(id);
+  // };
+
+  // const handleClose = () => {
+  //   if (file_id) {
+  //     // setRenameOpen(false);
+  //     // setId(0);
+  //   } else {
+  //     setOpen(false);
+  //   }
+  // };
+
   useEffect(() => {
     const categorySideBar = categorySideBarRef.current;
     if (categorySideBar) {
@@ -146,48 +250,118 @@ const CategoriesSideBar = ({
   }, [search]);
 
   return (
-    <div className="flex flex-col h-screen w-60 bg-gray text-gray-800 p-4">
-      <div className="mt-14">
-        <Input
-          placeholder="Search categories..."
-          value={search}
-          type="search"
-          onChange={handleSearchChange}
-          className="w-full"
-        />
-      </div>
+    <>
+      <div className="flex flex-col h-screen w-60 bg-gray text-gray-800 p-4">
+        <div className="mt-14">
+          <Input
+            placeholder="Search categories..."
+            value={search}
+            type="search"
+            onChange={handleSearchChange}
+            className="w-full"
+          />
+        </div>
 
-      <div
-        ref={categorySideBarRef} // Use ref here to target scrollable div
-        className="flex-1 overflow-y-auto"
-      >
-        {categoryData.length > 0 ? (
-          categoryData.map((data, index) => (
-            <ul key={index} className="space-y-2 text-gray-600">
-              <li
-                onClick={() => handleCategoryFiles(data?.id)}
-                className={`flex items-center space-x-2 p-2 rounded-md cursor-pointer ${
-                  isActive(`${data?.id}`)
-                    ? "text-violet-500"
-                    : "hover:text-violet-500"
-                }`}
-              >
-                <Image
-                  src="/dashboard/dashboard.svg"
-                  alt="dashboard"
-                  width={20}
-                  height={20}
-                  className="transition-all duration-200"
-                />
-                <span>{data?.name}</span>
-              </li>
-            </ul>
-          ))
-        ) : (
-          <p className="text-gray-500">No categories found</p>
-        )}
+        <div
+          ref={categorySideBarRef} // Use ref here to target scrollable div
+          className="flex-1 overflow-y-auto"
+        >
+          {categoryData.length > 0 ? (
+            categoryData.map((data, index) => (
+              <ul key={index} className="space-y-2 text-gray-600">
+                <li
+                  onClick={() => handleCategoryFiles(data?.id)}
+                  className={`flex items-center space-x-2 p-2 rounded-md  ${
+                    isActive(`${data?.id}`)
+                      ? "text-violet-500"
+                      : "hover:text-violet-500"
+                  }`}
+                >
+                  <Image
+                    src="/dashboard/dashboard.svg"
+                    alt="dashboard"
+                    width={20}
+                    height={20}
+                    className="transition-all duration-200"
+                  />
+                  <ContextMenu>
+                    <ContextMenuTrigger>
+                      <span className="cursor-pointer">
+                        {data?.name.charAt(0).toUpperCase() +
+                          data?.name.slice(1).toLowerCase()}
+                      </span>{" "}
+                    </ContextMenuTrigger>
+                    <ContextMenuContent>
+                      <ContextMenuItem
+                        onClick={() => getSingleCategory(data?.id)}
+                      >
+                        Rename
+                      </ContextMenuItem>
+                      <ContextMenuItem
+                        onClick={() => handleDeleteClick(data?.id)}
+                      >
+                        Delete
+                      </ContextMenuItem>
+                    </ContextMenuContent>
+                  </ContextMenu>
+                </li>
+              </ul>
+            ))
+          ) : (
+            <p className="text-gray-500">No categories found</p>
+          )}
+        </div>
       </div>
-    </div>
+      {open ? (
+        <DeleteDialog
+          openOrNot={open}
+          onCancelClick={handleClose}
+          label="Are you sure you want to delete this Category?"
+          onOKClick={deleteCategory}
+          deleteLoading={loading}
+        />
+      ) : (
+        ""
+      )}
+
+      <Dialog open={renameOpen} onOpenChange={handleRenameClose}>
+        <DialogContent className="bg-white">
+          <DialogHeader>
+            <DialogTitle>Rename Category</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            {/* <div className="grid grid-cols-4 items-center gap-4"> */}
+            <Input
+              id="name"
+              name="name"
+              value={name}
+              className="col-span-3"
+              placeholder="Enter another Name for category"
+              onChange={handleTextFieldChange}
+            />
+            {/* <span>
+                {errMessages?.name && (
+                  <p className="text-red-500">{errMessages.name[0]}</p>
+                )}
+              </span> */}
+            {/* </div> */}
+          </div>
+          <DialogFooter>
+            <Button onClick={handleRenameClose} variant="ghost" type="submit">
+              Cancel
+            </Button>
+            <Button onClick={updateCategory} type="submit">
+              {loading ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                "Rename"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      <Loading loading={loading} />
+    </>
   );
 };
 

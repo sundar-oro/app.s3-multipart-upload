@@ -69,7 +69,8 @@ const SideBar = ({
   };
 
   const getRecentCategory = async (page: number) => {
-    let queryParams = prepareQueryParams({ page: page || 1, limit: 1 });
+    console.log("sss");
+    let queryParams = prepareQueryParams({ page: page || 1, limit: 20 });
     setLoading(true);
     try {
       const response = await getAllCategoriesAPI(queryParams);
@@ -96,7 +97,7 @@ const SideBar = ({
         setOpen(false);
         router.push(`/categories/${response?.data.data.id}/files`);
         setData({ name: "", description: "" });
-        getAllCategories && getAllCategories(1, false);
+        await getRecentCategory(1);
         toast.success(response?.data?.message);
         setErrMessages({});
         // setDeleteid(false);
@@ -126,7 +127,8 @@ const SideBar = ({
     }));
   };
 
-  const handleCategorySidebar = () => {
+  const handleCategorySidebar = async () => {
+    await getRecentCategory(1);
     router.push(`/categories/${recentCategoryId}/files`);
     setCategoryOpen(true);
   };
@@ -302,9 +304,8 @@ const SideBar = ({
                 {loading ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 ) : (
-                  ""
+                  "Create"
                 )}
-                Create
               </Button>
             </DialogFooter>
           </DialogContent>

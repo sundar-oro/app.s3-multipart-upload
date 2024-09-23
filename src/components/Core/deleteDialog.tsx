@@ -10,6 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 // import CircularProgress from "@mui/material/CircularProgress";
 import { Spinner } from "../ui/spinner";
+import { Loader2 } from "lucide-react";
 
 const DeleteDialog = ({
   openOrNot,
@@ -41,7 +42,13 @@ const DeleteDialog = ({
             ) : (
               "Yes! Delete"
             )} */}
-            {deleteLoading ? <Spinner /> : "Yes! Delete"}
+            {/* <div>{deleteLoading ? <Loader2 /> : "Yes! Delete"}</div> */}
+
+            {deleteLoading ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              "Yes! Delete"
+            )}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
