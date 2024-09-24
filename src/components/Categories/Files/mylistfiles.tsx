@@ -116,7 +116,6 @@ const MyListFiles = ({
       maxWidth: "60px",
     },
   ];
-  console.log();
 
   const capturePageNum = (value: number) => {
     getAllMyFiles({

@@ -48,8 +48,8 @@ const TanStackTable: FC<pageProps> = ({
   }) => {
     return (
       <div>
-        {searchParams?.order_by === header?.id ? (
-          searchParams?.order_type === "asc" ? (
+        {searchParams?.sort_by === header?.id ? (
+          searchParams?.sort_type == "asc" ? (
             <Image
               src="/sort/sort-asc.svg"
               height={8}
@@ -81,8 +81,8 @@ const TanStackTable: FC<pageProps> = ({
 
     let orderBy = header.id;
     let orderType = "asc";
-    if ((searchParams?.order_by as string) === header.id) {
-      orderType = searchParams?.order_type === "asc" ? "desc" : "";
+    if ((searchParams?.sort_by as string) === header.id) {
+      orderType = searchParams?.sort_type === "asc" ? "desc" : "";
       if (orderType === "") orderBy = "";
     }
 
@@ -100,10 +100,7 @@ const TanStackTable: FC<pageProps> = ({
         <table className="min-w-full border-collapse border border-gray-300">
           <thead className="bg-gray-200 sticky top-0">
             {table.getHeaderGroups().map((headerGroup) => {
-              if (
-                Object.keys(searchParams)?.length > 0 &&
-                searchParams?.order_by === "fdsfds"
-              ) {
+              if (Object.keys(searchParams)?.length > 0) {
                 return (
                   <tr className="border-b" key={headerGroup.id}>
                     {headerGroup.headers.map((header) => (

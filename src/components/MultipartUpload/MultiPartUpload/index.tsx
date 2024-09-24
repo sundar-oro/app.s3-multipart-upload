@@ -496,8 +496,12 @@ const MultiPartUploadComponent = ({
       const result = await response.json();
 
       if (response.ok) {
-        if (file_id) {
-          getAllFiles && getAllFiles(1);
+        if (from === "sidebar") {
+          location.reload();
+        } else {
+          if (file_id) {
+            getAllFiles && getAllFiles(1);
+          }
         }
       } else {
         setFileProgress((prev) => ({ ...prev, [index]: 99 }));
