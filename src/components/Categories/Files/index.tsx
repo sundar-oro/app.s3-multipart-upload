@@ -277,16 +277,12 @@ const FilesComponent = () => {
           >
             <DialogContent className="bg-white w-[80%]">
               <DialogTitle>New FileUpload</DialogTitle>
-              {showMultipartUpload ? (
-                <MultiPartUploadComponent />
-              ) : (
-                <FileUpload
-                  showFileUpload={showFileUpload}
-                  setShowFileUpload={setShowFileUpload}
-                  getAllFiles={getAllFiles}
-                  from="category"
-                />
-              )}
+              <MultiPartUploadComponent
+                showFileUpload={showFileUpload}
+                setShowFileUpload={setShowFileUpload}
+                getAllFiles={getAllFiles}
+                from="category"
+              />
               <DialogFooter></DialogFooter>
             </DialogContent>
           </Dialog>

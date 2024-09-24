@@ -21,8 +21,21 @@ import {
 import axios from "axios";
 import React, { useState } from "react";
 import UploadFiles from "./FilesUploadingPart";
+import { IUseFileUploadHook } from "@/lib/interfaces/files";
+import { useParams } from "next/navigation";
+import { RootState } from "@/redux";
+import { useSelector } from "react-redux";
+import { toast } from "sonner";
 
-const MultiPartUploadComponent: React.FC = () => {
+const MultiPartUploadComponent = ({
+  showFileUpload,
+  setShowFileUpload,
+  getAllFiles,
+  from,
+}: IUseFileUploadHook) => {
+  const { file_id } = useParams();
+  const user = useSelector((state: RootState) => state?.user?.access_token);
+
   const [multipleFiles, setMultipleFiles] = useState<File[]>([]);
   const [abortedFiles, setAbortedFiles] = useState<Set<number>>(new Set());
   const [fileProgress, setFileProgress] = useState<FileProgress>({});
@@ -34,12 +47,56 @@ const MultiPartUploadComponent: React.FC = () => {
     totalChunksParts: "",
     chunkSizeInBytes: 0,
   });
+  const [open, setOpen] = useState(true);
+  const [selectedCategoryId, setSelectedCategoryId] = useState<String>("");
   const [uploadFileDetails, setUploadFileDetails] = useState<any>([]);
   const [presignedUrlsMap, setPresignedUrlsMap] = useState<{
     [index: number]: string[];
   }>({});
+  const [fileTitles, setFileTitles] = useState<string[]>(
+    Array(multipleFiles.length).fill("")
+  );
 
-  const handleFileChange = async (files: File[]) => {
+  const handleFileTypes = (type: string) => {
+    const fileType = type.toLowerCase();
+
+    if (
+      fileType === "doc" ||
+      fileType === "docx" ||
+      fileType === "html" ||
+      fileType === "htm" ||
+      fileType === "odt" ||
+      fileType === "pdf" ||
+      fileType === "xls" ||
+      fileType === "xlsx" ||
+      fileType === "csv" ||
+      fileType === "ods" ||
+      fileType === "ppt" ||
+      fileType === "pptx" ||
+      fileType === "txt"
+    ) {
+      return "document";
+    }
+
+    if (
+      fileType === "jpeg" ||
+      fileType === "jpg" ||
+      fileType === "png" ||
+      fileType === "svg" ||
+      fileType === "gif" ||
+      fileType === "psd"
+    ) {
+      return "image";
+    }
+
+    if (fileType === "video" || fileType === "mp4" || fileType === "mp3") {
+      return "media";
+    }
+
+    return "other";
+  };
+
+  const handleFileChange = async (files: File[], start: any) => {
     const newFiles: any = Array.from(files);
     const combinedFiles = [...newFiles, ...multipleFiles];
 
@@ -51,29 +108,39 @@ const MultiPartUploadComponent: React.FC = () => {
       ),
     }));
     setFileErrors([]);
-
     for (const [index, file] of newFiles.entries()) {
-      try {
-        if (file.type.startsWith("video")) {
-          generateVideoThumbnail(file, previewImages, setPreviewImages);
-        } else if (file.type.startsWith("image")) {
-          previewImagesEvent(file, previewImages, setPreviewImages);
+      if (file.type.startsWith("video")) {
+        generateVideoThumbnail(file, previewImages, setPreviewImages);
+      } else if (file.type.startsWith("image")) {
+        previewImagesEvent(file, previewImages, setPreviewImages);
+      }
+    }
+  };
+
+  const uploadProgressStart = async (start: any) => {
+    const newFiles: any = Array.from(multipleFiles);
+
+    if (start) {
+      for (const [index, file] of newFiles.entries()) {
+        try {
+          const { chunkSize, totalChunks } = calculateChunks(file.size);
+          setFileFormData((prev) => ({
+            ...prev,
+            chunkSize: chunkSize.toString(),
+            totalChunksParts: totalChunks.toString(),
+            chunkSizeInBytes: chunkSize,
+          }));
+          if (file.size > 5242880) {
+            await startUploadEvent(file, index, chunkSize, totalChunks);
+          } else {
+            await uploadSinglePartFile(file, index);
+          }
+        } catch (error) {
+          setFileErrors((prev) => [
+            ...prev,
+            { file, id: index, reason: (error as Error).message },
+          ]);
         }
-
-        const { chunkSize, totalChunks } = calculateChunks(file.size);
-        setFileFormData((prev) => ({
-          ...prev,
-          chunkSize: chunkSize.toString(),
-          totalChunksParts: totalChunks.toString(),
-          chunkSizeInBytes: chunkSize,
-        }));
-
-        await startUploadEvent(file, index, chunkSize, totalChunks);
-      } catch (error) {
-        setFileErrors((prev) => [
-          ...prev,
-          { file, reason: (error as Error).message },
-        ]);
       }
     }
   };
@@ -84,13 +151,18 @@ const MultiPartUploadComponent: React.FC = () => {
     chunkSize: number,
     totalChunks: number
   ) => {
+    const categoriesId = from === "sidebar" ? selectedCategoryId : file_id;
+
     try {
-      const response: UploadFileResponse = await startUploadMultipartFileAPI({
-        original_name: file.name,
-        file_type: file.type,
-        file_size: file.size,
-        file_path: file.name,
-      });
+      const response: UploadFileResponse = await startUploadMultipartFileAPI(
+        {
+          original_name: file.name,
+          file_type: file.type,
+          file_size: file.size,
+          file_path: file.name,
+        },
+        categoriesId
+      );
 
       if (response?.success) {
         const { upload_id, file_key } = response.data;
@@ -118,7 +190,7 @@ const MultiPartUploadComponent: React.FC = () => {
     } catch (error) {
       setFileErrors((prev) => [
         ...prev,
-        { file, reason: (error as Error).message },
+        { file, id: index, reason: (error as Error).message },
       ]);
     }
   };
@@ -129,15 +201,20 @@ const MultiPartUploadComponent: React.FC = () => {
     key: string,
     totalChunks: number
   ) => {
+    const categoriesId = from === "sidebar" ? selectedCategoryId : file_id;
+
     if (presignedUrlsMap[fileIndex]) {
       return presignedUrlsMap[fileIndex];
     }
 
-    const response: PresignedUrlsResponse = await getPresignedUrlsForFileAPI({
-      file_key: key,
-      upload_id: uploadId,
-      parts: totalChunks,
-    });
+    const response: PresignedUrlsResponse = await getPresignedUrlsForFileAPI(
+      {
+        file_key: key,
+        upload_id: uploadId,
+        parts: totalChunks,
+      },
+      categoriesId
+    );
 
     if (!response.success) {
       throw new Error("Failed to get presigned URLs");
@@ -154,7 +231,8 @@ const MultiPartUploadComponent: React.FC = () => {
     index: number,
     key: string,
     chunkSize: number,
-    totalChunks: number
+    totalChunks: number,
+    unuploadedParts?: number[] | any
   ): Promise<void> => {
     const etags: { ETag: string; PartNumber: number }[] = [];
 
@@ -166,8 +244,11 @@ const MultiPartUploadComponent: React.FC = () => {
         totalChunks
       );
 
-      let completedChunks = 0; // Track completed chunks
+      let completedChunks = 0;
 
+      completedChunks =
+        totalChunks -
+        (unuploadedParts?.length ? unuploadedParts.length : totalChunks);
       const uploadPromises = Array.from({ length: totalChunks }).map(
         async (_, chunkIndex) => {
           const start = chunkIndex * chunkSize;
@@ -183,7 +264,6 @@ const MultiPartUploadComponent: React.FC = () => {
               end,
               file.size,
               (partNumber, chunkProgress) => {
-                // Calculate overall progress
                 const overallProgress =
                   ((completedChunks + chunkProgress / 100) / totalChunks) * 100;
 
@@ -195,9 +275,8 @@ const MultiPartUploadComponent: React.FC = () => {
             );
 
             etags.push({ ETag: etag, PartNumber: chunkIndex + 1 });
-            completedChunks++; // Increment completed chunks
+            completedChunks++;
 
-            // Update overall progress after chunk upload completion
             const overallProgress = (completedChunks / totalChunks) * 100;
             setFileProgress((prev) => ({
               ...prev,
@@ -206,14 +285,14 @@ const MultiPartUploadComponent: React.FC = () => {
           } catch (error) {
             setFileErrors((prev) => [
               ...prev,
-              { file, reason: (error as Error).message },
+              { file, id: index, reason: (error as Error).message },
             ]);
           }
         }
       );
 
       await Promise.all(uploadPromises);
-      await mergeFileChunks(uploadId, key, etags, index);
+      await mergeFileChunks(uploadId, key, etags, index, file);
       setPresignedUrlsMap((prev) => {
         const newMap = { ...prev };
         delete newMap[index];
@@ -222,7 +301,7 @@ const MultiPartUploadComponent: React.FC = () => {
     } catch (error) {
       setFileErrors((prev) => [
         ...prev,
-        { file, reason: (error as Error).message },
+        { file, id: index, reason: (error as Error).message },
       ]);
     }
   };
@@ -256,54 +335,52 @@ const MultiPartUploadComponent: React.FC = () => {
     uploadId: string,
     fileKey: string,
     etags: { ETag: string; PartNumber: number }[],
-    index: number
+    index: number,
+    file: File
   ) => {
+    const categoriesId = from === "sidebar" ? selectedCategoryId : file_id;
+
     const sortedEtags = etags
       .slice()
       .sort((a, b) => a.PartNumber - b.PartNumber);
 
     try {
-      const response = await mergeAllChunksAPI({
-        file_key: fileKey,
-        upload_id: uploadId,
-        parts: sortedEtags,
-      });
+      const response = await mergeAllChunksAPI(
+        {
+          file_key: fileKey,
+          upload_id: uploadId,
+          parts: sortedEtags,
+        },
+        categoriesId
+      );
       if (!response.success) {
         setFileProgress((prev) => ({ ...prev, [index]: 99 }));
         throw new Error("Failed to merge chunks");
       } else {
         setFileProgress((prev) => ({ ...prev, [index]: 100 }));
+        await saveFileMetadata(file, index);
       }
     } catch (error) {
       setFileErrors((prev) => [
         ...prev,
-        { file: { name: fileKey } as File, reason: (error as Error).message },
+        {
+          file: { name: fileKey } as File,
+          id: index,
+          reason: (error as Error).message,
+        },
       ]);
     }
   };
 
   const resumeUpload = async (file: File, index: number) => {
-    const body = {
-      upload_id: uploadFileDetails[0]?.upload_id,
-      file_key: uploadFileDetails[0]?.file_key,
-      parts: +fileFormData.totalChunksParts,
-    };
-    try {
-      const response = await resumeUploadAPI(body);
-      if (!response.success) {
-        throw new Error("Failed to resume upload");
-      }
-      const unuploadedParts = response.data || [];
-      await uploadFileIntoChunks(
-        uploadFileDetails[0]?.upload_id,
-        file,
-        index,
-        uploadFileDetails[0]?.file_key,
-        +fileFormData.chunkSizeInBytes,
-        +fileFormData.totalChunksParts
-      );
-    } catch (error) {
-      console.error(error);
+    let erros = [...fileErrors];
+    erros = erros.filter((error) => error.id !== index);
+    setFileErrors(erros);
+    if (file.size > 5242880) {
+      const { chunkSize, totalChunks } = calculateChunks(file.size);
+      await startUploadEvent(file, index, chunkSize, totalChunks);
+    } else {
+      await uploadSinglePartFile(file, index);
     }
   };
 
@@ -323,6 +400,116 @@ const MultiPartUploadComponent: React.FC = () => {
     }
   };
 
+  // Upload single part file which is less than 5 mb
+  const uploadSinglePartFile = async (file: File, index: number) => {
+    const categoriesId = from === "sidebar" ? selectedCategoryId : file_id;
+
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/categories/${categoriesId}/files/generate-presigned-url`,
+        {
+          method: "POST",
+          body: JSON.stringify({
+            fileName: file.name,
+            fileSize: file.size,
+            fileType: file.type,
+          }),
+        }
+      );
+      const result = await response.json();
+
+      if (response.ok) {
+        const { upload_id, file_key } = result.data;
+        setUploadFileDetails((prev: any) => [
+          ...prev,
+          {
+            upload_id,
+            file_key,
+            original_name: file.name,
+            name: file.name,
+            path: file.name,
+          },
+        ]);
+        await uploadFileToS3(result.data.generate_url, file, index);
+      } else {
+        throw new Error(result.message || "Failed to generate presigned URL");
+      }
+    } catch (error) {
+      setFileErrors((prev) => [
+        ...prev,
+        { file, id: index, reason: (error as Error).message },
+      ]);
+    }
+  };
+
+  const uploadFileToS3 = async (url: string, file: File, index: number) => {
+    try {
+      await axios.put(url, file, {
+        headers: {
+          "Content-Type": "application/octet-stream",
+        },
+        onUploadProgress: (progressEvent) => {
+          const chunkProgress = (progressEvent.loaded / file.size) * 100;
+          setFileProgress((prev) => ({
+            ...prev,
+            [index]: parseFloat(chunkProgress.toFixed(2)),
+          }));
+        },
+      });
+      await saveFileMetadata(file, index);
+    } catch (error) {
+      setFileErrors((prev) => [
+        ...prev,
+        { file, id: index, reason: (error as Error).message },
+      ]);
+    }
+  };
+
+  const saveFileMetadata = async (file: File, index: number) => {
+    const categoriesId = from === "sidebar" ? selectedCategoryId : file_id;
+
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/categories/${categoriesId}/files`,
+        {
+          method: "POST",
+          body: JSON.stringify({
+            title: fileTitles[index],
+            name: file.name,
+            size: file.size,
+            path: file.name,
+            mime_type: file.type,
+            type: handleFileTypes(file.type.split("/")[1]),
+            tags: ["image", "sample"],
+          }),
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: user,
+          },
+        }
+      );
+      const result = await response.json();
+
+      if (response.ok) {
+        if (file_id) {
+          getAllFiles && getAllFiles(1);
+        }
+      } else {
+        setFileProgress((prev) => ({ ...prev, [index]: 99 }));
+        throw new Error(result.errors?.title[0] || result.message);
+      }
+    } catch (error) {
+      setFileErrors((prev) => [
+        ...prev,
+        {
+          file: { name: file.name } as File,
+          id: index,
+          reason: (error as Error).message,
+        },
+      ]);
+    }
+  };
+
   return (
     <div>
       <UploadFiles
@@ -338,6 +525,9 @@ const MultiPartUploadComponent: React.FC = () => {
         resumeUpload={resumeUpload}
         abortFileUpload={abortFileUpload}
         abortedFiles={abortedFiles}
+        uploadProgressStart={uploadProgressStart}
+        fileTitles={fileTitles}
+        setFileTitles={setFileTitles}
       />
     </div>
   );

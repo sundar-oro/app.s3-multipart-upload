@@ -22,11 +22,13 @@ import {
 import { getSelectAllCategoriesAPI } from "@/lib/services/categories";
 import { IUseFileUploadHook } from "@/lib/interfaces/files";
 
-const useFileUploadHook = ({showFileUpload,
-    setShowFileUpload,
-    getAllFiles,
-    from,}:IUseFileUploadHook) => {
-    const router = useRouter();
+const useFileUploadHook = ({
+  showFileUpload,
+  setShowFileUpload,
+  getAllFiles,
+  from,
+}: IUseFileUploadHook) => {
+  const router = useRouter();
   const { file_id } = useParams();
 
   const [open, setOpen] = useState(true);
@@ -45,8 +47,7 @@ const useFileUploadHook = ({showFileUpload,
   });
   const [filestatus, setFileStatus] = useState<filedetails[]>([]);
   const [etagData, setEtagData] = useState<any[]>([]);
-  const [selectedCategoryId, setSelectedCategoryId] = useState<
-    String>("");
+  const [selectedCategoryId, setSelectedCategoryId] = useState<String>("");
   const [uploaddata, setUploadData] = useState<any>({
     parts: 0,
     upload_id: "",
@@ -73,7 +74,6 @@ const useFileUploadHook = ({showFileUpload,
       setParts(30);
       return 30;
     } else {
-      // For any file larger than 10GB
       setParts(50);
       return 50;
     }
@@ -108,11 +108,11 @@ const useFileUploadHook = ({showFileUpload,
 
   const handleFileTypes = (type: string) => {
     const fileType = type.toLowerCase();
-  
+
     if (
-      fileType === "doc" || 
+      fileType === "doc" ||
       fileType === "docx" ||
-      fileType === "html" || 
+      fileType === "html" ||
       fileType === "htm" ||
       fileType === "odt" ||
       fileType === "pdf" ||
@@ -126,7 +126,7 @@ const useFileUploadHook = ({showFileUpload,
     ) {
       return "document";
     }
-  
+
     if (
       fileType === "jpeg" ||
       fileType === "jpg" ||
@@ -137,18 +137,13 @@ const useFileUploadHook = ({showFileUpload,
     ) {
       return "image";
     }
-  
-    if (
-      fileType === "video" ||
-      fileType === "mp4" ||
-      fileType === "mp3"
-    ) {
+
+    if (fileType === "video" || fileType === "mp4" || fileType === "mp3") {
       return "media";
     }
-  
+
     return "other";
   };
-  
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -182,7 +177,7 @@ const useFileUploadHook = ({showFileUpload,
       });
 
       if (file.size > 5242880) {
-        await postapi(file);
+        await startMultipartUpload(file);
       } else {
         await getsinglepartpresignedurl(file);
       }
@@ -249,7 +244,6 @@ const useFileUploadHook = ({showFileUpload,
       const result = await response.json();
 
       if (response.ok) {
-        console.log(result);
         setUploadProgress(33);
         setUploadData(result?.data);
         await s3partfile(result?.data, file);
@@ -257,7 +251,6 @@ const useFileUploadHook = ({showFileUpload,
         throw result;
       }
     } catch (error) {
-      console.error("Failed to call API", error);
       updateFileStatus(file.name, file.size, file.type, "failed");
       handleClear();
       setTimeout(() => {
@@ -274,7 +267,6 @@ const useFileUploadHook = ({showFileUpload,
       });
 
       if (response.ok) {
-        console.log("Single-part file upload successful");
         setUploadProgress(66);
         await addsinglepartfile(data, file);
       } else {
@@ -354,10 +346,8 @@ const useFileUploadHook = ({showFileUpload,
     getsinglepartpresignedurl(file);
   };
 
-  console.log(selectedCategoryId);
-
   // Multi-part upload (file > 5 MB)
-  const postapi = async (file: File) => {
+  const startMultipartUpload = async (file: File) => {
     // handleParts(file.size);
     try {
       const response = await fetch(
@@ -564,20 +554,20 @@ const useFileUploadHook = ({showFileUpload,
     getAllCategories();
   }, []);
 
-return {
+  return {
     getRootProps,
     getInputProps,
     selectedFiles,
-uploadProgress,
-uploaddata,
-handleChange,
-setSelectedCategoryId,
-categoriesData,
-filestatus,
-handleReUpload,
-open,
-handleCancel,
-handleUpload,
-}
-}
+    uploadProgress,
+    uploaddata,
+    handleChange,
+    setSelectedCategoryId,
+    categoriesData,
+    filestatus,
+    handleReUpload,
+    open,
+    handleCancel,
+    handleUpload,
+  };
+};
 export default useFileUploadHook;

@@ -51,6 +51,7 @@ export type FileProgress = Record<number, number>;
 
 export interface FileError {
   file: File;
+  id: number;
   reason: string;
 }
 
@@ -67,7 +68,7 @@ export interface FileFormData {
 }
 
 export interface uploadImagesComponentProps {
-  handleFileChange: (files: File[]) => void;
+  handleFileChange: (files: File[], start: any) => void;
   multipleFiles: File[];
   previewImages: { fileIndex: string; previewUrl: string }[];
   fileProgress: FileProgress;
@@ -79,4 +80,7 @@ export interface uploadImagesComponentProps {
   resumeUpload: (file: File, index: number) => void;
   abortFileUpload: (index: number) => void;
   abortedFiles: Set<number>;
+  uploadProgressStart: any;
+  fileTitles: any;
+  setFileTitles: any;
 }

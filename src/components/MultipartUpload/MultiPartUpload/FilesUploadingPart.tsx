@@ -20,14 +20,20 @@ const UploadFiles: React.FC<uploadImagesComponentProps> = ({
   resumeUpload,
   abortFileUpload,
   abortedFiles,
+  uploadProgressStart,
+  fileTitles,
+  setFileTitles,
 }) => {
   const [file, setFile] = useState<File[]>([]);
-  const [error, setError] = useState<string | null>(null);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     if (acceptedFiles.length > 0) {
       setFile(acceptedFiles);
-      handleFileChange(acceptedFiles);
+      handleFileChange(acceptedFiles, false);
+      setFileTitles((prev: any) => [
+        ...prev,
+        ...Array(acceptedFiles.length).fill(""),
+      ]);
     }
   }, []);
 
@@ -44,15 +50,30 @@ const UploadFiles: React.FC<uploadImagesComponentProps> = ({
 
   const removeFileAfterAdding = (index: number) => {
     const updatedFiles = multipleFiles.filter((_, i) => i !== index);
+    const updatedTitles = fileTitles.filter((_: any, i: any) => i !== index);
     const updatedProgress = { ...fileProgress };
     delete updatedProgress[index];
     setMultipleFiles(updatedFiles);
     setFileProgress(updatedProgress);
+    setFileTitles(updatedTitles);
   };
 
   const retryUpload = (file: File, index: number) => {
     resumeUpload(file, index);
   };
+
+  const handleTitleChange = (index: number, title: string) => {
+    const updatedTitles = [...fileTitles];
+    updatedTitles[index] = title;
+    setFileTitles(updatedTitles);
+  };
+
+  const allTitlesProvided = fileTitles.every(
+    (title: any) => title.trim() !== ""
+  );
+  const allFilesUploaded =
+    multipleFiles.length > 0 &&
+    multipleFiles.every((_, index) => fileProgress[index] === 100);
 
   return (
     <div className="p-4 bg-white rounded-lg shadow-md">
@@ -78,78 +99,113 @@ const UploadFiles: React.FC<uploadImagesComponentProps> = ({
           )}
         </div>
       </div>
-      {/* <button onClick={() => handleFileChange(file)}>Upload</button> */}
-      <div className="mt-4">
-        {multipleFiles.map((item: File, index: number) => (
-          <div
-            className="flex items-center mb-2 p-2 bg-gray-100 rounded-md"
-            key={index}
-          >
-            <img
-              alt={item.name}
-              className="w-12 h-12 object-cover mr-2"
-              src={
-                previewImages.find((e) => e.fileIndex === item.name)?.previewUrl
-                  ? previewImages.find((e) => e.fileIndex === item.name)
-                      ?.previewUrl
-                  : item.type.includes("application/pdf")
-                  ? "/pdf-icon1.png"
-                  : "/doc-icon.png"
-              }
-            />
-            <div className="flex-1">
-              <p className="text-sm font-semibold">
-                {item.name.length > 15
-                  ? `${item.name.slice(0, 12)}...`
-                  : item.name}{" "}
-                <span className="text-gray-500">({item.type})</span>
-              </p>
-              <Progress
-                value={fileProgress[index]}
-                className="my-1 bg-gray-300"
-              />
-              <div className="flex justify-between items-center">
-                <span className="text-xs text-gray-500">
-                  {fileProgress[index]?.toFixed(2)}%
-                </span>
-                {fileErrors[index] ? (
-                  <div className="text-red-500 text-xs">
-                    {fileErrors[index].reason || "Upload Failed"}
-                  </div>
-                ) : (
-                  <span className="text-xs text-gray-500">
-                    {bytesToMB(item.size).toFixed(2)} MB
-                  </span>
-                )}
-              </div>
-              <div className="flex justify-end mt-1">
-                {abortedFiles.has(index) ? (
-                  <p className="text-red-500 text-xs">Canceled</p>
-                ) : fileProgress[index] === 100 ? (
-                  <CheckCircle className="text-green-500 w-5 h-5 mr-2" />
-                ) : (
-                  <Button
-                    onClick={() =>
-                      fileErrors[index]
-                        ? retryUpload(item, index)
-                        : abortFileUpload(index)
-                    }
-                    className="text-sm"
-                  >
-                    {fileErrors[index] ? "Retry" : "Cancel"}
-                  </Button>
-                )}
-              </div>
-            </div>
-            <Button
-              onClick={() => removeFileAfterAdding(index)}
-              className="ml-2 text-red-500"
-              disabled={fileProgress[index] !== 100}
+
+      <div className="mt-4 max-h-[250px] overflow-auto">
+        {multipleFiles.map((item: File, index: number) => {
+          const error = fileErrors.find((error: any) => error.id === index);
+
+          return (
+            <div
+              className="flex items-center mb-2 p-2 bg-gray-100 rounded-md"
+              key={index}
             >
-              <X className="w-4 h-4" />
-            </Button>
-          </div>
-        ))}
+              <img
+                alt={item.name}
+                className="w-12 h-12 object-cover mr-2"
+                src={
+                  previewImages.find((e) => e.fileIndex === item.name)
+                    ?.previewUrl
+                    ? previewImages.find((e) => e.fileIndex === item.name)
+                        ?.previewUrl
+                    : item.type.includes("application/pdf")
+                    ? "/pdf-files.svg"
+                    : item.type.includes("doc")
+                    ? "doc-files.svg"
+                    : "other-files.svg"
+                }
+                onError={(e) => {
+                  e.currentTarget.onerror = null;
+                  e.currentTarget.src = "/No-Preview-1.jpg";
+                }}
+              />
+              <div className="flex-1">
+                <p className="text-sm font-semibold">
+                  {item.name.length > 15
+                    ? `${item.name.slice(0, 12)}...`
+                    : item.name}{" "}
+                  <span className="text-gray-500">({item.type})</span>
+                </p>
+                <input
+                  type="text"
+                  placeholder="Enter title"
+                  className="border rounded p-1 mt-1 w-full"
+                  value={fileTitles[index] || ""}
+                  onChange={(e) => handleTitleChange(index, e.target.value)}
+                />
+                <Progress
+                  value={fileProgress[index]}
+                  className="my-1 bg-gray-300"
+                />
+                <div className="flex justify-between items-center">
+                  <span className="text-xs text-gray-500">
+                    {fileProgress[index]?.toFixed(2)}%
+                  </span>
+                  {error ? (
+                    <div className="text-red-500 text-xs">
+                      {error.reason || "Upload Failed"}
+                    </div>
+                  ) : (
+                    <span className="text-xs text-gray-500">
+                      {bytesToMB(item.size).toFixed(2)} MB
+                    </span>
+                  )}
+                </div>
+                <div className="flex justify-end mt-1">
+                  {fileProgress[index] === 100 ? (
+                    <CheckCircle className="text-green-500 w-5 h-5 mr-2" />
+                  ) : error ? (
+                    <Button
+                      onClick={() => retryUpload(item, index)}
+                      className="text-sm"
+                    >
+                      Retry
+                    </Button>
+                  ) : (
+                    ""
+                  )}
+                </div>
+              </div>
+              <Button
+                onClick={() => removeFileAfterAdding(index)}
+                className="ml-2 text-red-500"
+                disabled={fileProgress[index] !== 100}
+              >
+                <X className="w-4 h-4" />
+              </Button>
+            </div>
+          );
+        })}
+      </div>
+      <div className="mt-4">
+        <Button
+          onClick={() => uploadProgressStart(true)}
+          disabled={
+            !file.length ||
+            fileErrors.length > 0 ||
+            multipleFiles.length === 0 ||
+            allFilesUploaded
+          }
+          className={`w-full ${
+            !file.length ||
+            fileErrors.length > 0 ||
+            multipleFiles.length === 0 ||
+            allFilesUploaded
+              ? "opacity-50 cursor-not-allowed"
+              : ""
+          }`}
+        >
+          Upload
+        </Button>
       </div>
     </div>
   );
