@@ -148,24 +148,28 @@ const SideBar = ({
         <nav className="flex flex-col h-full w-60 bg-white text-gray-800 py-4 px-3 gap-9">
           <div className="mt-[20%]">
             <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button className="flex items-center justify-center w-full py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+              <DropdownMenuTrigger asChild className="cursor-pointer">
+                <Button className="flex items-center justify-center  cursor-pointer w-full py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
                   <span>+ New</span>
                 </Button>
                 {/* <Button variant="outline">Open</Button> */}
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56">
+              <DropdownMenuContent className="w-56 cursor-pointer">
                 <DropdownMenuGroup>
-                  <DropdownMenuItem onClick={handleCreate}>
+                  <DropdownMenuItem
+                    className="cursor-pointer"
+                    onClick={handleCreate}
+                  >
                     <Folder className="mr-2 h-4 w-4" />
                     <span>New Category</span>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem>
+                  <DropdownMenuItem
+                    className="cursor-pointer"
+                    onClick={() => setShowFileUpload(true)}
+                  >
                     <File className="mr-2 h-4 w-4" />
-                    <span onClick={() => setShowFileUpload(true)}>
-                      File Upload
-                    </span>
+                    <span>File Upload</span>
                   </DropdownMenuItem>
                 </DropdownMenuGroup>
               </DropdownMenuContent>
@@ -176,7 +180,7 @@ const SideBar = ({
             <li>
               <Link
                 href="/dashboard"
-                className={`flex items-center space-x-3 p-2 rounded-md ${
+                className={`flex items-center  space-x-3 p-2 rounded-md ${
                   isActive("/dashboard") ? "bg-gray-200" : "hover:bg-gray-200"
                 }`}
               >
@@ -220,7 +224,7 @@ const SideBar = ({
                   width={20}
                   height={20}
                 />
-                <div className="flex justify-between items-center">
+                <div className="flex justify-between items-center cursor-pointer">
                   <span>Categories</span>
                   {categoryOpen ? <ChevronRight /> : ""}
                 </div>
@@ -331,6 +335,7 @@ const SideBar = ({
           <FileUpload
             showFileUpload={showFileUpload}
             setShowFileUpload={setShowFileUpload}
+            from="sidebar"
           />
 
           <DialogFooter></DialogFooter>

@@ -284,6 +284,7 @@ const Files = () => {
                   showFileUpload={showFileUpload}
                   setShowFileUpload={setShowFileUpload}
                   getAllFiles={getAllFiles}
+                  from="category"
                 />
               )}
               <DialogFooter></DialogFooter>
