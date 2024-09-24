@@ -37,7 +37,7 @@ import FileUpload from "./filesupload";
 import MyListFiles from "./mylistfiles";
 
 // Helper functions for file name truncation and size formatting
-export const truncateFileName = (name: string, maxLength: number) => {
+const truncateFileName = (name: string, maxLength: number) => {
   const baseName = name.split(".")[0];
   return baseName.length <= maxLength
     ? baseName
@@ -50,7 +50,7 @@ export const formatSize = (sizeInBytes: number) => {
     : `${(sizeInBytes / 1048576).toFixed(2)} MB`;
 };
 
-const Files = () => {
+const FilesComponent = () => {
   const router = useRouter();
   const params = useSearchParams();
   const [page, setPage] = useState(1);
@@ -296,4 +296,4 @@ const Files = () => {
   );
 };
 
-export default Files;
+export default FilesComponent;

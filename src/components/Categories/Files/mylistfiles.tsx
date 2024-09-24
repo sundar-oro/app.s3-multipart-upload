@@ -1,4 +1,4 @@
-import { TablePaginationComponent } from "@/components/Core/TablePagination";
+import PaginationComponent from "@/components/Core/TablePagination";
 import TanStackTable from "@/components/Core/TanstackTable";
 import { FilesTableColumns } from "@/components/Dashboard/FilesTableColoumns";
 
@@ -37,7 +37,7 @@ const MyListFiles = ({
         />
       </div>
       <div className="mb-10 ">
-        <TablePaginationComponent
+        <PaginationComponent
           captureRowPerItems={captureRowPerItems}
           capturePageNum={capturePageNum}
           paginationDetails={paginationDetails}

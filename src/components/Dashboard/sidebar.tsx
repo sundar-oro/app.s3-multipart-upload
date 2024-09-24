@@ -145,8 +145,8 @@ const SideBar = ({
   return (
     <>
       <div className="flex">
-        <nav className="flex flex-col h-full w-60 bg-white text-gray-800 py-4 px-3 gap-9">
-          <div className="mt-[20%]">
+        <nav className="flex flex-col h-full  bg-white text-gray-800 py-4 px-3 gap-9">
+          <div className="mt-[40%]">
             <DropdownMenu>
               <DropdownMenuTrigger asChild className="cursor-pointer">
                 <Button className="flex items-center justify-center  cursor-pointer w-full py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
