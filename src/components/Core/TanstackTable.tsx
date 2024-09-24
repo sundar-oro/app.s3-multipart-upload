@@ -25,7 +25,7 @@ const TanStackTable: FC<pageProps> = ({
   getData,
 }) => {
   const [sorting, setSorting] = useState<SortingState>([]);
-  let removeSortingForColumnIds = ["serial", "id", "month_year"];
+  let removeSortingForColumnIds = ["serial", "id", "month_year", "actions"];
 
   const table = useReactTable({
     columns,
@@ -46,29 +46,33 @@ const TanStackTable: FC<pageProps> = ({
     searchParams: any;
     header: any;
   }) => {
-    return (
-      <div>
-        {searchParams?.sort_by === header?.id ? (
-          searchParams?.sort_type == "asc" ? (
-            <Image
-              src="/sort/sort-asc.svg"
-              height={8}
-              width={8}
-              alt="Sort Asc"
-            />
+    if (removeSortingForColumnIds?.includes(header?.id)) {
+      return <></>;
+    } else {
+      return (
+        <div>
+          {searchParams?.sort_by === header?.id ? (
+            searchParams?.sort_type == "asc" ? (
+              <Image
+                src="/sort/sort-asc.svg"
+                height={8}
+                width={8}
+                alt="Sort Asc"
+              />
+            ) : (
+              <Image
+                src="/sort/sort-desc.svg"
+                height={8}
+                width={8}
+                alt="Sort Desc"
+              />
+            )
           ) : (
-            <Image
-              src="/sort/sort-desc.svg"
-              height={8}
-              width={8}
-              alt="Sort Desc"
-            />
-          )
-        ) : (
-          <Image src="/sort/un-sort.svg" height={8} width={8} alt="Unsort" />
-        )}
-      </div>
-    );
+            <Image src="/sort/un-sort.svg" height={8} width={8} alt="Unsort" />
+          )}
+        </div>
+      );
+    }
   };
 
   const getWidth = (id: string) => {

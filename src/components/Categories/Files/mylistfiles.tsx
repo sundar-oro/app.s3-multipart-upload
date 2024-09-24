@@ -156,7 +156,7 @@ const MyListFiles = ({
       <DeleteDialog
         openOrNot={open}
         onCancelClick={() => setOpen(false)}
-        label="Are you sure you want to delete this Category?"
+        label="Are you sure you want to delete this file?"
         onOKClick={handleDeleteClick}
         deleteLoading={loading}
       />
