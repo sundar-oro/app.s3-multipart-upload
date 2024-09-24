@@ -159,7 +159,7 @@ const MultiPartUploadComponent = ({
     const categoriesId = from === "sidebar" ? selectedCategoryId : file_id;
 
     try {
-      const response: UploadFileResponse = await startUploadMultipartFileAPI(
+      const response: any = await startUploadMultipartFileAPI(
         {
           original_name: file.name,
           file_type: file.type,
@@ -175,10 +175,10 @@ const MultiPartUploadComponent = ({
           ...prev,
           {
             upload_id,
-            file_key,
+            file_key: response.data?.file_key,
             original_name: file.name,
             name: file.name,
-            path: file.name,
+            path: response.data?.file_key,
           },
         ]);
         await uploadFileIntoChunks(
@@ -492,7 +492,7 @@ const MultiPartUploadComponent = ({
             title: fileTitles[index],
             name: file.name,
             size: file.size,
-            path: path,
+            path: path || file.name,
             mime_type: file.type,
             type: handleFileTypes(file.type.split("/")[1]),
             tags: ["image", "sample"],
@@ -506,12 +506,8 @@ const MultiPartUploadComponent = ({
       const result = await response.json();
 
       if (response.ok) {
-        if (from === "sidebar") {
-          location.reload();
-        } else {
-          if (file_id) {
-            getAllFiles && getAllFiles(1);
-          }
+        if (file_id) {
+          getAllFiles && getAllFiles(1);
         }
       } else {
         setFileProgress((prev) => ({ ...prev, [index]: 99 }));
@@ -563,7 +559,6 @@ const MultiPartUploadComponent = ({
       {from == "sidebar" && (
         <div className="mt-10">
           <Select
-            isDisabled={!multipleFiles?.length}
             options={categoriesData}
             placeholder="Select Category"
             onChange={handleChange}
@@ -590,6 +585,7 @@ const MultiPartUploadComponent = ({
         selectedCategoryId={selectedCategoryId}
         setSelectedCategoryId={setSelectedCategoryId}
         setShowFileUpload={setShowFileUpload}
+        from={from}
       />
     </div>
   );

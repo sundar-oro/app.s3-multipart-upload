@@ -86,4 +86,5 @@ export interface uploadImagesComponentProps {
   selectedCategoryId: any;
   setSelectedCategoryId: any;
   setShowFileUpload: any;
+  from: string;
 }

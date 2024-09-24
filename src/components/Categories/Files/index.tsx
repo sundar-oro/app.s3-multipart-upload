@@ -347,7 +347,7 @@ const FilesComponent = () => {
               )}
               <div className="mt-8 ml-10 flex items-center space-x-4">
                 <Input
-                  placeholder="Search Files..."
+                  placeholder="Search Title..."
                   value={search}
                   type="search"
                   onChange={handleSearchChange}
@@ -355,7 +355,6 @@ const FilesComponent = () => {
                 />
 
                 <DateRangePicker
-                  showOneCalendar
                   ranges={predefinedRanges}
                   value={selectedDates}
                   onChange={handleDateChange}

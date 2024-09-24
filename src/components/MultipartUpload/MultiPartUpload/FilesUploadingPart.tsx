@@ -4,6 +4,7 @@ import { Progress } from "@/components/ui/progress";
 import { bytesToMB } from "@/lib/helpers/uploadHelpers";
 import { uploadImagesComponentProps } from "@/lib/interfaces";
 import { CheckCircle, Upload, X } from "lucide-react";
+import { useParams } from "next/navigation";
 import React, { useCallback, useState } from "react";
 import { useDropzone } from "react-dropzone";
 
@@ -26,7 +27,10 @@ const UploadFiles: React.FC<uploadImagesComponentProps> = ({
   selectedCategoryId,
   setSelectedCategoryId,
   setShowFileUpload,
+  from,
 }) => {
+  const { file_id } = useParams();
+
   const [file, setFile] = useState<File[]>([]);
   const [startUploading, setStartUploading] = useState(false);
   const onDrop = useCallback((acceptedFiles: File[]) => {
@@ -194,9 +198,12 @@ const UploadFiles: React.FC<uploadImagesComponentProps> = ({
           onClick={() => {
             setShowFileUpload(false);
             setStartUploading(false);
+            if (from == "sidebar") {
+              location.reload();
+            }
           }}
         >
-          Cancel
+          Close
         </Button>
         <Button
           onClick={() => {
@@ -208,14 +215,18 @@ const UploadFiles: React.FC<uploadImagesComponentProps> = ({
             fileErrors.length > 0 ||
             multipleFiles.length === 0 ||
             allFilesUploaded ||
-            startUploading
+            startUploading ||
+            !selectedCategoryId ||
+            !allTitlesProvided
           }
           className={`w-[50%] ${
             !file.length ||
             fileErrors.length > 0 ||
             multipleFiles.length === 0 ||
             allFilesUploaded ||
-            startUploading
+            startUploading ||
+            !selectedCategoryId ||
+            !allTitlesProvided
               ? "opacity-50 cursor-not-allowed"
               : ""
           }`}
