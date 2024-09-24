@@ -363,7 +363,7 @@ const MultiPartUploadComponent = ({
         throw new Error("Failed to merge chunks");
       } else {
         setFileProgress((prev) => ({ ...prev, [index]: 100 }));
-        await saveFileMetadata(file, index);
+        await saveFileMetadata(file, index, uploadFileDetails[index]?.file_key);
       }
     } catch (error) {
       setFileErrors((prev) => [
@@ -435,7 +435,12 @@ const MultiPartUploadComponent = ({
             path: file.name,
           },
         ]);
-        await uploadFileToS3(result.data.generate_url, file, index);
+        await uploadFileToS3(
+          result.data.generate_url,
+          file,
+          index,
+          result?.data.path
+        );
       } else {
         throw new Error(result.message || "Failed to generate presigned URL");
       }
@@ -447,7 +452,12 @@ const MultiPartUploadComponent = ({
     }
   };
 
-  const uploadFileToS3 = async (url: string, file: File, index: number) => {
+  const uploadFileToS3 = async (
+    url: string,
+    file: File,
+    index: number,
+    path: any
+  ) => {
     try {
       await axios.put(url, file, {
         headers: {
@@ -461,7 +471,7 @@ const MultiPartUploadComponent = ({
           }));
         },
       });
-      await saveFileMetadata(file, index);
+      await saveFileMetadata(file, index, path);
     } catch (error) {
       setFileErrors((prev) => [
         ...prev,
@@ -470,7 +480,7 @@ const MultiPartUploadComponent = ({
     }
   };
 
-  const saveFileMetadata = async (file: File, index: number) => {
+  const saveFileMetadata = async (file: File, index: number, path: any) => {
     const categoriesId = from === "sidebar" ? selectedCategoryId : file_id;
 
     try {
@@ -482,7 +492,7 @@ const MultiPartUploadComponent = ({
             title: fileTitles[index],
             name: file.name,
             size: file.size,
-            path: file.name,
+            path: path,
             mime_type: file.type,
             type: handleFileTypes(file.type.split("/")[1]),
             tags: ["image", "sample"],

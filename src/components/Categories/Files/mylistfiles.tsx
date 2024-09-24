@@ -75,7 +75,6 @@ const MyListFiles = ({
       id: "actions",
       cell: (info: any) => {
         const totalObj = info.getValue();
-        const router = useRouter();
         return (
           <div className="flex ">
             <ul className="flex">

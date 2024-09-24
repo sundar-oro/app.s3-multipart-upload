@@ -28,7 +28,7 @@ const UploadFiles: React.FC<uploadImagesComponentProps> = ({
   setShowFileUpload,
 }) => {
   const [file, setFile] = useState<File[]>([]);
-
+  const [startUploading, setStartUploading] = useState(false);
   const onDrop = useCallback((acceptedFiles: File[]) => {
     if (acceptedFiles.length > 0) {
       setFile(acceptedFiles);
@@ -190,20 +190,32 @@ const UploadFiles: React.FC<uploadImagesComponentProps> = ({
         })}
       </div>
       <div className="mt-4 flex  items-center justify-between">
-        <Button onClick={() => setShowFileUpload(false)}>Cancel</Button>
         <Button
-          onClick={() => uploadProgressStart(true)}
+          onClick={() => {
+            setShowFileUpload(false);
+            setStartUploading(false);
+          }}
+        >
+          Cancel
+        </Button>
+        <Button
+          onClick={() => {
+            uploadProgressStart(true);
+            setStartUploading(true);
+          }}
           disabled={
             !file.length ||
             fileErrors.length > 0 ||
             multipleFiles.length === 0 ||
-            allFilesUploaded
+            allFilesUploaded ||
+            startUploading
           }
           className={`w-[50%] ${
             !file.length ||
             fileErrors.length > 0 ||
             multipleFiles.length === 0 ||
-            allFilesUploaded
+            allFilesUploaded ||
+            startUploading
               ? "opacity-50 cursor-not-allowed"
               : ""
           }`}
