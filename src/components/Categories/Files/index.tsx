@@ -280,11 +280,12 @@ const FilesComponent = () => {
               {showMultipartUpload ? (
                 <MultiPartUploadComponent />
               ) : (
-                <FileUpload
-                  showFileUpload={showFileUpload}
-                  setShowFileUpload={setShowFileUpload}
-                  getAllFiles={getAllFiles}
-                />
+                // <FileUpload
+                //   showFileUpload={showFileUpload}
+                //   setShowFileUpload={setShowFileUpload}
+                //   getAllFiles={getAllFiles}
+                // />
+                <MultiPartUploadComponent />
               )}
               <DialogFooter></DialogFooter>
             </DialogContent>

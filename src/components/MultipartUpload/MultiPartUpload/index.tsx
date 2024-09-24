@@ -1,5 +1,8 @@
-import React, { useState } from "react";
-import UploadFiles from "./FilesUploadingPart";
+import {
+  calculateChunks,
+  generateVideoThumbnail,
+  previewImagesEvent,
+} from "@/lib/helpers/uploadHelpers";
 import {
   FileError,
   FileFormData,
@@ -9,12 +12,6 @@ import {
   UploadFileResponse,
 } from "@/lib/interfaces";
 import {
-  bytesToMB,
-  calculateChunks,
-  generateVideoThumbnail,
-  previewImagesEvent,
-} from "@/lib/helpers/uploadHelpers";
-import {
   abortUploadingAPI,
   getPresignedUrlsForFileAPI,
   mergeAllChunksAPI,
@@ -22,6 +19,8 @@ import {
   startUploadMultipartFileAPI,
 } from "@/lib/services/multipart";
 import axios from "axios";
+import React, { useState } from "react";
+import UploadFiles from "./FilesUploadingPart";
 
 const MultiPartUploadComponent: React.FC = () => {
   const [multipleFiles, setMultipleFiles] = useState<File[]>([]);
@@ -167,6 +166,8 @@ const MultiPartUploadComponent: React.FC = () => {
         totalChunks
       );
 
+      let completedChunks = 0; // Track completed chunks
+
       const uploadPromises = Array.from({ length: totalChunks }).map(
         async (_, chunkIndex) => {
           const start = chunkIndex * chunkSize;
@@ -182,26 +183,26 @@ const MultiPartUploadComponent: React.FC = () => {
               end,
               file.size,
               (partNumber, chunkProgress) => {
-                // Calculate overall progress using chunkProgress
+                // Calculate overall progress
                 const overallProgress =
-                  ((chunkIndex * chunkSize +
-                    (chunkProgress / 100) * chunkSize) /
-                    file.size) *
-                  100;
+                  ((completedChunks + chunkProgress / 100) / totalChunks) * 100;
 
-                // Update overall progress based on chunk upload
                 setFileProgress((prev) => ({
                   ...prev,
                   [index]: parseFloat(overallProgress.toFixed(2)),
                 }));
-
-                console.log(
-                  `Chunk ${partNumber} progress: ${chunkProgress.toFixed(2)}%`
-                );
               }
             );
 
             etags.push({ ETag: etag, PartNumber: chunkIndex + 1 });
+            completedChunks++; // Increment completed chunks
+
+            // Update overall progress after chunk upload completion
+            const overallProgress = (completedChunks / totalChunks) * 100;
+            setFileProgress((prev) => ({
+              ...prev,
+              [index]: parseFloat(overallProgress.toFixed(2)),
+            }));
           } catch (error) {
             setFileErrors((prev) => [
               ...prev,
@@ -242,13 +243,13 @@ const MultiPartUploadComponent: React.FC = () => {
         "Content-Type": "application/octet-stream",
       },
       onUploadProgress: (progressEvent: any) => {
-        const chunkProgress = (progressEvent.loaded / chunk.size) * 100; // Progress for the current chunk
+        const chunkProgress = (progressEvent.loaded / chunk.size) * 100;
         progressCallback(partNumber, chunkProgress);
       },
     });
 
-    const etag = response.headers["etag"]; // Retrieve the ETag from the response headers
-    return { etag }; // Return the ETag
+    const etag = response.headers["etag"];
+    return { etag };
   };
 
   const mergeFileChunks = async (

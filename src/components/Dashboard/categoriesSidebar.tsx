@@ -1,21 +1,4 @@
 "use client";
-import { Input } from "@/components/ui/input";
-import { prepareQueryParams } from "@/lib/helpers/Core/prepareQueryParams";
-import { prepareURLEncodedParams } from "@/lib/helpers/prepareUrlEncodedParams";
-import {
-  deleteCategoryAPI,
-  getAllCategoriesAPI,
-  getSingleCategoryAPI,
-  postCreateCategoryAPI,
-  updateCategoryAPI,
-} from "@/lib/services/categories";
-import Image from "next/image";
-import {
-  useParams,
-  usePathname,
-  useRouter,
-  useSearchParams,
-} from "next/navigation";
 import {
   ContextMenu,
   ContextMenuContent,
@@ -25,25 +8,38 @@ import {
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
-import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
-import DeleteDialog from "../Core/deleteDialog";
-import { toast } from "sonner";
-import { Label } from "../ui/label";
-import { Button } from "../ui/button";
-import Loading from "../Core/loading";
-import { Loader2 } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { prepareQueryParams } from "@/lib/helpers/Core/prepareQueryParams";
+import { prepareURLEncodedParams } from "@/lib/helpers/prepareUrlEncodedParams";
+import {
+  deleteCategoryAPI,
+  getAllCategoriesAPI,
+  getSingleCategoryAPI,
+  updateCategoryAPI,
+} from "@/lib/services/categories";
+import { Loader2 } from "lucide-react";
+import Image from "next/image";
+import {
+  useParams,
+  usePathname,
+  useRouter,
+  useSearchParams,
+} from "next/navigation";
+import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
+import DeleteDialog from "../Core/deleteDialog";
+import Loading from "../Core/loading";
+import { Button } from "../ui/button";
 
 const CategoriesSideBar = () => {
   const router = useRouter();
@@ -128,7 +124,7 @@ const CategoriesSideBar = () => {
     });
 
     router.replace(prepareURLEncodedParams(pathname, queryParams));
-    setLoading(true);
+    // setLoading(true);
     try {
       const response = await getAllCategoriesAPI(queryParams);
       if (response?.success) {
@@ -354,6 +350,7 @@ const CategoriesSideBar = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
       <Loading loading={loading} />
     </>
   );

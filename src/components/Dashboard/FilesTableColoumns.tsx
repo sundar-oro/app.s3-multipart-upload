@@ -23,7 +23,7 @@ export const FilesTableColumns = () => {
       maxWidth: "220px",
       minWidth: "220px",
       cell: (info: any) => {
-        return <span>{info.getValue() || "--"}</span>;
+        return <span className="capitalize">{info.getValue() || "--"}</span>;
       },
     },
     {
@@ -64,6 +64,18 @@ export const FilesTableColumns = () => {
       minWidth: "220px",
       cell: (info: any) => {
         return <span>{formatSize(info.getValue() || 0)}</span>;
+      },
+    },
+    {
+      accessorFn: (row: any) => row.type,
+      id: "type",
+      header: () => <span>File Type</span>,
+      footer: (props: any) => props.column.id,
+      width: "220px",
+      maxWidth: "220px",
+      minWidth: "220px",
+      cell: (info: any) => {
+        return <span className="capitalize">{info.getValue() || "---"}</span>;
       },
     },
   ];

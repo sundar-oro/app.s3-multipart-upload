@@ -243,6 +243,14 @@ const FileUpload = ({
     }
   };
 
+  const getNameForFile = (file: any) => {
+    if (selectedFiles.length > 1) {
+      return `${uploaddata.title} 
+          (${selectedFiles.findIndex((e) => e.name === file.name)})`;
+    } else {
+      return uploaddata.title;
+    }
+  };
   const addsinglepartfile = async (data: any, file: File) => {
     try {
       const response = await fetch(
@@ -250,8 +258,7 @@ const FileUpload = ({
         {
           method: "POST",
           body: JSON.stringify({
-            title: `${uploaddata.title} 
-          (${selectedFiles.findIndex((e) => e.name === file.name)})`,
+            title: getNameForFile(file),
             name: data.file_name,
             size: data.file_size,
             path: data?.path,

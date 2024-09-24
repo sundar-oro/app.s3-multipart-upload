@@ -3,9 +3,9 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { bytesToMB } from "@/lib/helpers/uploadHelpers";
 import { uploadImagesComponentProps } from "@/lib/interfaces";
-import React, { ChangeEvent, useCallback, useState } from "react";
+import { CheckCircle, Upload, X } from "lucide-react";
+import React, { useCallback, useState } from "react";
 import { useDropzone } from "react-dropzone";
-import { Upload, X, CheckCircle } from "lucide-react"; // Importing lucide-react icons
 
 const UploadFiles: React.FC<uploadImagesComponentProps> = ({
   handleFileChange,

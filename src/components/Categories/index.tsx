@@ -39,9 +39,6 @@ import DeleteDialog from "../Core/deleteDialog";
 import Loading from "../Core/loading";
 import CategoriesSideBar from "../Dashboard/categoriesSidebar";
 
-export const description =
-  "An orders dashboard with a sidebar navigation. The sidebar has icon navigation. The content area has a breadcrumb and search in the header. The main area has a list of recent orders with a filter and export button. The main area also has a detailed view of a single order with order details, shipping information, billing information, customer information, and payment information.";
-
 const CategoriesComponent = () => {
   const router = useRouter();
 
@@ -168,8 +165,6 @@ const CategoriesComponent = () => {
       setLoading(false);
     }
   };
-
-  console.log(errMessages);
 
   const handleMenu = (id: number) => {
     setId(id);
