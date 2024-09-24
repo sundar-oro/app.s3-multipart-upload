@@ -9,12 +9,19 @@ import {
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { ListOrdered, PanelLeft, Table2 } from "lucide-react";
-import { useParams, useRouter, useSearchParams } from "next/navigation";
+import {
+  useParams,
+  usePathname,
+  useRouter,
+  useSearchParams,
+} from "next/navigation";
 
 import { getAllFilesAPI, getMyFilesAPI } from "@/lib/services/files";
 import { RootState } from "@/redux";
 import { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
+import { DateRangePicker } from "rsuite";
+import "rsuite/dist/rsuite.css";
 
 interface FileData {
   id: string;
@@ -35,8 +42,16 @@ import {
 } from "@/components/ui/dialog";
 import FileUpload from "./filesupload";
 import MyListFiles from "./mylistfiles";
+import Loading from "@/components/Core/loading";
+import dayjs from "dayjs";
+import { predefinedRanges } from "@/components/Core/DateFilter";
+import {
+  apiPropsForQuaryParams,
+  prepareQueryParams,
+} from "@/lib/helpers/Core/prepareQueryParams";
+import { prepareURLEncodedParams } from "@/lib/helpers/prepareUrlEncodedParams";
+import { Input } from "@/components/ui/input";
 
-// Helper functions for file name truncation and size formatting
 const truncateFileName = (name: string, maxLength: number) => {
   const baseName = name.split(".")[0];
   return baseName.length <= maxLength
@@ -53,6 +68,8 @@ export const formatSize = (sizeInBytes: number) => {
 const FilesComponent = () => {
   const router = useRouter();
   const params = useSearchParams();
+  const pathname = usePathname();
+
   const [page, setPage] = useState(1);
   const [showFileUpload, setShowFileUpload] = useState<any>(false);
   const [filesData, setFilesData] = useState<FileData[]>([]);
@@ -62,7 +79,12 @@ const FilesComponent = () => {
   const [listView, setListView] = useState(true);
   const [showMultipartUpload, setShowMultipartUpload] = useState(false);
   const [paginationDetails, setPaginationDetails] = useState({});
-
+  const [selectedDates, setSelectedDates] = useState<[Date, Date] | null>(null);
+  const [formattedStartDate, setFormattedStartDate] = useState<string | null>(
+    null
+  );
+  const [search, setSearch] = useState("");
+  const [formattedEndDate, setFormattedEndDate] = useState<string | null>(null);
   const lastFileRef = useRef<HTMLDivElement>(null);
   const fileListRef = useRef<HTMLDivElement>(null);
   const { file_id } = useParams();
@@ -79,26 +101,71 @@ const FilesComponent = () => {
     handleToggle();
   };
 
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearch(e.target.value.toLowerCase());
+  };
+
+  const handleDateChange = (dates: any) => {
+    setSelectedDates(dates);
+    setFormattedStartDate(null);
+    setFormattedEndDate(null);
+
+    if (Array.isArray(dates) && dates.length === 2) {
+      const [startDate, endDate] = dates;
+
+      const formattedStartDate = dayjs(startDate)
+        .startOf("day")
+        .format("YYYY-MM-DD");
+      const formattedEndDate = dayjs(endDate).endOf("day").format("YYYY-MM-DD");
+
+      setFormattedStartDate(formattedStartDate);
+      setFormattedEndDate(formattedEndDate);
+      if (file_id) {
+        getAllFiles({
+          date_from: formattedStartDate,
+          date_to: formattedEndDate,
+        });
+      } else {
+        getAllMyFiles({
+          date_from: formattedStartDate,
+          date_to: formattedEndDate,
+        });
+      }
+    } else {
+      if (file_id) {
+        getAllFiles({
+          date_from: "",
+          date_to: "",
+        });
+      } else {
+        getAllMyFiles({
+          date_from: "",
+          date_to: "",
+        });
+      }
+    }
+  };
+
   const getAllFiles = async ({
     page = params.get("page") as string,
     limit = params.get("limit") as string,
     orderBy = params.get("order_by") as string,
     orderType = params.get("order_type") as string,
-    searchValue = params.get("search_string") as string,
+    search_string = params.get("search_string") as string,
+    date_from = params.get("date_from") as any,
+    date_to = params.get("date_to") as any,
   }: any) => {
-    let queryParams: any = {
+    let queryParams = prepareQueryParams({
       page: page ? page : 1,
       limit: limit ? limit : 10,
-    };
-    if (searchValue) {
-      queryParams["search_string"] = searchValue;
-    }
-    if (orderBy) {
-      queryParams["order_by"] = orderBy;
-    }
-    if (orderType) {
-      queryParams["order_type"] = orderType;
-    }
+      orderBy,
+      orderType,
+      search_string,
+      date_from,
+      date_to,
+    });
+    let querySting = prepareURLEncodedParams("", queryParams);
+    router.push(`${pathname}${querySting}`);
     try {
       setLoading(true);
       const response = await getAllFilesAPI(queryParams, file_id);
@@ -122,22 +189,22 @@ const FilesComponent = () => {
     limit = params.get("limit") as string,
     orderBy = params.get("order_by") as string,
     orderType = params.get("order_type") as string,
-    searchValue = params.get("search_string") as string,
+    search_string = params.get("search_string") as string,
+    date_from = params.get("date_from") as any,
+    date_to = params.get("date_to") as any,
   }: any) => {
+    let queryParams = prepareQueryParams({
+      page: page ? page : 1,
+      limit: limit ? limit : 10,
+      orderBy,
+      orderType,
+      search_string,
+      date_from,
+      date_to,
+    });
+    let querySting = prepareURLEncodedParams("", queryParams);
+    router.push(`${pathname}${querySting}`);
     try {
-      let queryParams: any = {
-        page: page ? page : 1,
-        limit: limit ? limit : 10,
-      };
-      if (searchValue) {
-        queryParams["search_string"] = searchValue;
-      }
-      if (orderBy) {
-        queryParams["order_by"] = orderBy;
-      }
-      if (orderType) {
-        queryParams["order_type"] = orderType;
-      }
       setLoading(true);
       const response = await getMyFilesAPI(queryParams);
       if (response?.success) {
@@ -208,6 +275,27 @@ const FilesComponent = () => {
     );
   };
 
+  useEffect(() => {
+    const date_from: any = params.get("date_from");
+    const date_to: any = params.get("date_to");
+    if (date_from && date_to) {
+      const startDate = dayjs(date_from, "MM-DD-YYYY").toDate();
+      const endDate = dayjs(date_to, "MM-DD-YYYY").toDate();
+      setSelectedDates([startDate, endDate]);
+    }
+  }, []);
+
+  useEffect(() => {
+    let debounce = setTimeout(() => {
+      if (file_id) {
+        getAllFiles({ page: 1, search_string: search });
+      } else {
+        getAllMyFiles({ page: 1, search_string: search });
+      }
+    }, 500);
+    return () => clearInterval(debounce);
+  }, [search]);
+
   return (
     <>
       <div className="flex min-h-screen w-full bg-muted/40">
@@ -257,12 +345,35 @@ const FilesComponent = () => {
               ) : (
                 ""
               )}
+              <div className="mt-8 ml-10 flex items-center space-x-4">
+                <Input
+                  placeholder="Search categories..."
+                  value={search}
+                  type="search"
+                  onChange={handleSearchChange}
+                  className="w-30"
+                />
+
+                <DateRangePicker
+                  showOneCalendar
+                  ranges={predefinedRanges}
+                  value={selectedDates}
+                  onChange={handleDateChange}
+                  format="dd-MM-yyyy"
+                  editable={false}
+                  showHeader={false}
+                  placeholder="Select Date Range"
+                  oneTap
+                />
+              </div>
               <MyListFiles
                 filesData={filesData}
                 loading={loading}
                 searchParams={searchParams}
                 getAllMyFiles={file_id ? getAllFiles : getAllMyFiles}
                 paginationDetails={paginationDetails}
+                file_id={file_id}
+                setLoading={setLoading}
               />
             </div>
           ) : (
@@ -285,6 +396,7 @@ const FilesComponent = () => {
           </Dialog>
         </div>
       </div>
+      <Loading loading={loading} />
     </>
   );
 };

@@ -22,7 +22,7 @@ import React, { useEffect, useState } from "react";
 
 interface PaginationProps {
   paginationDetails: any;
-  capturePageNum: (value: number) => void;
+  capturePageNum: (value: string) => void;
   captureRowPerItems: (value: number) => void;
   limitOptionsFromProps?: { title: string; value: number }[] | any;
   limitValue?: number;
