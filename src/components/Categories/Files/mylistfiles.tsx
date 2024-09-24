@@ -1,4 +1,4 @@
-import { TablePaginationComponent } from "@/components/Core/TablePagination";
+import PaginationComponent from "@/components/Core/TablePagination";
 import TanStackTable from "@/components/Core/TanstackTable";
 import { FilesTableColumns } from "@/components/Dashboard/FilesTableColoumns";
 
@@ -26,7 +26,7 @@ const MyListFiles = ({
   };
 
   return (
-    <div className="ml-6 mt-6 p-6  flex-grow  max-h-[70vh]">
+    <div className="ml-6 mt-4 p-6 flex-grow  max-h-[60vh]">
       <div className="overflow-x-auto">
         <TanStackTable
           columns={FilesTableColumns()}
@@ -37,7 +37,7 @@ const MyListFiles = ({
         />
       </div>
       <div className="mb-10 ">
-        <TablePaginationComponent
+        <PaginationComponent
           captureRowPerItems={captureRowPerItems}
           capturePageNum={capturePageNum}
           paginationDetails={paginationDetails}

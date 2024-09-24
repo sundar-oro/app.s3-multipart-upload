@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import TanStackTable from "../Core/TanstackTable";
 import { FilesTableColumns } from "./FilesTableColoumns";
+// import TanStackTable from "../Core/TanstackTable";
 
 export const convertToLocalDate = (utcDateString: string | number | Date) => {
   const date = new Date(utcDateString);
@@ -17,7 +18,7 @@ export const convertToLocalDate = (utcDateString: string | number | Date) => {
     year: "numeric",
     hour: "2-digit",
     minute: "2-digit",
-    second: "2-digit",
+    // second: "2-digit",
     //timeZoneName: "short",
   });
 };

@@ -16,11 +16,12 @@ import {
   TableHeader,
   TableRow,
 } from "./ui/table";
-import { tanstackTablePropTypes } from "./tanstackTablePropTypes";
 //import { tanstackTablePropTypes } from "@/interface/tanstackTablePropTypes";
-//import { LoadingComponent } from "../LoadingComponent"
+//import { LoadingComponent } from "../LoadingComponent";
+//import TablePagination from "./TablePagination";
 
-const TanStackTableComponent: FunctionComponent<tanstackTablePropTypes> = ({
+const TanStackTableComponent: FunctionComponent<any> = ({
+  //tanstackTablePropTypes
   columns,
   data,
   loading,
@@ -98,8 +99,6 @@ const TanStackTableComponent: FunctionComponent<tanstackTablePropTypes> = ({
         orderType = "";
       }
     }
-    console.log("testing", header.id, orderBy, orderType);
-
     getData({
       sort_by: orderBy,
       sort_type: orderType,

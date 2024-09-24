@@ -1,15 +1,14 @@
 import React, { useState } from "react";
-
-import { Input } from "./ui/input";
-import ItemsPerPageDropdown from "./ItemsPerPageDropdown";
 import {
   Pagination,
   PaginationContent,
   PaginationItem,
+  PaginationPrevious,
   PaginationLink,
   PaginationNext,
-  PaginationPrevious,
-} from "./ui/pagination";
+} from "@/components/ui/pagination";
+import ItemsPerPageDropdown from "./ItemsPerPageDropdown";
+import { Input } from "./ui/input";
 
 interface PaginationProps {
   page: number;
@@ -127,19 +126,14 @@ const PaginationComponent: React.FC<PaginationProps> = ({
         )}
       </PaginationContent>
       {/* <PaginationContent>
-        <div style={{ display: "flex", alignItems: "center" }}>
+        <div style={{ display: 'flex', alignItems: 'center' }}>
           GoTo
-          <Input
+         <Input
             type="text"
             value={gotoPage}
             onChange={handleGotoChange}
             onKeyPress={handleKeyPress}
-            style={{
-              marginLeft: "10px",
-              width: "60px",
-              textAlign: "center",
-              maxHeight: "48px",
-            }}
+            style={{ marginLeft: '10px', width: '60px', textAlign: 'center',maxHeight:'48px' }}
             placeholder="Page"
           />
         </div>

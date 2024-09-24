@@ -1,57 +1,52 @@
+"use client";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import {
   Pagination,
   PaginationContent,
-  PaginationEllipsis,
   PaginationItem,
-  PaginationLink,
-  PaginationNext,
   PaginationPrevious,
+  PaginationNext,
+  PaginationLink,
+  PaginationEllipsis,
 } from "@/components/ui/pagination";
 import {
   Select,
   SelectContent,
-  SelectGroup,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
-import { Card } from "../ui/card";
-import { Input } from "../ui/input";
-export const TablePaginationComponent = ({
-  capturePageNum,
-  captureRowPerItems,
-  paginationDetails,
-  limitOptionsFromProps,
-  limitValue,
-}: {
-  capturePageNum: (e: any) => void;
-  captureRowPerItems: (e: any) => void;
+import React, { useEffect, useState } from "react";
+
+interface PaginationProps {
   paginationDetails: any;
+  capturePageNum: (value: number) => void;
+  captureRowPerItems: (value: number) => void;
   limitOptionsFromProps?: { title: string; value: number }[] | any;
   limitValue?: number;
-}) => {
-  const params = useSearchParams();
-  const [pageValue, setPageValue] = useState<number>(+paginationDetails?.page);
-  const [totalPages, setTotalPages] = useState(0);
-  const [limitOptions, setLimitOptions] = useState<any[]>([]);
-  const handlePageRowChange = (value: string) => {
-    const numberValue = parseInt(value, 10);
-    if (!isNaN(numberValue)) {
-      captureRowPerItems(numberValue);
-    }
-  };
-  const onKeyDownChange = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
-      const newPageValue = Math.max(1, Math.min(totalPages || 1, pageValue));
-      capturePageNum(newPageValue);
-    }
-  };
-  useEffect(() => {
-    setPageValue(paginationDetails?.page || 1);
-    setTotalPages(+paginationDetails?.total_pages || 0);
-  }, [paginationDetails]);
+}
+
+const PaginationComponent = ({
+  paginationDetails,
+  capturePageNum,
+  captureRowPerItems,
+  limitOptionsFromProps,
+  limitValue,
+}: any) => {
+  const [pageValue, setPageValue] = useState<number>(
+    paginationDetails?.page || 1
+  );
+  const [limitOptions, setLimitOptions] = useState<
+    {
+      title: string;
+      value: number;
+    }[]
+  >([]);
+
+  const selectedValue = +paginationDetails?.limit || limitValue || 25;
+
   useEffect(() => {
     setLimitOptions(
       limitOptionsFromProps?.length
@@ -59,107 +54,144 @@ export const TablePaginationComponent = ({
         : [
             { title: "10/page", value: 10 },
             { title: "20/page", value: 20 },
+            { title: "30/page", value: 30 },
             { title: "50/page", value: 50 },
-            { title: "80/page", value: 80 },
+            { title: "70/page", value: 70 },
             { title: "100/page", value: 100 },
           ]
     );
   }, [limitOptionsFromProps]);
+
+  const handlePageChange = (page: number) => {
+    setPageValue(page);
+    capturePageNum(page);
+  };
+
+  const handleRowChange = (newLimit: string) => {
+    captureRowPerItems(Number(newLimit));
+  };
+
+  const onKeyDownInPageChange = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      const page = Math.max(
+        1,
+        Math.min(Number(pageValue) || 1, paginationDetails?.total_pages)
+      );
+      handlePageChange(page);
+    }
+  };
+
+  useEffect(() => {
+    if (!paginationDetails?.total_pages) {
+      const pagesCount = Math.ceil(
+        paginationDetails?.count / paginationDetails?.limit
+      );
+    }
+  }, [paginationDetails]);
+
   return (
-    <Card className="flex justify-center items-center p-2 sticky bottom-0 left-0 w-full">
-      <p className="text-sm font-normal mr-4 text-gray-600 w-[15%]">
-        Total {paginationDetails?.total || paginationDetails?.count || ""}
-      </p>
-      <Select
-        onValueChange={handlePageRowChange}
-        value={paginationDetails?.limit}
-      >
-        <SelectTrigger className="w-[180px]">
-          <SelectValue placeholder="Select a Limit" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectGroup>
-            {limitOptions.map((item) => (
-              <SelectItem key={item.value} value={item.value}>
-                {item.title}
-              </SelectItem>
-            ))}
-          </SelectGroup>
-        </SelectContent>
-      </Select>
-
-      <Pagination>
+    <Card>
+      <Pagination className="flex flex-row items-center justify-between p-2">
         <PaginationContent>
-          <PaginationItem>
-            <PaginationPrevious
-              onClick={(e) => {
-                e.preventDefault();
-                if (paginationDetails.page > 1) {
-                  capturePageNum(paginationDetails.page - 1);
-                }
-              }}
-            />
-          </PaginationItem>
+          Total {paginationDetails?.total || paginationDetails?.count || "0"}
+        </PaginationContent>
 
-          {/* Render page links conditionally */}
-          {Array.from({ length: paginationDetails.total_pages }, (_, index) => {
-            const pageNumber = index + 1;
-            if (
-              pageNumber < 3 ||
-              pageNumber > paginationDetails.total_pages - 2 ||
-              (pageNumber >= paginationDetails.page - 1 &&
-                pageNumber <= paginationDetails.page + 1)
-            ) {
-              return (
-                <PaginationItem key={index}>
-                  <PaginationLink
-                    href="#"
-                    isActive={pageNumber === paginationDetails.page}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      capturePageNum(pageNumber);
-                    }}
-                  >
-                    {pageNumber}
-                  </PaginationLink>
-                </PaginationItem>
-              );
-            }
-            return null; // Skip rendering for unneeded pages
-          })}
+        <PaginationContent>
+          <Select
+            value={selectedValue.toString()}
+            onValueChange={handleRowChange}
+          >
+            <SelectTrigger className="w-[120px]">
+              <SelectValue placeholder="Items per page" />
+            </SelectTrigger>
+            <SelectContent>
+              {limitOptions.map((item, index) => (
+                <SelectItem value={item.value.toString()} key={index}>
+                  {item.title}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </PaginationContent>
 
-          {/* Render ellipsis if needed */}
-          {paginationDetails.total_pages > 5 && paginationDetails.page > 3 && (
+        <PaginationContent>
+          {pageValue > 1 && (
             <PaginationItem>
-              <PaginationEllipsis />
+              <PaginationPrevious
+                onClick={() => handlePageChange(pageValue - 1)}
+              />
+            </PaginationItem>
+          )}
+          {pageValue > 2 && (
+            <PaginationItem>
+              <PaginationLink onClick={() => handlePageChange(1)}>
+                1
+              </PaginationLink>
+            </PaginationItem>
+          )}
+
+          {pageValue > 2 && <PaginationEllipsis />}
+          {pageValue > 1 && (
+            <PaginationItem>
+              <PaginationLink onClick={() => handlePageChange(pageValue - 1)}>
+                {pageValue - 1}
+              </PaginationLink>
             </PaginationItem>
           )}
 
           <PaginationItem>
-            <PaginationNext
-              onClick={(e) => {
-                e.preventDefault();
-                if (paginationDetails.page < paginationDetails.total_pages) {
-                  capturePageNum(paginationDetails.page + 1);
-                }
-              }}
-            />
+            <PaginationLink isActive>{pageValue}</PaginationLink>
           </PaginationItem>
+
+          {pageValue < +paginationDetails?.total_pages && (
+            <PaginationItem>
+              <PaginationLink onClick={() => handlePageChange(pageValue + 1)}>
+                {pageValue + 1}
+              </PaginationLink>
+            </PaginationItem>
+          )}
+          {pageValue < +paginationDetails?.total_pages - 1 && (
+            <PaginationEllipsis />
+          )}
+          {pageValue < +paginationDetails?.total_pages && (
+            <PaginationItem>
+              <PaginationLink
+                onClick={() =>
+                  handlePageChange(+paginationDetails?.total_pages)
+                }
+              >
+                {+paginationDetails?.total_pages}
+              </PaginationLink>
+            </PaginationItem>
+          )}
+          {pageValue < +paginationDetails?.total_pages && (
+            <PaginationItem>
+              <PaginationNext onClick={() => handlePageChange(pageValue + 1)} />
+            </PaginationItem>
+          )}
+        </PaginationContent>
+
+        <PaginationContent>
+          <div style={{ display: "flex", alignItems: "center" }}>
+            GoTo
+            <Input
+              type="number"
+              value={pageValue}
+              onChange={(e) => setPageValue(Number(e.target.value))}
+              onKeyDown={onKeyDownInPageChange}
+              style={{
+                marginLeft: "10px",
+                width: "60px",
+                textAlign: "center",
+                fontSize: "14px",
+              }}
+              placeholder="Page"
+            />
+          </div>
         </PaginationContent>
       </Pagination>
-
-      <div className="flex items-center gap-2 w-[15%]">
-        <p className="text-sm font-medium text-gray-600">Go to</p>
-        <Input
-          type="number"
-          value={pageValue}
-          onChange={(e) => setPageValue(Number(e.target.value))}
-          onKeyDown={onKeyDownChange}
-          onWheel={(e) => e.currentTarget.blur()}
-          className="w-16 text-center text-sm"
-          min={1}
-        />
-      </div>
     </Card>
   );
 };
+
+export default PaginationComponent;
