@@ -115,8 +115,8 @@ const FilesComponent = () => {
 
       const formattedStartDate = dayjs(startDate)
         .startOf("day")
-        .format("DD-MM-YYYY");
-      const formattedEndDate = dayjs(endDate).endOf("day").format("DD-MM-YYYY");
+        .format("YYYY-MM-DD");
+      const formattedEndDate = dayjs(endDate).endOf("day").format("YYYY-MM-DD");
 
       setFormattedStartDate(formattedStartDate);
       setFormattedEndDate(formattedEndDate);

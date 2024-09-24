@@ -1,4 +1,5 @@
 import PaginationComponent from "@/components/Core/TablePagination";
+import DynamicPagination from "@/components/Core/TablePaginationtest";
 import TanStackTable from "@/components/Core/TanstackTable";
 import DeleteDialog from "@/components/Core/deleteDialog";
 import { FilesTableColumns } from "@/components/Dashboard/FilesTableColoumns";
@@ -115,8 +116,9 @@ const MyListFiles = ({
       maxWidth: "60px",
     },
   ];
+  console.log();
 
-  const capturePageNum = (value: string) => {
+  const capturePageNum = (value: number) => {
     getAllMyFiles({
       ...searchParams,
       limit: searchParams.limit as string,
@@ -137,7 +139,15 @@ const MyListFiles = ({
           />
         </div>
         <div className="mb-10 ">
-          <PaginationComponent
+          {/* <PaginationComponent
+            captureRowPerItems={captureRowPerItems}
+            capturePageNum={capturePageNum}
+            paginationDetails={paginationDetails}
+          /> */}
+          <DynamicPagination
+            totalPages={
+              paginationDetails?.total_pages || paginationDetails?.count || "0"
+            }
             captureRowPerItems={captureRowPerItems}
             capturePageNum={capturePageNum}
             paginationDetails={paginationDetails}
