@@ -7,9 +7,10 @@ import { useSelector } from "react-redux";
 import { RootState } from "@/redux";
 import { getMyFilesAPI } from "@/lib/services/files";
 import { formatSize, truncateFileName } from "../Categories/Files";
-import TanStackTable from "../Core/TanstackTable";
+// import TanStackTable from "../Core/TanstackTable";
 import { FilesTableColumns } from "./FilesTableColoumns";
 import { useSearchParams } from "next/navigation";
+import { Input } from "../ui/input";
 
 export const convertToLocalDate = (utcDateString: string | number | Date) => {
   const date = new Date(utcDateString);
@@ -19,7 +20,7 @@ export const convertToLocalDate = (utcDateString: string | number | Date) => {
     year: "numeric",
     hour: "2-digit",
     minute: "2-digit",
-    second: "2-digit",
+    // second: "2-digit",
     //timeZoneName: "short",
   });
 };
@@ -79,13 +80,13 @@ export function DashboardTable() {
           <h2 className="text-xl font-semibold mt-4 mb-4"> Recent Files</h2>
 
           <div className="overflow-x-auto">
-            <TanStackTable
+            {/* <TanStackTable
               columns={FilesTableColumns()}
               data={filesData}
               loading={loading}
               searchParams={searchParams}
               getData={getAllMyFiles}
-            />
+            /> */}
           </div>
         </CardContent>
       </Card>
