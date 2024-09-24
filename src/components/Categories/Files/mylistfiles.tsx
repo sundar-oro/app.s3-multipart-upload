@@ -74,24 +74,15 @@ const MyListFiles = ({
       accessorFn: (row: any) => row.actions,
       id: "actions",
       cell: (info: any) => {
+        console.log(info.row.original);
         const totalObj = info.getValue();
         return (
-          <div className="flex ">
-            <ul className="flex">
+          <div className="flex items-center ">
+            <ul className="flex items-center">
               <li>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() =>
-                    handleDownloadFile(
-                      info.row.original.url,
-                      info.row.original.title
-                    )
-                  }
-                  title="Download"
-                >
+                <a href={info.row.original.url} download="file.txt">
                   <Download className="h-4 w-4" />
-                </Button>
+                </a>
               </li>
 
               <li>
