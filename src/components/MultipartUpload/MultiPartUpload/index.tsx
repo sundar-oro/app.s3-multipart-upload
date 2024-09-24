@@ -1,3 +1,4 @@
+"use client";
 import {
   calculateChunks,
   generateVideoThumbnail,
@@ -15,17 +16,18 @@ import {
   abortUploadingAPI,
   getPresignedUrlsForFileAPI,
   mergeAllChunksAPI,
-  resumeUploadAPI,
   startUploadMultipartFileAPI,
 } from "@/lib/services/multipart";
-import axios from "axios";
-import React, { useState } from "react";
-import UploadFiles from "./FilesUploadingPart";
+
 import { IUseFileUploadHook } from "@/lib/interfaces/files";
-import { useParams } from "next/navigation";
 import { RootState } from "@/redux";
+import axios from "axios";
+import { useParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import { toast } from "sonner";
+import UploadFiles from "./FilesUploadingPart";
+import Select from "react-select";
+import { getSelectAllCategoriesAPI } from "@/lib/services/categories";
 
 const MultiPartUploadComponent = ({
   showFileUpload,
@@ -48,7 +50,8 @@ const MultiPartUploadComponent = ({
     chunkSizeInBytes: 0,
   });
   const [open, setOpen] = useState(true);
-  const [selectedCategoryId, setSelectedCategoryId] = useState<String>("");
+  const [selectedCategoryId, setSelectedCategoryId] = useState<any>();
+  const [selectedCategory, setSelectedCategory] = useState<any>();
   const [uploadFileDetails, setUploadFileDetails] = useState<any>([]);
   const [presignedUrlsMap, setPresignedUrlsMap] = useState<{
     [index: number]: string[];
@@ -56,6 +59,8 @@ const MultiPartUploadComponent = ({
   const [fileTitles, setFileTitles] = useState<string[]>(
     Array(multipleFiles.length).fill("")
   );
+  const [categoriesData, setCategoriesData] = useState([]);
+  const [inputValue, setInputValue] = useState("");
 
   const handleFileTypes = (type: string) => {
     const fileType = type.toLowerCase();
@@ -510,8 +515,48 @@ const MultiPartUploadComponent = ({
     }
   };
 
+  const getAllCategories = async () => {
+    try {
+      const response = await getSelectAllCategoriesAPI();
+
+      if (response.status === 200 || response.status === 201) {
+        const options = response?.data.data?.map((category: any) => ({
+          value: category.id,
+          label: category.name,
+        }));
+        setCategoriesData(options);
+      } else {
+        throw response;
+      }
+    } catch (error) {
+      console.error("Failed to call API", error);
+    } finally {
+    }
+  };
+  const handleChange = (selectedOption: any) => {
+    setSelectedCategoryId(selectedOption.value);
+    setSelectedCategory(selectedOption);
+  };
+
+  useEffect(() => {
+    if (showFileUpload) {
+      getAllCategories();
+    }
+  }, [showFileUpload]);
+
   return (
     <div>
+      {from == "sidebar" && (
+        <div className="mt-10">
+          <Select
+            isDisabled={!multipleFiles?.length}
+            options={categoriesData}
+            placeholder="Select Category"
+            onChange={handleChange}
+            value={selectedCategory}
+          />
+        </div>
+      )}
       <UploadFiles
         handleFileChange={handleFileChange}
         multipleFiles={multipleFiles}
@@ -528,6 +573,9 @@ const MultiPartUploadComponent = ({
         uploadProgressStart={uploadProgressStart}
         fileTitles={fileTitles}
         setFileTitles={setFileTitles}
+        selectedCategoryId={selectedCategoryId}
+        setSelectedCategoryId={setSelectedCategoryId}
+        setShowFileUpload={setShowFileUpload}
       />
     </div>
   );

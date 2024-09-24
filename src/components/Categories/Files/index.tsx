@@ -271,10 +271,7 @@ const FilesComponent = () => {
         </div>
 
         <div>
-          <Dialog
-            open={showFileUpload}
-            onOpenChange={() => setShowFileUpload(false)}
-          >
+          <Dialog open={showFileUpload}>
             <DialogContent className="bg-white w-[80%]">
               <DialogTitle>New FileUpload</DialogTitle>
               <MultiPartUploadComponent

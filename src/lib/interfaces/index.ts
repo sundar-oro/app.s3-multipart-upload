@@ -83,4 +83,7 @@ export interface uploadImagesComponentProps {
   uploadProgressStart: any;
   fileTitles: any;
   setFileTitles: any;
+  selectedCategoryId: any;
+  setSelectedCategoryId: any;
+  setShowFileUpload: any;
 }

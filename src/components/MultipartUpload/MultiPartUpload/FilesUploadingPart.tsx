@@ -23,6 +23,9 @@ const UploadFiles: React.FC<uploadImagesComponentProps> = ({
   uploadProgressStart,
   fileTitles,
   setFileTitles,
+  selectedCategoryId,
+  setSelectedCategoryId,
+  setShowFileUpload,
 }) => {
   const [file, setFile] = useState<File[]>([]);
 
@@ -186,7 +189,8 @@ const UploadFiles: React.FC<uploadImagesComponentProps> = ({
           );
         })}
       </div>
-      <div className="mt-4">
+      <div className="mt-4 flex  items-center justify-between">
+        <Button onClick={() => setShowFileUpload(false)}>Cancel</Button>
         <Button
           onClick={() => uploadProgressStart(true)}
           disabled={
@@ -195,7 +199,7 @@ const UploadFiles: React.FC<uploadImagesComponentProps> = ({
             multipleFiles.length === 0 ||
             allFilesUploaded
           }
-          className={`w-full ${
+          className={`w-[50%] ${
             !file.length ||
             fileErrors.length > 0 ||
             multipleFiles.length === 0 ||
