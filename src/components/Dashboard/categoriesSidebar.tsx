@@ -27,7 +27,7 @@ import {
   getSingleCategoryAPI,
   updateCategoryAPI,
 } from "@/lib/services/categories";
-import { Loader2 } from "lucide-react";
+import { Folder, Loader2 } from "lucide-react";
 import Image from "next/image";
 import {
   useParams,
@@ -115,26 +115,24 @@ const CategoriesSideBar = () => {
   const getAllCategories = async (
     page: number,
     isScrolling: boolean = false,
-    search_val = params.get("search_string") as any
+    search_val?: string
   ) => {
     let queryParams = prepareQueryParams({
       page: page || 1,
       limit: 20,
       search_string: search_val,
     });
-
-    router.replace(prepareURLEncodedParams(pathname, queryParams));
-    // setLoading(true);
     try {
       const response = await getAllCategoriesAPI(queryParams);
       if (response?.success) {
         const newPage = page + 1;
         const newData = response?.data?.data;
-        setRecentCategoryId(newData[0].id);
+
         if (isScrolling) {
           setCategoryData((prevData) => prevData.concat(newData));
         } else {
           setCategoryData(newData);
+          setRecentCategoryId(newData[0]?.id);
         }
         setPage(newPage);
         if (newData.length === 0) setNoData(true);
@@ -168,9 +166,22 @@ const CategoriesSideBar = () => {
     }
   };
 
-  // Functions Used
+  const getUniqueCategories = (categories: any[]) => {
+    const seenIds = new Set<number>();
+    const uniqueCategories = categories.filter((category) => {
+      const categoryId = Number(category.id);
+      if (seenIds.has(categoryId)) {
+        return false;
+      } else {
+        seenIds.add(categoryId);
+        return true;
+      }
+    });
+    return uniqueCategories;
+  };
 
-  // Search handler
+  const uniqueCategories = getUniqueCategories(categoryData);
+
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearch(e.target.value.toLowerCase());
   };
@@ -238,6 +249,8 @@ const CategoriesSideBar = () => {
     return () => clearInterval(debounce);
   }, [search]);
 
+  console.log(categoryData, "data");
+  console.log(uniqueCategories, "unique");
   return (
     <>
       <div className="flex flex-col h-screen w-60 bg-gray text-gray-800 p-4">
@@ -252,8 +265,8 @@ const CategoriesSideBar = () => {
         </div>
 
         <div ref={categorySideBarRef} className="flex-1 overflow-y-auto">
-          {categoryData.length > 0 ? (
-            categoryData.map((data, index) => (
+          {uniqueCategories.length > 0 ? (
+            uniqueCategories.map((data, index) => (
               <ul key={index} className="space-y-2 text-gray-600">
                 <li
                   onClick={() => handleCategoryFiles(data?.id)}
@@ -263,23 +276,23 @@ const CategoriesSideBar = () => {
                       : "hover:text-violet-500"
                   }`}
                 >
-                  <Image
+                  {/* <Image
                     src="/dashboard/dashboard.svg"
                     alt="dashboard"
                     width={20}
                     height={20}
                     className="transition-all duration-200"
-                  />
+                  /> */}
+                  <Folder className="w-5 h-5 transition-all duration-200" />
                   <ContextMenu>
                     <ContextMenuTrigger>
                       <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <span className="cursor-pointer">
+                            <span className="cursor-pointer capitalize">
                               {data?.name.length > 15
                                 ? `${data?.name.slice(0, 15)}...`
-                                : data?.name.charAt(0).toUpperCase() +
-                                  data?.name.slice(1).toLowerCase()}
+                                : data?.name}
                             </span>
                           </TooltipTrigger>
                           <TooltipContent>{data?.name}</TooltipContent>

@@ -18,6 +18,11 @@ export interface apiPropsForQuaryParams {
     sales_rep_id: string;
     from_date: string;
     to_date: string;
+    orderBy : string
+      orderType : string;
+      searchValue: string;
+      date_from : string;
+      date_to: string;
   }
 
 export const prepareQueryParams = (params: Partial<apiPropsForQuaryParams>) => {
