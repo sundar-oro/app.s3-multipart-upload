@@ -116,11 +116,13 @@ export const calculateChunks = (
   fileSize: number
 ): { chunkSize: number; totalChunks: number } => {
   const MIN_CHUNK_SIZE_BYTES = 5 * 1024 * 1024;
-  const chunkSize = Math.max(
-    MIN_CHUNK_SIZE_BYTES,
-    Math.ceil(fileSize / Math.ceil(fileSize / MIN_CHUNK_SIZE_BYTES))
-  );
+  const MAX_TOTAL_CHUNKS = 10000;
+
+  let chunkSize: number = Math.ceil(fileSize / MAX_TOTAL_CHUNKS);
+
+  chunkSize = Math.max(chunkSize, MIN_CHUNK_SIZE_BYTES);
 
   const totalChunks = Math.ceil(fileSize / chunkSize);
+
   return { chunkSize, totalChunks };
 };

@@ -104,7 +104,7 @@ const MultiPartUploadComponent = ({
   const handleFileChange = async (files: File[], start: any) => {
     const newFiles: any = Array.from(files);
     const combinedFiles = [...newFiles, ...multipleFiles];
-
+    console.log(combinedFiles, "lakkkkk");
     setMultipleFiles(combinedFiles);
     setFileProgress((prev) => ({
       ...prev,
