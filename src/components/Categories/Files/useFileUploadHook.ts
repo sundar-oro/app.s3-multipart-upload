@@ -197,7 +197,6 @@ const useFileUploadHook = ({
       const response = await getSelectAllCategoriesAPI();
 
       if (response.status === 200 || response.status === 201) {
-        console.log(response?.data);
         setCategoriesData(response?.data?.data);
       } else {
         throw response;
@@ -364,7 +363,6 @@ const useFileUploadHook = ({
       const result = await response.json();
 
       if (response.ok) {
-        console.log(result);
         setUploadData(result?.data);
         setUploadProgress(5);
         await getpresignedurl(result?.data, file);
@@ -434,7 +432,6 @@ const useFileUploadHook = ({
             PartNumber: index,
           },
         ]);
-        console.log("Single-part file upload successful");
         setUploadProgress(60);
       } else {
         throw response;
@@ -468,7 +465,6 @@ const useFileUploadHook = ({
       const result = await response.json();
 
       if (response.ok) {
-        console.log("File metadata saved:", result);
         setUploadProgress(100);
         // updateFileStatus(file.name, file.size, file.type, "success");
         await addMultipartfiletoDB();

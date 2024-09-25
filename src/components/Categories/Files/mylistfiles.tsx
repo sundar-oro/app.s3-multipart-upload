@@ -74,7 +74,6 @@ const MyListFiles = ({
       accessorFn: (row: any) => row.actions,
       id: "actions",
       cell: (info: any) => {
-        console.log(info.row.original);
         const totalObj = info.getValue();
         return (
           <div className="flex items-center ">

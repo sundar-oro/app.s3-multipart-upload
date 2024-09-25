@@ -216,7 +216,7 @@ const UploadFiles: React.FC<uploadImagesComponentProps> = ({
             multipleFiles.length === 0 ||
             allFilesUploaded ||
             startUploading ||
-            !selectedCategoryId ||
+            (!selectedCategoryId && from == "sidebar") ||
             !allTitlesProvided
           }
           className={`w-[50%] ${
@@ -225,7 +225,7 @@ const UploadFiles: React.FC<uploadImagesComponentProps> = ({
             multipleFiles.length === 0 ||
             allFilesUploaded ||
             startUploading ||
-            !selectedCategoryId ||
+            (!selectedCategoryId && from == "sidebar") ||
             !allTitlesProvided
               ? "opacity-50 cursor-not-allowed"
               : ""

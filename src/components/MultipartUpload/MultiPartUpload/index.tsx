@@ -171,7 +171,6 @@ const MultiPartUploadComponent = ({
 
       if (response?.success) {
         const { upload_id, file_key } = response.data;
-        console.log(response.data, "dksfksdkds");
         setUploadFileDetails((prev: any) => [
           ...prev,
           {
@@ -282,12 +281,6 @@ const MultiPartUploadComponent = ({
 
             etags.push({ ETag: etag, PartNumber: chunkIndex + 1 });
             completedChunks++;
-
-            const overallProgress = (completedChunks / totalChunks) * 100;
-            setFileProgress((prev) => ({
-              ...prev,
-              [index]: parseFloat(overallProgress.toFixed(2)),
-            }));
           } catch (error) {
             setFileErrors((prev) => [
               ...prev,
