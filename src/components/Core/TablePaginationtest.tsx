@@ -1,4 +1,4 @@
-"use client"; // Ensures the component is client-side
+"use client";
 
 import React, { useEffect, useState } from "react";
 import {
@@ -123,7 +123,7 @@ export default function DynamicPagination({
 
       <PaginationContent>
         <Select
-          value={selectedValue.toString()}
+          value={selectedValue?.toString()}
           onValueChange={handleRowChange}
         >
           <SelectTrigger className="w-[120px]">
@@ -131,7 +131,7 @@ export default function DynamicPagination({
           </SelectTrigger>
           <SelectContent>
             {limitOptions.map((item, index) => (
-              <SelectItem value={item.value.toString()} key={index}>
+              <SelectItem value={item.value?.toString()} key={index}>
                 {item.title}
               </SelectItem>
             ))}

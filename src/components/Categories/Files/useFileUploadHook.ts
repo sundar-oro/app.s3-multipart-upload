@@ -166,7 +166,7 @@ const useFileUploadHook = ({showFileUpload,
 
       return [
         ...filtered,
-        { name, size, type, status }, // Add or update the file entry
+        { name, size, type, status }, 
       ];
     });
   };
@@ -510,6 +510,7 @@ const useFileUploadHook = ({showFileUpload,
         {
           method: "POST",
           body: JSON.stringify({
+            title: `${uploaddata.title}`,
             name: uploaddata.original_name,
             size: size.filesize,
             path: uploaddata?.file_key,
@@ -529,7 +530,7 @@ const useFileUploadHook = ({showFileUpload,
         setUploadProgress(100);
         // updateFileStatus(file.name, file.size, file.type, "success");
         getAllFiles && getAllFiles(1);
-        toast.success(result?.message);
+        // toast.success(result?.message);
         handleClear();
         setTimeout(() => {
           setUploadProgress(0);
@@ -563,6 +564,9 @@ const useFileUploadHook = ({showFileUpload,
   useEffect(() => {
     getAllCategories();
   }, []);
+
+  console.log(uploaddata
+    ?.title);
 
 return {
     getRootProps,

@@ -363,7 +363,6 @@ const FilesComponent = () => {
                   editable={false}
                   showHeader={false}
                   placeholder="Select Date Range"
-                  oneTap
                 />
               </div>
               <MyListFiles
