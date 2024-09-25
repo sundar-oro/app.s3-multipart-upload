@@ -4,11 +4,9 @@ import {
   Dialog,
   DialogContent,
   DialogFooter,
-  DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { ChevronRight, File, Folder, Loader2 } from "lucide-react";
+import { ChevronRight, File, Folder } from "lucide-react";
 import Image from "next/image";
 
 import {
@@ -31,21 +29,10 @@ import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import CategoriesSideBar from "./categoriesSidebar";
 import { toast } from "sonner";
-import FileUpload from "../Categories/Files/filesupload";
 import MultiPartUploadComponent from "../MultipartUpload/MultiPartUpload";
 import AddDialog from "../Core/CreateDialog";
 
-const SideBar = ({
-  categoryid,
-  getAllCategories,
-  setCategoryId,
-  children,
-}: {
-  categoryid?: number | null;
-  getAllCategories?: (page: number, value: boolean) => void;
-  setCategoryId?: Dispatch<SetStateAction<number>>;
-  children?: React.ReactNode;
-}) => {
+const SideBar = ({ children }: { children?: React.ReactNode }) => {
   const router = useRouter();
   const pathname = usePathname();
 
@@ -59,7 +46,6 @@ const SideBar = ({
   const [errMessages, setErrMessages] = useState<any>();
   const [recentCategoryId, setRecentCategoryId] = useState(0);
   const [categoryOpen, setCategoryOpen] = useState(false);
-  const user = useSelector((state: RootState) => state?.user?.user_details);
   const [showFileUpload, setShowFileUpload] = useState(false);
 
   const handleCreate = () => {
@@ -119,10 +105,10 @@ const SideBar = ({
   const handleTextFieldChange = (e: any) => {
     const { name, value } = e.target;
 
-    // setErrMessages((prevErr: any) => ({
-    //   ...prevErr,
-    //   [name]: null,
-    // }));
+    setErrMessages((prevErr: any) => ({
+      ...prevErr,
+      [name]: null,
+    }));
 
     setData((prev: any) => ({
       ...prev,
@@ -154,7 +140,6 @@ const SideBar = ({
                 <Button className="flex items-center justify-center  cursor-pointer w-full py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
                   <span>+ New</span>
                 </Button>
-                {/* <Button variant="outline">Open</Button> */}
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-56 cursor-pointer">
                 <DropdownMenuGroup>

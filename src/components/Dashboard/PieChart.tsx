@@ -1,31 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import Highcharts from "highcharts";
 import HighchartsReact from "highcharts-react-official";
-import { getStatsApi } from "@/lib/services/dashboard";
 import { Loader2 } from "lucide-react";
 
 const PieChart = ({ data, loading }: { data: any; loading: boolean }) => {
-  //   const [loading, setLoading] = useState(false);
-  //   const [data, setData] = useState<any>({});
-
-  //   const GetStatsData = async () => {
-  //     setLoading(true);
-  //     try {
-  //       const response = await getStatsApi();
-  //       if (response.status === 200 || response.status === 201) {
-  //         setData(response?.data?.data);
-  //       }
-  //     } catch (error) {
-  //       // handle error
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   };
-
-  //   useEffect(() => {
-  //     GetStatsData();
-  //   }, []);
-
   const bytesToGB = (bytes: number) =>
     (bytes / (1024 * 1024 * 1024)).toFixed(2);
 
@@ -44,8 +22,8 @@ const PieChart = ({ data, loading }: { data: any; loading: boolean }) => {
               )} GB<br> <strong>Total Count:</Strong> <br>${
                 data?.totalFileCount
               }`,
-              chart.plotLeft + chart.plotWidth / 2 - 150, // X position (centered)
-              chart.plotTop + chart.plotHeight / 2 - 40 // Y position (centered)
+              chart.plotLeft + chart.plotWidth / 2 - 150,
+              chart.plotTop + chart.plotHeight / 2 - 40
             )
             .attr({
               padding: 10,
@@ -66,6 +44,7 @@ const PieChart = ({ data, loading }: { data: any; loading: boolean }) => {
     tooltip: {
       pointFormat: "{series.name}: <b>{point.percentage:.1f}%</b>",
     },
+
     plotOptions: {
       pie: {
         allowPointSelect: true,
@@ -117,7 +96,9 @@ const PieChart = ({ data, loading }: { data: any; loading: boolean }) => {
           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
         </div>
       ) : (
-        <HighchartsReact highcharts={Highcharts} options={options} />
+        <div className="ml-8">
+          <HighchartsReact highcharts={Highcharts} options={options} />
+        </div>
       )}
     </div>
   );

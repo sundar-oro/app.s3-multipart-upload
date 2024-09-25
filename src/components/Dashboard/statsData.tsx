@@ -14,8 +14,6 @@ const StatsData = () => {
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<any>({});
 
-  const user = useSelector((state: RootState) => state?.user);
-
   const GetStatsData = async () => {
     setLoading(true);
     try {

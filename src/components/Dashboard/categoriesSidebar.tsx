@@ -5,13 +5,6 @@ import {
   ContextMenuItem,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import {
   Tooltip,
@@ -20,26 +13,18 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { prepareQueryParams } from "@/lib/helpers/Core/prepareQueryParams";
-import { prepareURLEncodedParams } from "@/lib/helpers/prepareUrlEncodedParams";
 import {
   deleteCategoryAPI,
   getAllCategoriesAPI,
   getSingleCategoryAPI,
   updateCategoryAPI,
 } from "@/lib/services/categories";
-import { Folder, Loader2 } from "lucide-react";
-import Image from "next/image";
-import {
-  useParams,
-  usePathname,
-  useRouter,
-  useSearchParams,
-} from "next/navigation";
+import { Folder, Loader2, Search } from "lucide-react";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import DeleteDialog from "../Core/deleteDialog";
 import Loading from "../Core/loading";
-import { Button } from "../ui/button";
 import AddDialog from "../Core/CreateDialog";
 
 const CategoriesSideBar = () => {
@@ -68,7 +53,6 @@ const CategoriesSideBar = () => {
       const response = await getSingleCategoryAPI(id);
 
       if (response?.status == 200 || response?.status == 201) {
-        // toast.success(response?.data?.message);
         console.log(response?.data?.data?.name);
         setName(response?.data?.data?.name);
         setId(id);
@@ -89,9 +73,7 @@ const CategoriesSideBar = () => {
       const payload = {
         name: name,
       };
-
       const response: any = await updateCategoryAPI(id, payload);
-
       if (response?.status == 200 || response?.status == 201) {
         toast.success(response?.data?.message);
         setRenameOpen(false);
@@ -251,13 +233,14 @@ const CategoriesSideBar = () => {
   return (
     <>
       <div className="flex flex-col h-screen w-60 bg-gray text-gray-800 p-4">
-        <div className="mt-14">
+        <div className="mt-14 relative">
+          <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
           <Input
             placeholder="Search categories..."
             value={search}
             type="search"
             onChange={handleSearchChange}
-            className="w-full"
+            className="w-full pl-8"
           />
         </div>
 
@@ -331,42 +314,6 @@ const CategoriesSideBar = () => {
         errMessage={errMessages?.name}
         buttonName="Rename"
       />
-
-      {/* <Dialog open={renameOpen} onOpenChange={handleRenameClose}>
-        <DialogContent className="bg-white">
-          <DialogHeader>
-            <DialogTitle>Rename Category</DialogTitle>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <Input
-              id="name"
-              name="name"
-              value={name}
-              className="col-span-3"
-              placeholder="Enter another Name for category"
-              onChange={handleTextFieldChange}
-            />
-            <span>
-              {errMessages && (
-                <p className="text-red-500">{errMessages?.name}</p>
-              )}
-            </span>
-          </div>
-          <DialogFooter>
-            <Button onClick={handleRenameClose} variant="ghost" type="submit">
-              Cancel
-            </Button>
-            <Button onClick={updateCategory} type="submit">
-              {loading ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                "Rename"
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog> */}
-
       <Loading loading={loading} />
     </>
   );

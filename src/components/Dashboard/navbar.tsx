@@ -31,10 +31,7 @@ const NavBar = () => {
   const user = useSelector((state: RootState) => state?.user?.user_details);
 
   const handleLogout = () => {
-    // Dispatch the logout action
     dispatch(logout());
-
-    // Redirect to login page
     router.replace("/");
   };
 
@@ -46,7 +43,7 @@ const NavBar = () => {
             href="#"
             className="text-white font-bold-200 transition-colors hover:text-foreground "
           >
-            <b>Ashika</b>
+            <b>Ashika Group</b>
           </Link>
 
           <DropdownMenu>
@@ -69,9 +66,6 @@ const NavBar = () => {
               <DropdownMenuLabel>
                 {user ? `Hello, ${user.full_name}` : "Hello, Guest"}
               </DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>Settings</DropdownMenuItem>
-              <DropdownMenuItem>Support</DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>
             </DropdownMenuContent>

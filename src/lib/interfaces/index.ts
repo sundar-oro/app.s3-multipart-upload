@@ -1,3 +1,16 @@
+export interface FileDataDetails {
+  title: string;
+  uploaded_at: number;
+  category_id: number;
+  id: string;
+  name: string;
+  mime_type: string;
+  type: string;
+  size: number;
+  status: string;
+  url: string;
+}
+
 export interface createcategory {
   name: string;
   description: string;

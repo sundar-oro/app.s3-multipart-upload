@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { ListOrdered, PanelLeft, Table2 } from "lucide-react";
+import { ListOrdered, PanelLeft, Search, Table2 } from "lucide-react";
 import {
   useParams,
   usePathname,
@@ -347,23 +347,27 @@ const FilesComponent = () => {
                 ""
               )}
               <div className="mt-8 ml-10 flex items-center space-x-4">
-                <Input
-                  placeholder="Search Title..."
-                  value={search}
-                  type="search"
-                  onChange={handleSearchChange}
-                  className="w-30"
-                />
-
-                <DateRangePicker
-                  ranges={predefinedRanges}
-                  value={selectedDates}
-                  onChange={handleDateChange}
-                  format="dd-MM-yyyy"
-                  editable={false}
-                  showHeader={false}
-                  placeholder="Select Date Range"
-                />
+                <div className="relative">
+                  <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
+                  <Input
+                    placeholder="Search Title..."
+                    value={search}
+                    type="search"
+                    onChange={handleSearchChange}
+                    className="w-30 pl-8 bg-white-500"
+                  />
+                </div>
+                <div>
+                  <DateRangePicker
+                    ranges={predefinedRanges}
+                    value={selectedDates}
+                    onChange={handleDateChange}
+                    format="dd-MM-yyyy"
+                    editable={false}
+                    showHeader={false}
+                    placeholder="Select Date Range"
+                  />
+                </div>
               </div>
               <MyListFiles
                 filesData={filesData}

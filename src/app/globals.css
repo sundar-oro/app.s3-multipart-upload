@@ -90,3 +90,7 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+.highcharts-credits {
+  display: none;
+}
