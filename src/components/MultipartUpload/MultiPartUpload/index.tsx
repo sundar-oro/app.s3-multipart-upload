@@ -171,6 +171,7 @@ const MultiPartUploadComponent = ({
 
       if (response?.success) {
         const { upload_id, file_key } = response.data;
+        console.log(response.data, "dksfksdkds");
         setUploadFileDetails((prev: any) => [
           ...prev,
           {
@@ -363,7 +364,7 @@ const MultiPartUploadComponent = ({
         throw new Error("Failed to merge chunks");
       } else {
         setFileProgress((prev) => ({ ...prev, [index]: 100 }));
-        await saveFileMetadata(file, index, uploadFileDetails[index]?.file_key);
+        await saveFileMetadata(file, index, fileKey);
       }
     } catch (error) {
       setFileErrors((prev) => [
@@ -492,7 +493,7 @@ const MultiPartUploadComponent = ({
             title: fileTitles[index],
             name: file.name,
             size: file.size,
-            path: path || file.name,
+            path: path,
             mime_type: file.type,
             type: handleFileTypes(file.type.split("/")[1]),
             tags: ["image", "sample"],
