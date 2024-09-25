@@ -115,12 +115,20 @@ export const getTotalChunks = (
 export const calculateChunks = (
   fileSize: number
 ): { chunkSize: number; totalChunks: number } => {
-  const MIN_CHUNK_SIZE_BYTES = 5 * 1024 * 1024;
+  const MIN_CHUNK_SIZE_BYTES = 5 * 1024 * 1024; // 5 MB
+  const MAX_CHUNK_SIZE_BYTES = 5 * 1024 * 1024 * 1024; // 5 GB
   const MAX_TOTAL_CHUNKS = 10000;
 
-  let chunkSize: number = Math.ceil(fileSize / MAX_TOTAL_CHUNKS);
+  let chunkSize: number;
 
-  chunkSize = Math.max(chunkSize, MIN_CHUNK_SIZE_BYTES);
+  if (fileSize <= MAX_CHUNK_SIZE_BYTES) {
+    chunkSize = Math.max(
+      Math.ceil(fileSize / MAX_TOTAL_CHUNKS),
+      MIN_CHUNK_SIZE_BYTES
+    );
+  } else {
+    chunkSize = MAX_CHUNK_SIZE_BYTES;
+  }
 
   const totalChunks = Math.ceil(fileSize / chunkSize);
 
