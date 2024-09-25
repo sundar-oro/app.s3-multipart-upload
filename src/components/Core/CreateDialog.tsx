@@ -10,46 +10,64 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Loader2 } from "lucide-react";
 
-const DialogDemo = ({
+const AddDialog = ({
   openOrNot,
   title,
   onCancelClick,
   onOKClick,
-  deleteLoading,
+  createLoading,
+  placeholder,
+  handleTextFieldChange,
+  value,
+  errMessage,
+  buttonName,
 }: {
   openOrNot: boolean;
   title: string;
   onCancelClick: () => void;
   onOKClick: () => void;
-  deleteLoading: boolean;
+  createLoading: boolean;
+  placeholder: string;
+  handleTextFieldChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  value: string;
+  errMessage: string;
+  buttonName: string;
 }) => {
   return (
-    <Dialog open={openOrNot}>
-      <DialogContent className="sm:max-w-[425px]">
+    <Dialog open={openOrNot} onOpenChange={onCancelClick}>
+      <DialogContent className="sm:max-w-[425px] bg-white">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
         </DialogHeader>
         <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="name" className="text-right">
-              Rename
-            </Label>
-            <Input
-              id="name"
-              className="col-span-3"
-              placeholder="Enter the Name for category"
-            />
-          </div>
+          <Input
+            id="name"
+            name="name"
+            value={value}
+            className="col-span-3 capitalize"
+            placeholder={placeholder}
+            onChange={handleTextFieldChange}
+          />
+          <span>
+            {errMessage && <p className="text-red-500">{errMessage}</p>}
+          </span>
         </div>
         <DialogFooter>
-          <Button variant="ghost" type="submit">
+          <Button onClick={onCancelClick} variant="ghost" type="submit">
             Cancel
           </Button>
-          <Button type="submit">Save</Button>
+          <Button onClick={onOKClick} type="submit">
+            {createLoading ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              buttonName
+            )}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
   );
 };
-export default DialogDemo;
+export default AddDialog;

@@ -22,15 +22,6 @@ interface FileData {
 }
 
 const DashBoard = () => {
-  const router = useRouter();
-  const dispatch = useDispatch();
-
-  const [page, setPage] = useState(1);
-  const [loading, setLoading] = useState(false);
-  const [categorydata, setCategoryData] = useState<any[]>([]);
-  const [filesData, setFilesData] = useState<FileData[]>([]);
-  const [noData, setNoData] = useState(false);
-
   return (
     <div className="flex min-h-screen w-full mt-10">
       <div className="flex flex-1 flex-col bg-muted/40 ">

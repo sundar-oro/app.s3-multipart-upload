@@ -33,6 +33,7 @@ import CategoriesSideBar from "./categoriesSidebar";
 import { toast } from "sonner";
 import FileUpload from "../Categories/Files/filesupload";
 import MultiPartUploadComponent from "../MultipartUpload/MultiPartUpload";
+import AddDialog from "../Core/CreateDialog";
 
 const SideBar = ({
   categoryid,
@@ -227,97 +228,24 @@ const SideBar = ({
                 />
                 <div className="flex justify-between items-center cursor-pointer">
                   <span>Categories</span>
-                  {categoryOpen ? <ChevronRight /> : ""}
+                  {pathname.includes("/categories") ? <ChevronRight /> : ""}
                 </div>
               </a>
             </li>
-
-            {/* <li>
-          onClick={handleCategorySidebar}
-            className={`flex items-center space-x-3 p-2 rounded-md ${
-              isActive(`/categories`) ? "bg-gray-200" : "hover:bg-gray-200"
-            }`}
-          <Link
-            href="/settings"
-            className="flex items-center space-x-3 p-2 hover:bg-gray-200 rounded-md"
-          >
-            <Image
-              src="/icons/settings.svg"
-              alt="Settings"
-              width={20}
-              height={20}
-            />
-            <span>Settings</span>
-          </Link>
-        </li> */}
-            {/* <li>
-            <div className="mt-auto text-gray-500 text-xs px-3">
-              <div className="flex items-center">
-                {" "}
-                <Cloud />
-                <span className="ml-2 text-sm"> Storage (87% full)</span>
-              </div>
-
-              <div className="w-full bg-gray-300 rounded-full h-2 mt-1">
-                <div
-                  className="bg-blue-500 h-full rounded-full"
-                  style={{ width: "87%" }}
-                ></div>
-                <span className="mt-3"> 13 GB used</span>
-              </div>
-            </div>
-          </li> */}
           </ul>
-          {/* <CategoriesSideBar /> */}
 
-          <Dialog open={open} onOpenChange={handleClose}>
-            <DialogContent
-              className="bg-white"
-              onClick={() => console.log("close")}
-            >
-              <DialogHeader>
-                <DialogTitle>New Category</DialogTitle>
-              </DialogHeader>
-              <div>
-                <Input
-                  id="name"
-                  value={data?.name}
-                  // defaultValue="Pedro Duarte"
-                  className="col-span-3"
-                  name="name"
-                  placeholder="Enter the Category Name"
-                  onChange={handleTextFieldChange}
-                />
-              </div>
-              {errMessages ? (
-                <span className="text-red-500">{errMessages?.name}</span>
-              ) : (
-                ""
-              )}
-              <DialogFooter>
-                <Button
-                  onClick={handleClose}
-                  // className="bg-grey-700"
-                  // variant="outline"
-                  variant="secondary"
-                  type="submit"
-                >
-                  Cancel
-                </Button>
-                <Button
-                  onClick={createCategories}
-                  type="submit"
-                  disabled={loading ? true : false}
-                >
-                  {loading ? (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  ) : (
-                    "Create"
-                  )}
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+          <AddDialog
+            openOrNot={open}
+            onCancelClick={handleClose}
+            title="New Category"
+            onOKClick={createCategories}
+            placeholder="Enter the Category Name"
+            createLoading={loading}
+            handleTextFieldChange={handleTextFieldChange}
+            value={data?.name}
+            errMessage={errMessages?.name}
+            buttonName="Create"
+          />
         </nav>
         {pathname.includes("/categories") && (
           <div className="w-60 ">

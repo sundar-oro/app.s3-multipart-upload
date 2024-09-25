@@ -164,11 +164,11 @@ const FilesComponent = () => {
       date_from,
       date_to,
     });
+    setLoading(true);
     let querySting = prepareURLEncodedParams("", queryParams);
     router.push(`${pathname}${querySting}`);
     setSearchParams(queryParams);
     try {
-      setLoading(true);
       const response = await getAllFilesAPI(queryParams, file_id);
 
       if (response?.success) {
@@ -202,10 +202,11 @@ const FilesComponent = () => {
       date_from,
       date_to,
     });
+    setLoading(true);
     let querySting = prepareURLEncodedParams("", queryParams);
     router.push(`${pathname}${querySting}`);
+    setSearchParams(queryParams);
     try {
-      setLoading(true);
       const response = await getMyFilesAPI(queryParams);
       if (response?.success) {
         let { data, ...rest } = response.data;
@@ -329,7 +330,7 @@ const FilesComponent = () => {
                 <div className="fixed  right-6 space-x-4 flex">
                   <Button
                     variant="outline"
-                    className="shadow-lg"
+                    className="shadow-lg outline outline-2 outline-blue-500 bg-black-500 text-white-500"
                     onClick={handleToggle}
                   >
                     +

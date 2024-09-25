@@ -40,11 +40,10 @@ import { toast } from "sonner";
 import DeleteDialog from "../Core/deleteDialog";
 import Loading from "../Core/loading";
 import { Button } from "../ui/button";
+import AddDialog from "../Core/CreateDialog";
 
 const CategoriesSideBar = () => {
   const router = useRouter();
-  const params = useSearchParams();
-  const pathname = usePathname();
   const { file_id } = useParams();
   const categorySideBarRef = useRef<HTMLDivElement>(null);
 
@@ -56,7 +55,7 @@ const CategoriesSideBar = () => {
   const [open, setOpen] = useState(false);
   const [renameOpen, setRenameOpen] = useState<boolean>(false);
   const [deleteid, setDeleteid] = useState<number>(0);
-  const [search, setSearch] = useState(""); // Search field state
+  const [search, setSearch] = useState("");
   const [name, setName] = useState("");
   const [recentCategoryId, setRecentCategoryId] = useState(0);
   const [errMessages, setErrMessages] = useState<any>({});
@@ -249,8 +248,6 @@ const CategoriesSideBar = () => {
     return () => clearInterval(debounce);
   }, [search]);
 
-  console.log(categoryData, "data");
-  console.log(uniqueCategories, "unique");
   return (
     <>
       <div className="flex flex-col h-screen w-60 bg-gray text-gray-800 p-4">
@@ -276,13 +273,6 @@ const CategoriesSideBar = () => {
                       : "hover:text-violet-500"
                   }`}
                 >
-                  {/* <Image
-                    src="/dashboard/dashboard.svg"
-                    alt="dashboard"
-                    width={20}
-                    height={20}
-                    className="transition-all duration-200"
-                  /> */}
                   <Folder className="w-5 h-5 transition-all duration-200" />
                   <ContextMenu>
                     <ContextMenuTrigger>
@@ -329,7 +319,20 @@ const CategoriesSideBar = () => {
         deleteLoading={loading}
       />
 
-      <Dialog open={renameOpen} onOpenChange={handleRenameClose}>
+      <AddDialog
+        openOrNot={renameOpen}
+        onCancelClick={handleRenameClose}
+        title="Update Category"
+        onOKClick={updateCategory}
+        placeholder="Enter another Name for category"
+        createLoading={loading}
+        handleTextFieldChange={handleTextFieldChange}
+        value={name}
+        errMessage={errMessages?.name}
+        buttonName="Rename"
+      />
+
+      {/* <Dialog open={renameOpen} onOpenChange={handleRenameClose}>
         <DialogContent className="bg-white">
           <DialogHeader>
             <DialogTitle>Rename Category</DialogTitle>
@@ -362,7 +365,7 @@ const CategoriesSideBar = () => {
             </Button>
           </DialogFooter>
         </DialogContent>
-      </Dialog>
+      </Dialog> */}
 
       <Loading loading={loading} />
     </>

@@ -7,12 +7,16 @@ import { Button } from "@/components/ui/button";
 import {
   deleteFilesAPI,
   deleteMyFilesAPI,
+  getSingleFileAPI,
   handleDownloadFile,
 } from "@/lib/services/files";
-import { Download, Trash2 } from "lucide-react";
+import { Download, Edit, Edit2, Trash2 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { title } from "process";
 import { useState } from "react";
 import { toast } from "sonner";
+import { FilePenLine } from "lucide-react";
+import AddDialog from "@/components/Core/CreateDialog";
 
 const MyListFiles = ({
   filesData,
@@ -26,7 +30,9 @@ const MyListFiles = ({
   const params = useSearchParams();
 
   const [fileid, setFileid] = useState(0);
-  const [open, setOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [fileUpdateOpen, setFileUpdateOpen] = useState(false);
+  const [name, setName] = useState("");
 
   const captureRowPerItems = (value?: number) => {
     getAllMyFiles({
@@ -36,9 +42,19 @@ const MyListFiles = ({
     });
   };
 
-  const handleOpen = (id: number) => {
-    setOpen(true);
+  const handleDeleteDialogOpen = (id: number) => {
+    setDeleteDialogOpen(true);
     setFileid(id);
+  };
+
+  const handleUpdateDialogOpen = (id: number) => {
+    setFileUpdateOpen(true);
+    setFileid(id);
+  };
+
+  const handleTextFieldChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { value } = e.target;
+    setName(value);
   };
 
   const handleDeleteClick = async () => {
@@ -52,7 +68,7 @@ const MyListFiles = ({
       }
       if (response?.status === 200 || response?.status === 201) {
         toast.success(response?.data?.message);
-        setOpen(false);
+        setDeleteDialogOpen(false);
         getAllMyFiles({
           searchValue: params.get("search_string"),
           limit: params.get("limit"),
@@ -69,6 +85,26 @@ const MyListFiles = ({
     }
   };
 
+  const getSingleFileDetails = async (categoryid: number, fileid: number) => {
+    setLoading(true);
+    try {
+      const response = await getSingleFileAPI(categoryid, fileid);
+
+      if (response?.status == 200 || response?.status == 201) {
+        console.log(response?.data?.data?.title);
+        setName(response?.data?.data?.title);
+        setFileid(fileid);
+        setFileUpdateOpen(true);
+      } else {
+        throw response;
+      }
+    } catch (err: any) {
+      // errorPopper(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const filesActions = [
     {
       accessorFn: (row: any) => row.actions,
@@ -80,6 +116,21 @@ const MyListFiles = ({
           <div className="flex items-center ">
             <ul className="flex items-center">
               <li>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() =>
+                    getSingleFileDetails(
+                      info.row.original.category_id,
+                      info.row.original.file_id
+                    )
+                  }
+                  title="Edit"
+                >
+                  <FilePenLine className="h-4 w-4" />
+                </Button>
+              </li>
+              <li>
                 <a href={info.row.original.url} download="file.txt">
                   <Download className="h-4 w-4" />
                 </a>
@@ -89,7 +140,9 @@ const MyListFiles = ({
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={() => handleOpen(info.row.original.file_id)}
+                  onClick={() =>
+                    handleDeleteDialogOpen(info.row.original.file_id)
+                  }
                   title="Delete"
                 >
                   <Trash2 className="h-4 w-4" />
@@ -144,11 +197,23 @@ const MyListFiles = ({
         </div>
       </div>
       <DeleteDialog
-        openOrNot={open}
-        onCancelClick={() => setOpen(false)}
+        openOrNot={deleteDialogOpen}
+        onCancelClick={() => setDeleteDialogOpen(false)}
         label="Are you sure you want to delete this file?"
         onOKClick={handleDeleteClick}
         deleteLoading={loading}
+      />
+      <AddDialog
+        openOrNot={fileUpdateOpen}
+        onCancelClick={() => setFileUpdateOpen(false)}
+        title="Update File Title"
+        onOKClick={() => setFileUpdateOpen(false)}
+        placeholder="Enter another Name for File"
+        createLoading={loading}
+        handleTextFieldChange={handleTextFieldChange}
+        value={name}
+        errMessage=""
+        buttonName="Rename"
       />
     </>
   );
