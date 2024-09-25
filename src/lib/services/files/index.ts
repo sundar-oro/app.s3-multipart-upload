@@ -30,12 +30,13 @@ export const getSingleFileAPI = async (categoryid: number,fileid: number) => {
   }
 };
 
-export const updateCategoryAPI = async (
-  id: number,
+export const updateFileAPI = async (
+  categoryid: number,
+  fileid:number,
   payload: any
 ) => {
   try {
-    return await $fetch.put(`/categories/${id}`, payload);
+    return await $fetch.patch(`/categories/${categoryid}/files/${fileid}`, payload);
   } catch (err) {
     throw err;
   }

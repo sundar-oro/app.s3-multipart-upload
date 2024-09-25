@@ -8,7 +8,7 @@ import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import TanStackTable from "../Core/TanstackTable";
 import { FilesTableColumns } from "./FilesTableColoumns";
-// import TanStackTable from "../Core/TanstackTable";
+import { FileDataDetails } from "@/lib/interfaces";
 
 export const convertToLocalDate = (utcDateString: string | number | Date) => {
   const date = new Date(utcDateString);
@@ -22,24 +22,12 @@ export const convertToLocalDate = (utcDateString: string | number | Date) => {
     //timeZoneName: "short",
   });
 };
-interface FileData {
-  title: string;
-  uploaded_at: number;
-  category_id: number;
-  id: string;
-  name: string;
-  mime_type: string;
-  type: string;
-  size: number;
-  status: string;
-  url: string;
-}
 
 export function DashboardTable() {
   const [page, setPage] = useState(1);
   const params = useSearchParams();
 
-  const [filesData, setFilesData] = useState<FileData[]>([]);
+  const [filesData, setFilesData] = useState<FileDataDetails[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchParams, setSearchParams] = useState(
     Object.fromEntries(new URLSearchParams(Array.from(params.entries())))

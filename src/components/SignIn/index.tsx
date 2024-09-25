@@ -29,35 +29,6 @@ const SignInPage = () => {
   const [isLoading, setLoading] = useState(false);
   const [errors, setErrors] = useState<any>([]);
 
-  // const validateEmail = (email: string) => {
-  //   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  //   return emailRegex.test(email);
-  // };
-
-  // const validatePassword = (password: string) => {
-  //   return password.length >= 6;
-  // };
-
-  // const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  //   const value = e.target.value;
-  //   setEmail(value);
-  //   if (!validateEmail(value)) {
-  //     setEmailError("Please enter a valid email.");
-  //   } else {
-  //     setEmailError(null);
-  //   }
-  // };
-
-  // const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  //   const value = e.target.value;
-  //   setPassword(value);
-  //   if (!validatePassword(value)) {
-  //     setPasswordError("Password must be at least 6 characters.");
-  //   } else {
-  //     setPasswordError(null);
-  //   }
-  // };
-
   const user = useSelector((state: RootState) => state.user);
 
   const setUserDetailsInCookies = ({ access_token, user_details }: any) => {

@@ -9,6 +9,7 @@ import {
   deleteMyFilesAPI,
   getSingleFileAPI,
   handleDownloadFile,
+  updateFileAPI,
 } from "@/lib/services/files";
 import { Download, Edit, Edit2, Trash2 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -30,9 +31,11 @@ const MyListFiles = ({
   const params = useSearchParams();
 
   const [fileid, setFileid] = useState(0);
+  const [categoryId, setCategoryId] = useState(0);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [fileUpdateOpen, setFileUpdateOpen] = useState(false);
   const [name, setName] = useState("");
+  const [errMessages, setErrMessages] = useState<any>({});
 
   const captureRowPerItems = (value?: number) => {
     getAllMyFiles({
@@ -44,11 +47,6 @@ const MyListFiles = ({
 
   const handleDeleteDialogOpen = (id: number) => {
     setDeleteDialogOpen(true);
-    setFileid(id);
-  };
-
-  const handleUpdateDialogOpen = (id: number) => {
-    setFileUpdateOpen(true);
     setFileid(id);
   };
 
@@ -94,12 +92,45 @@ const MyListFiles = ({
         console.log(response?.data?.data?.title);
         setName(response?.data?.data?.title);
         setFileid(fileid);
+        setCategoryId(categoryid);
         setFileUpdateOpen(true);
       } else {
         throw response;
       }
     } catch (err: any) {
       // errorPopper(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updateCategory = async () => {
+    setLoading(true);
+    try {
+      const payload = {
+        title: name,
+      };
+      const response: any = await updateFileAPI(categoryId, fileid, payload);
+
+      if (response?.status == 200 || response?.status == 201) {
+        toast.success(response?.data?.message);
+        setFileUpdateOpen(false);
+        setFileid(0);
+        setCategoryId(0);
+        setName("");
+        getAllMyFiles({
+          searchValue: params.get("search_string"),
+          limit: params.get("limit"),
+          page: params.get("page"),
+        });
+      } else if (response.status === 422) {
+        setErrMessages(response?.data?.errors);
+      } else {
+        throw response;
+      }
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err);
     } finally {
       setLoading(false);
     }
@@ -180,11 +211,6 @@ const MyListFiles = ({
           />
         </div>
         <div className="mb-10 ">
-          {/* <PaginationComponent
-            captureRowPerItems={captureRowPerItems}
-            capturePageNum={capturePageNum}
-            paginationDetails={paginationDetails}
-          /> */}
           <DynamicPagination
             totalPages={
               paginationDetails?.total_pages || paginationDetails?.count || "0"
@@ -206,12 +232,12 @@ const MyListFiles = ({
         openOrNot={fileUpdateOpen}
         onCancelClick={() => setFileUpdateOpen(false)}
         title="Update File Title"
-        onOKClick={() => setFileUpdateOpen(false)}
+        onOKClick={updateCategory}
         placeholder="Enter another Name for File"
         createLoading={loading}
         handleTextFieldChange={handleTextFieldChange}
         value={name}
-        errMessage=""
+        errMessage={errMessages?.title}
         buttonName="Rename"
       />
     </>
