@@ -4,14 +4,6 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
-import { filedetails } from "@/lib/interfaces";
-import { RootState } from "@/redux";
-import { RotateCw } from "lucide-react";
-import { useParams, useRouter } from "next/navigation";
-import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
-import { useDropzone } from "react-dropzone";
-import { useSelector } from "react-redux";
-import { toast } from "sonner";
 import {
   Select,
   SelectContent,
@@ -19,18 +11,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { getSelectAllCategoriesAPI } from "@/lib/services/categories";
-import useFileUploadHook from "./useFileUploadHook";
-import {
-  IUseFileUploadHook,
-  IUseFileUploadHookReturnType,
-} from "@/lib/interfaces/files";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { IUseFileUploadHook } from "@/lib/interfaces/files";
+import { RotateCw } from "lucide-react";
+import useFileUploadHook from "./useFileUploadHook";
 
 const FileUpload = ({
   showFileUpload,
@@ -82,6 +71,7 @@ const FileUpload = ({
                     <th className="border px-4 py-2">File Type</th>
                   </tr>
                 </thead>
+
                 <tbody>
                   {selectedFiles.map((file, index) => (
                     <tr key={index}>
@@ -98,8 +88,6 @@ const FileUpload = ({
                             <TooltipContent>{file?.name}</TooltipContent>
                           </Tooltip>
                         </TooltipProvider>
-
-                        {/* {file.name.slice(0, 20)} */}
                       </td>
                       <td className="border px-4 py-2">
                         {Math.ceil(file.size / 1024)} KB

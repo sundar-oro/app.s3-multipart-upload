@@ -74,25 +74,15 @@ const MyListFiles = ({
       accessorFn: (row: any) => row.actions,
       id: "actions",
       cell: (info: any) => {
+        console.log(info.row.original);
         const totalObj = info.getValue();
-        const router = useRouter();
         return (
-          <div className="flex ">
-            <ul className="flex">
+          <div className="flex items-center ">
+            <ul className="flex items-center">
               <li>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() =>
-                    handleDownloadFile(
-                      info.row.original.url,
-                      info.row.original.title
-                    )
-                  }
-                  title="Download"
-                >
+                <a href={info.row.original.url} download="file.txt">
                   <Download className="h-4 w-4" />
-                </Button>
+                </a>
               </li>
 
               <li>
@@ -116,7 +106,6 @@ const MyListFiles = ({
       maxWidth: "60px",
     },
   ];
-  console.log();
 
   const capturePageNum = (value: number) => {
     getAllMyFiles({
@@ -157,7 +146,7 @@ const MyListFiles = ({
       <DeleteDialog
         openOrNot={open}
         onCancelClick={() => setOpen(false)}
-        label="Are you sure you want to delete this Category?"
+        label="Are you sure you want to delete this file?"
         onOKClick={handleDeleteClick}
         deleteLoading={loading}
       />

@@ -1,10 +1,10 @@
 import { $fetch } from "@/lib/servicehelpers/fetch";
 import { handleAPIErrorResponse } from "@/lib/servicehelpers/httpErrorHandler";
 
-export const startUploadMultipartFileAPI = async (body: any) => {
+export const startUploadMultipartFileAPI = async (body: any, id: any) => {
   try {
     const { data, success } = await $fetch.post(
-      `/categories/5/files/start`,
+      `/categories/${id}/files/start`,
       body
     );
     if (!success) {
@@ -16,10 +16,10 @@ export const startUploadMultipartFileAPI = async (body: any) => {
   }
 };
 
-export const getPresignedUrlsForFileAPI = async (body: any) => {
+export const getPresignedUrlsForFileAPI = async (body: any, id: any) => {
   try {
     const { data, success } = await $fetch.post(
-      `/categories/5/files/urls`,
+      `/categories/${id}/files/urls`,
       body
     );
     if (!success) {
@@ -31,10 +31,10 @@ export const getPresignedUrlsForFileAPI = async (body: any) => {
   }
 };
 
-export const mergeAllChunksAPI = async (body: any) => {
+export const mergeAllChunksAPI = async (body: any, id: any) => {
   try {
     const { data, success } = await $fetch.post(
-      `/categories/5/files/complete`,
+      `/categories/${id}/files/complete`,
       body
     );
     if (!success) {
@@ -46,10 +46,10 @@ export const mergeAllChunksAPI = async (body: any) => {
   }
 };
 
-export const resumeUploadAPI = async (body: any) => {
+export const resumeUploadAPI = async (body: any, id: any) => {
   try {
     const { data, success } = await $fetch.post(
-      `/categories/5/files/list-incomplete-parts`,
+      `/categories/${id}/files/list-incomplete-parts`,
       body
     );
     if (!success) {

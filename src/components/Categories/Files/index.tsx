@@ -149,8 +149,8 @@ const FilesComponent = () => {
   const getAllFiles = async ({
     page = params.get("page") as string,
     limit = params.get("limit") as string,
-    orderBy = params.get("order_by") as string,
-    orderType = params.get("order_type") as string,
+    orderBy = params.get("sort_by") as string,
+    orderType = params.get("sort_type") as string,
     search_string = params.get("search_string") as string,
     date_from = params.get("date_from") as any,
     date_to = params.get("date_to") as any,
@@ -166,12 +166,12 @@ const FilesComponent = () => {
     });
     let querySting = prepareURLEncodedParams("", queryParams);
     router.push(`${pathname}${querySting}`);
+    setSearchParams(queryParams);
     try {
       setLoading(true);
       const response = await getAllFilesAPI(queryParams, file_id);
 
       if (response?.success) {
-        console.log(response, "Fsdk883282");
         let { data, ...rest } = response.data;
         setPaginationDetails(rest);
         setFilesData(data);
@@ -187,8 +187,8 @@ const FilesComponent = () => {
   const getAllMyFiles = async ({
     page = params.get("page") as string,
     limit = params.get("limit") as string,
-    orderBy = params.get("order_by") as string,
-    orderType = params.get("order_type") as string,
+    orderBy = params.get("sort_by") as string,
+    orderType = params.get("sort_type") as string,
     search_string = params.get("search_string") as string,
     date_from = params.get("date_from") as any,
     date_to = params.get("date_to") as any,
@@ -347,7 +347,7 @@ const FilesComponent = () => {
               )}
               <div className="mt-8 ml-10 flex items-center space-x-4">
                 <Input
-                  placeholder="Search categories..."
+                  placeholder="Search Title..."
                   value={search}
                   type="search"
                   onChange={handleSearchChange}
@@ -355,7 +355,6 @@ const FilesComponent = () => {
                 />
 
                 <DateRangePicker
-                  showOneCalendar
                   ranges={predefinedRanges}
                   value={selectedDates}
                   onChange={handleDateChange}
@@ -381,22 +380,15 @@ const FilesComponent = () => {
         </div>
 
         <div>
-          <Dialog
-            open={showFileUpload}
-            onOpenChange={() => setShowFileUpload(false)}
-          >
+          <Dialog open={showFileUpload}>
             <DialogContent className="bg-white w-[80%]">
               <DialogTitle>New FileUpload</DialogTitle>
-              {showMultipartUpload ? (
-                <MultiPartUploadComponent />
-              ) : (
-                <FileUpload
-                  showFileUpload={showFileUpload}
-                  setShowFileUpload={setShowFileUpload}
-                  getAllFiles={getAllFiles}
-                  from="category"
-                />
-              )}
+              <MultiPartUploadComponent
+                showFileUpload={showFileUpload}
+                setShowFileUpload={setShowFileUpload}
+                getAllFiles={getAllFiles}
+                from="category"
+              />
               <DialogFooter></DialogFooter>
             </DialogContent>
           </Dialog>

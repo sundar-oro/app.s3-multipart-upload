@@ -32,6 +32,7 @@ import { useSelector } from "react-redux";
 import CategoriesSideBar from "./categoriesSidebar";
 import { toast } from "sonner";
 import FileUpload from "../Categories/Files/filesupload";
+import MultiPartUploadComponent from "../MultipartUpload/MultiPartUpload";
 
 const SideBar = ({
   categoryid,
@@ -325,18 +326,20 @@ const SideBar = ({
         )}
         <div className="flex-grow">{children}</div>
       </div>
-      <Dialog
-        open={showFileUpload}
-        onOpenChange={() => setShowFileUpload(false)}
-      >
+      <Dialog open={showFileUpload}>
         <DialogContent className="bg-white w-[80%]">
           <DialogTitle>New FileUpload</DialogTitle>
 
-          <FileUpload
+          <MultiPartUploadComponent
             showFileUpload={showFileUpload}
             setShowFileUpload={setShowFileUpload}
             from="sidebar"
           />
+          {/* <FileUpload
+            showFileUpload={showFileUpload}
+            setShowFileUpload={setShowFileUpload}
+            from="sidebar"
+          /> */}
 
           <DialogFooter></DialogFooter>
         </DialogContent>

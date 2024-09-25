@@ -25,7 +25,7 @@ const TanStackTable: FC<pageProps> = ({
   getData,
 }) => {
   const [sorting, setSorting] = useState<SortingState>([]);
-  let removeSortingForColumnIds = ["serial", "id", "month_year"];
+  let removeSortingForColumnIds = ["serial", "id", "month_year", "actions"];
 
   const table = useReactTable({
     columns,
@@ -46,29 +46,33 @@ const TanStackTable: FC<pageProps> = ({
     searchParams: any;
     header: any;
   }) => {
-    return (
-      <div>
-        {searchParams?.order_by === header?.id ? (
-          searchParams?.order_type === "asc" ? (
-            <Image
-              src="/sort/sort-asc.svg"
-              height={8}
-              width={8}
-              alt="Sort Asc"
-            />
+    if (removeSortingForColumnIds?.includes(header?.id)) {
+      return <></>;
+    } else {
+      return (
+        <div>
+          {searchParams?.sort_by === header?.id ? (
+            searchParams?.sort_type == "asc" ? (
+              <Image
+                src="/sort/sort-asc.svg"
+                height={8}
+                width={8}
+                alt="Sort Asc"
+              />
+            ) : (
+              <Image
+                src="/sort/sort-desc.svg"
+                height={8}
+                width={8}
+                alt="Sort Desc"
+              />
+            )
           ) : (
-            <Image
-              src="/sort/sort-desc.svg"
-              height={8}
-              width={8}
-              alt="Sort Desc"
-            />
-          )
-        ) : (
-          <Image src="/sort/un-sort.svg" height={8} width={8} alt="Unsort" />
-        )}
-      </div>
-    );
+            <Image src="/sort/un-sort.svg" height={8} width={8} alt="Unsort" />
+          )}
+        </div>
+      );
+    }
   };
 
   const getWidth = (id: string) => {
@@ -81,8 +85,8 @@ const TanStackTable: FC<pageProps> = ({
 
     let orderBy = header.id;
     let orderType = "asc";
-    if ((searchParams?.order_by as string) === header.id) {
-      orderType = searchParams?.order_type === "asc" ? "desc" : "";
+    if ((searchParams?.sort_by as string) === header.id) {
+      orderType = searchParams?.sort_type === "asc" ? "desc" : "";
       if (orderType === "") orderBy = "";
     }
 
@@ -100,10 +104,7 @@ const TanStackTable: FC<pageProps> = ({
         <table className="min-w-full border-collapse border border-gray-300">
           <thead className="bg-gray-200 sticky top-0">
             {table.getHeaderGroups().map((headerGroup) => {
-              if (
-                Object.keys(searchParams)?.length > 0 &&
-                searchParams?.order_by === "fdsfds"
-              ) {
+              if (Object.keys(searchParams)?.length > 0) {
                 return (
                   <tr className="border-b" key={headerGroup.id}>
                     {headerGroup.headers.map((header) => (

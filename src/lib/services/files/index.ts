@@ -22,7 +22,7 @@ export const getMyFilesAPI = async (params: any) => {
   }
 };
 
-export const deleteFilesAPI = async (categoryid: number,fileid: number) => {
+export const deleteFilesAPI = async (categoryid: number, fileid: number) => {
   try {
     return await $fetch.delete(`/categories/${categoryid}/files/${fileid}`);
   } catch (err) {
@@ -41,8 +41,11 @@ export const deleteMyFilesAPI = async (fileid: number) => {
 export const handleDownloadFile = async (url: string, title: string) => {
   try {
     const response = await fetch(url);
-    const blob = await response.blob();
 
+    if (!response.ok) {
+      throw new Error("Network response was not ok");
+    }
+    const blob = await response.blob();
     const blobUrl = window.URL.createObjectURL(blob);
 
     const link = document.createElement("a");
@@ -54,6 +57,7 @@ export const handleDownloadFile = async (url: string, title: string) => {
     document.body.removeChild(link);
     window.URL.revokeObjectURL(blobUrl);
   } catch (error) {
+    console.error("Download error:", error);
     toast.error("File download failed");
   }
 };
