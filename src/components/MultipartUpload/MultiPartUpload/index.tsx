@@ -135,7 +135,7 @@ const MultiPartUploadComponent = ({
             totalChunksParts: totalChunks.toString(),
             chunkSizeInBytes: chunkSize,
           }));
-          if (file.size > 5242880) {
+          if (file.size > 52428800) {
             await startUploadEvent(file, index, chunkSize, totalChunks);
           } else {
             await uploadSinglePartFile(file, index);
@@ -270,7 +270,7 @@ const MultiPartUploadComponent = ({
               file.size,
               (partNumber, chunkProgress) => {
                 const overallProgress =
-                  ((completedChunks + chunkProgress / 100) / totalChunks) * 100;
+                  ((completedChunks + chunkProgress) / totalChunks) * 100;
 
                 setFileProgress((prev) => ({
                   ...prev,
@@ -321,7 +321,9 @@ const MultiPartUploadComponent = ({
         "Content-Type": "application/octet-stream",
       },
       onUploadProgress: (progressEvent: any) => {
-        const chunkProgress = (progressEvent.loaded / chunk.size) * 100;
+        const { loaded, total } = progressEvent;
+        const chunkProgress =
+          ((loaded / total) * (end - start)) / totalFileSize;
         progressCallback(partNumber, chunkProgress);
       },
     });
