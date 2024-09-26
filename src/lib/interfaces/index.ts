@@ -100,4 +100,5 @@ export interface uploadImagesComponentProps {
   setSelectedCategoryId: any;
   setShowFileUpload: any;
   from: string;
+  setFileErrors: any;
 }

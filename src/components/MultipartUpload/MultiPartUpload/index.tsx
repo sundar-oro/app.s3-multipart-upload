@@ -17,6 +17,7 @@ import {
   getPresignedUrlsForFileAPI,
   getPresignedUrlsForIncompleteFileAPI,
   mergeAllChunksAPI,
+  resumeUploadAPI,
   startUploadMultipartFileAPI,
 } from "@/lib/services/multipart";
 
@@ -57,13 +58,13 @@ const MultiPartUploadComponent = ({
   const [presignedUrlsMap, setPresignedUrlsMap] = useState<{
     [index: number]: string[];
   }>({});
+  const [etagsMap, setEtagsMap] = useState<{ [index: number]: string[] }>({});
   const [fileTitles, setFileTitles] = useState<string[]>(
     Array(multipleFiles.length).fill("")
   );
   const [categoriesData, setCategoriesData] = useState([]);
   const [incompleteData, setIncompleteData] = useState([]);
   const [inputValue, setInputValue] = useState("");
-  const [etagsMap, setEtagsMap] = useState([{}]);
 
   const handleFileTypes = (type: string) => {
     const fileType = type.toLowerCase();
@@ -107,7 +108,6 @@ const MultiPartUploadComponent = ({
   const handleFileChange = async (files: File[], start: any) => {
     const newFiles: any = Array.from(files);
     const combinedFiles = [...newFiles, ...multipleFiles];
-
     setMultipleFiles(combinedFiles);
     setFileProgress((prev) => ({
       ...prev,
@@ -138,7 +138,7 @@ const MultiPartUploadComponent = ({
             totalChunksParts: totalChunks.toString(),
             chunkSizeInBytes: chunkSize,
           }));
-          if (file.size > 5242880) {
+          if (file.size > 52428800) {
             await startUploadEvent(file, index, chunkSize, totalChunks);
           } else {
             await uploadSinglePartFile(file, index);
@@ -174,7 +174,6 @@ const MultiPartUploadComponent = ({
 
       if (response?.success) {
         const { upload_id, file_key } = response.data;
-        console.log(response.data, "dksfksdkds");
         setUploadFileDetails((prev: any) => [
           ...prev,
           {
@@ -210,28 +209,38 @@ const MultiPartUploadComponent = ({
     key: string,
     totalChunks: number
   ) => {
-    const categoriesId = from === "sidebar" ? selectedCategoryId : file_id;
+    try {
+      const categoriesId = from === "sidebar" ? selectedCategoryId : file_id;
 
-    if (presignedUrlsMap[fileIndex]) {
-      return presignedUrlsMap[fileIndex];
+      if (presignedUrlsMap[fileIndex]) {
+        return presignedUrlsMap[fileIndex];
+      }
+
+      const response: PresignedUrlsResponse = await getPresignedUrlsForFileAPI(
+        {
+          file_key: key,
+          upload_id: uploadId,
+          parts: totalChunks,
+        },
+        categoriesId
+      );
+
+      if (response.data?.length === 0 || !response) {
+        throw new Error("Failed to get presigned URLs");
+      }
+      const presignedUrls: any = response.data;
+      setPresignedUrlsMap((prev) => ({ ...prev, [fileIndex]: presignedUrls }));
+      return presignedUrls;
+    } catch (error) {
+      setFileErrors((prev) => [
+        ...prev,
+        {
+          file: multipleFiles[fileIndex],
+          id: fileIndex,
+          reason: (error as Error).message,
+        },
+      ]);
     }
-
-    const response: PresignedUrlsResponse = await getPresignedUrlsForFileAPI(
-      {
-        file_key: key,
-        upload_id: uploadId,
-        parts: totalChunks,
-      },
-      categoriesId
-    );
-
-    if (!response.success) {
-      throw new Error("Failed to get presigned URLs");
-    }
-
-    const presignedUrls = response.data;
-    setPresignedUrlsMap((prev) => ({ ...prev, [fileIndex]: presignedUrls }));
-    return presignedUrls;
   };
 
   console.log(presignedUrlsMap, "urls map");
@@ -243,25 +252,44 @@ const MultiPartUploadComponent = ({
     key: string,
     chunkSize: number,
     totalChunks: number,
-    unuploadedParts?: number[]
+    unuploadedParts?: number[],
+    initialProgress?: number
   ): Promise<void> => {
     const etags: { ETag: string; PartNumber: number }[] = [];
+    const chunkProgresses: number[] = new Array(totalChunks).fill(0);
     try {
       const existingEtags: any = unuploadedParts?.length
         ? etagsMap[index] || []
         : [];
+
+      existingEtags.forEach((part: any) => {
+        chunkProgresses[part.PartNumber - 1] = 1;
+      });
+
+      if (initialProgress === 100) {
+        for (let i = 0; i < totalChunks; i++) {
+          chunkProgresses[i] = 1;
+        }
+      }
+
+      const initialProgressPercent =
+        (chunkProgresses.reduce((sum, progress) => sum + progress, 0) /
+          totalChunks) *
+        100;
+
+      setFileProgress((prev) => ({
+        ...prev,
+        [index]: parseFloat(initialProgressPercent.toFixed(2)),
+      }));
       const partsToUpload =
         unuploadedParts || Array.from({ length: totalChunks }, (_, i) => i + 1);
+
       const presignedUrls: string[] = await fetchPresignedUrls(
         index,
         uploadId,
         key,
         partsToUpload.length
       );
-      let completedChunks = 0;
-      completedChunks =
-        totalChunks -
-        (unuploadedParts?.length ? unuploadedParts.length : totalChunks);
       const uploadPromises = partsToUpload.map(async (partNumber) => {
         const chunkIndex = partNumber - 1;
         const start = chunkIndex * chunkSize;
@@ -276,16 +304,20 @@ const MultiPartUploadComponent = ({
             end,
             file.size,
             (partNumber, chunkProgress) => {
-              const overallProgress =
-                ((completedChunks + chunkProgress) / totalChunks) * 100;
+              chunkProgresses[chunkIndex] = chunkProgress;
+              const totalLoaded = chunkProgresses.reduce(
+                (sum, progress) => sum + progress,
+                0
+              );
+              const overallProgress = (totalLoaded / totalChunks) * 100;
               setFileProgress((prev) => ({
                 ...prev,
                 [index]: parseFloat(overallProgress.toFixed(2)),
               }));
             }
           );
+
           etags.push({ ETag: etag, PartNumber: partNumber });
-          completedChunks++;
         } catch (error) {
           setFileErrors((prev) => [
             ...prev,
@@ -293,9 +325,12 @@ const MultiPartUploadComponent = ({
           ]);
         }
       });
+
       await Promise.all(uploadPromises);
+
       const allEtags = [...existingEtags, ...etags];
-      if (completedChunks === totalChunks) {
+
+      if (allEtags.length === totalChunks) {
         await mergeFileChunks(uploadId, key, allEtags, index, file);
         setPresignedUrlsMap((prev) => {
           const newMap = { ...prev };
@@ -332,9 +367,8 @@ const MultiPartUploadComponent = ({
         "Content-Type": "application/octet-stream",
       },
       onUploadProgress: (progressEvent: any) => {
-        const { loaded, total } = progressEvent;
-        const chunkProgress =
-          ((loaded / total) * (end - start)) / totalFileSize;
+        const { loaded } = progressEvent;
+        const chunkProgress = loaded / (end - start);
         progressCallback(partNumber, chunkProgress);
       },
     });
@@ -383,25 +417,57 @@ const MultiPartUploadComponent = ({
     }
   };
 
+  const resumeUploadForMultipart = async (file: File, index: number) => {
+    let body = {
+      upload_id: uploadFileDetails[index]?.upload_id,
+      file_key: uploadFileDetails[index]?.file_key,
+      parts: +fileFormData.totalChunksParts,
+    };
+    const categoriesId = from === "sidebar" ? selectedCategoryId : file_id;
+
+    try {
+      const response = await resumeUploadAPI(body, categoriesId);
+
+      if (!response.success) {
+        throw new Error("Failed to resume upload");
+      }
+      const unuploadedParts = response.data || [];
+      const { chunkSize, totalChunks } = calculateChunks(file.size);
+      await uploadFileIntoChunks(
+        uploadFileDetails[index]?.upload_id,
+        file,
+        index,
+        uploadFileDetails[index]?.file_key,
+        chunkSize,
+        totalChunks,
+        unuploadedParts,
+        fileProgress[index]
+      );
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   const resumeUpload = async (file: File, index: number) => {
     let erros = [...fileErrors];
     erros = erros.filter((error) => error.id !== index);
     setFileErrors(erros);
     if (file.size > 5242880) {
-      const { chunkSize, totalChunks } = calculateChunks(file.size);
-      await fetchIncompletePresignedUrls(index, totalChunks, chunkSize, file);
+      await resumeUploadForMultipart(file, index);
     } else {
       await uploadSinglePartFile(file, index);
     }
   };
 
   const abortFileUpload = async (index: number) => {
+    const categoriesId = from === "sidebar" ? selectedCategoryId : file_id;
+
     const body = {
-      upload_id: uploadFileDetails[0]?.upload_id,
-      file_key: uploadFileDetails[0]?.file_key,
+      upload_id: uploadFileDetails[index]?.upload_id,
+      file_key: uploadFileDetails[index]?.file_key,
     };
     try {
-      const response = await abortUploadingAPI(body);
+      const response = await abortUploadingAPI(body, categoriesId);
       if (!response.success) {
         throw new Error("Failed to abort upload");
       }
@@ -529,6 +595,9 @@ const MultiPartUploadComponent = ({
   };
 
   const saveFileMetadata = async (file: File, index: number, path: any) => {
+    if (abortedFiles.has(index)) {
+      return;
+    }
     const categoriesId = from === "sidebar" ? selectedCategoryId : file_id;
 
     try {
@@ -634,6 +703,7 @@ const MultiPartUploadComponent = ({
         setSelectedCategoryId={setSelectedCategoryId}
         setShowFileUpload={setShowFileUpload}
         from={from}
+        setFileErrors={setFileErrors}
       />
     </div>
   );
