@@ -16,6 +16,7 @@ import {
   abortUploadingAPI,
   getPresignedUrlsForFileAPI,
   mergeAllChunksAPI,
+  resumeUploadAPI,
   startUploadMultipartFileAPI,
 } from "@/lib/services/multipart";
 
@@ -56,6 +57,7 @@ const MultiPartUploadComponent = ({
   const [presignedUrlsMap, setPresignedUrlsMap] = useState<{
     [index: number]: string[];
   }>({});
+  const [etagsMap, setEtagsMap] = useState<{ [index: number]: string[] }>({});
   const [fileTitles, setFileTitles] = useState<string[]>(
     Array(multipleFiles.length).fill("")
   );
@@ -237,66 +239,83 @@ const MultiPartUploadComponent = ({
     key: string,
     chunkSize: number,
     totalChunks: number,
-    unuploadedParts?: number[] | any
+    unuploadedParts?: number[]
   ): Promise<void> => {
     const etags: { ETag: string; PartNumber: number }[] = [];
 
     try {
+      const existingEtags: any = unuploadedParts?.length
+        ? etagsMap[index] || []
+        : [];
+
+      const partsToUpload =
+        unuploadedParts || Array.from({ length: totalChunks }, (_, i) => i + 1);
+
       const presignedUrls: string[] = await fetchPresignedUrls(
         index,
         uploadId,
         key,
-        totalChunks
+        partsToUpload.length
       );
-
       let completedChunks = 0;
-
       completedChunks =
         totalChunks -
         (unuploadedParts?.length ? unuploadedParts.length : totalChunks);
-      const uploadPromises = Array.from({ length: totalChunks }).map(
-        async (_, chunkIndex) => {
-          const start = chunkIndex * chunkSize;
-          const end = Math.min(start + chunkSize, file.size);
-          const url = presignedUrls[chunkIndex];
 
-          try {
-            const { etag } = await uploadChunk(
-              url,
-              file,
-              chunkIndex + 1,
-              start,
-              end,
-              file.size,
-              (partNumber, chunkProgress) => {
-                const overallProgress =
-                  ((completedChunks + chunkProgress) / totalChunks) * 100;
+      const uploadPromises = partsToUpload.map(async (partNumber) => {
+        const chunkIndex = partNumber - 1;
+        const start = chunkIndex * chunkSize;
+        const end = Math.min(start + chunkSize, file.size);
+        const url = presignedUrls[chunkIndex];
 
-                setFileProgress((prev) => ({
-                  ...prev,
-                  [index]: parseFloat(overallProgress.toFixed(2)),
-                }));
-              }
-            );
+        try {
+          const { etag } = await uploadChunk(
+            url,
+            file,
+            partNumber,
+            start,
+            end,
+            file.size,
+            (partNumber, chunkProgress) => {
+              const overallProgress =
+                ((completedChunks + chunkProgress) / totalChunks) * 100;
 
-            etags.push({ ETag: etag, PartNumber: chunkIndex + 1 });
-            completedChunks++;
-          } catch (error) {
-            setFileErrors((prev) => [
-              ...prev,
-              { file, id: index, reason: (error as Error).message },
-            ]);
-          }
+              setFileProgress((prev) => ({
+                ...prev,
+                [index]: parseFloat(overallProgress.toFixed(2)),
+              }));
+            }
+          );
+
+          etags.push({ ETag: etag, PartNumber: partNumber });
+          completedChunks++;
+        } catch (error) {
+          setFileErrors((prev) => [
+            ...prev,
+            { file, id: index, reason: (error as Error).message },
+          ]);
         }
-      );
+      });
 
       await Promise.all(uploadPromises);
-      await mergeFileChunks(uploadId, key, etags, index, file);
-      setPresignedUrlsMap((prev) => {
-        const newMap = { ...prev };
-        delete newMap[index];
-        return newMap;
-      });
+
+      const allEtags = [...existingEtags, ...etags];
+
+      if (completedChunks === totalChunks) {
+        await mergeFileChunks(uploadId, key, allEtags, index, file);
+        setPresignedUrlsMap((prev) => {
+          const newMap = { ...prev };
+          delete newMap[index];
+          return newMap;
+        });
+        setEtagsMap((prev) => {
+          const newMap = { ...prev };
+          delete newMap[index];
+          return newMap;
+        });
+      } else {
+        setEtagsMap((prev) => ({ ...prev, [index]: allEtags }));
+      }
     } catch (error) {
       setFileErrors((prev) => [
         ...prev,
@@ -373,13 +392,42 @@ const MultiPartUploadComponent = ({
     }
   };
 
+  const resumeUploadForMultipart = async (file: File, index: number) => {
+    let body = {
+      upload_id: uploadFileDetails[index]?.upload_id,
+      file_key: uploadFileDetails[index]?.file_key,
+      parts: +fileFormData.totalChunksParts,
+    };
+    const categoriesId = from === "sidebar" ? selectedCategoryId : file_id;
+
+    try {
+      const response = await resumeUploadAPI(body, categoriesId);
+
+      if (!response.success) {
+        throw new Error("Failed to resume upload");
+      }
+      const unuploadedParts = response.data || [];
+      const { chunkSize, totalChunks } = calculateChunks(file.size);
+      await uploadFileIntoChunks(
+        uploadFileDetails[index]?.upload_id,
+        file,
+        index,
+        uploadFileDetails[index]?.file_key,
+        chunkSize,
+        totalChunks,
+        unuploadedParts
+      );
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   const resumeUpload = async (file: File, index: number) => {
     let erros = [...fileErrors];
     erros = erros.filter((error) => error.id !== index);
     setFileErrors(erros);
     if (file.size > 5242880) {
-      const { chunkSize, totalChunks } = calculateChunks(file.size);
-      await startUploadEvent(file, index, chunkSize, totalChunks);
+      await resumeUploadForMultipart(file, index);
     } else {
       await uploadSinglePartFile(file, index);
     }
