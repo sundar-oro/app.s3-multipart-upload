@@ -258,6 +258,7 @@ const MultiPartUploadComponent = ({
         partsToUpload.length
       );
       let completedChunks = 0;
+
       completedChunks =
         totalChunks -
         (unuploadedParts?.length ? unuploadedParts.length : totalChunks);
