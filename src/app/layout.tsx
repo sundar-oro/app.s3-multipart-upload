@@ -28,7 +28,7 @@ export default function RootLayout({
           ) : (
             <>
               <NavBar />
-              <div className="sticky top-0 left-0 h-screen w-50 bg-white">
+              <div className="h-screen w-50 bg-white">
                 <SideBar>{children}</SideBar>
               </div>
             </>

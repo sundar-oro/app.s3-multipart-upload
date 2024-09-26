@@ -132,8 +132,8 @@ const SideBar = ({ children }: { children?: React.ReactNode }) => {
 
   return (
     <>
-      <div className="flex">
-        <nav className="flex flex-col h-full  bg-white text-gray-800 py-4 px-3 gap-9">
+      <div className="flex ">
+        <nav className="flex flex-col h-full sticky w-  top-0 left-0 bg-white text-gray-800 py-4 px-3 gap-9">
           <div className="mt-[40%]">
             <DropdownMenu>
               <DropdownMenuTrigger asChild className="cursor-pointer">
@@ -197,7 +197,6 @@ const SideBar = ({ children }: { children?: React.ReactNode }) => {
                 <span>My Files</span>
               </Link>
             </li>
-
             <li>
               <a
                 onClick={handleCategorySidebar}
