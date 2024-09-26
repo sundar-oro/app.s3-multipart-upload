@@ -34,7 +34,7 @@ class FetchService {
   configureAuthorization(config: any) {
     // const state = store.getState();
     // let accessToken = state?.auth?.user?.access_token;
-    let accessToken = Cookies.get("token");; 
+    let accessToken = Cookies.get("token");
 
     // const encodedString = Cookies.get("token");
     // accessToken += decode(encodedString);

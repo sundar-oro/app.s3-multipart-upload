@@ -47,11 +47,11 @@ const UploadFiles: React.FC<uploadImagesComponentProps> = ({
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: {
-      "image/*": [],
-      "video/*": [],
-      "application/pdf": [],
-      "text/csv": [],
-      "text/plain": [],
+      // "image/*": [],
+      // "video/*": [],
+      // "application/pdf": [],
+      // "text/csv": [],
+      // "text/plain": [],
     },
   });
 

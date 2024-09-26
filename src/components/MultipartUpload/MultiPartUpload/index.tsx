@@ -15,6 +15,7 @@ import {
 import {
   abortUploadingAPI,
   getPresignedUrlsForFileAPI,
+  getPresignedUrlsForIncompleteFileAPI,
   mergeAllChunksAPI,
   startUploadMultipartFileAPI,
 } from "@/lib/services/multipart";
@@ -60,7 +61,9 @@ const MultiPartUploadComponent = ({
     Array(multipleFiles.length).fill("")
   );
   const [categoriesData, setCategoriesData] = useState([]);
+  const [incompleteData, setIncompleteData] = useState([]);
   const [inputValue, setInputValue] = useState("");
+  const [etagsMap, setEtagsMap] = useState([{}]);
 
   const handleFileTypes = (type: string) => {
     const fileType = type.toLowerCase();
@@ -231,6 +234,8 @@ const MultiPartUploadComponent = ({
     return presignedUrls;
   };
 
+  console.log(presignedUrlsMap, "urls map");
+
   const uploadFileIntoChunks = async (
     uploadId: string,
     file: File,
@@ -238,72 +243,73 @@ const MultiPartUploadComponent = ({
     key: string,
     chunkSize: number,
     totalChunks: number,
-    unuploadedParts?: number[] | any
+    unuploadedParts?: number[]
   ): Promise<void> => {
     const etags: { ETag: string; PartNumber: number }[] = [];
-
     try {
+      const existingEtags: any = unuploadedParts?.length
+        ? etagsMap[index] || []
+        : [];
+      const partsToUpload =
+        unuploadedParts || Array.from({ length: totalChunks }, (_, i) => i + 1);
       const presignedUrls: string[] = await fetchPresignedUrls(
         index,
         uploadId,
         key,
-        totalChunks
+        partsToUpload.length
       );
-
       let completedChunks = 0;
-
       completedChunks =
         totalChunks -
         (unuploadedParts?.length ? unuploadedParts.length : totalChunks);
-      const uploadPromises = Array.from({ length: totalChunks }).map(
-        async (_, chunkIndex) => {
-          const start = chunkIndex * chunkSize;
-          const end = Math.min(start + chunkSize, file.size);
-          const url = presignedUrls[chunkIndex];
-
-          try {
-            const { etag } = await uploadChunk(
-              url,
-              file,
-              chunkIndex + 1,
-              start,
-              end,
-              file.size,
-              (partNumber, chunkProgress) => {
-                const overallProgress =
-                  ((completedChunks + chunkProgress / 100) / totalChunks) * 100;
-
-                setFileProgress((prev) => ({
-                  ...prev,
-                  [index]: parseFloat(overallProgress.toFixed(2)),
-                }));
-              }
-            );
-
-            etags.push({ ETag: etag, PartNumber: chunkIndex + 1 });
-            completedChunks++;
-
-            const overallProgress = (completedChunks / totalChunks) * 100;
-            setFileProgress((prev) => ({
-              ...prev,
-              [index]: parseFloat(overallProgress.toFixed(2)),
-            }));
-          } catch (error) {
-            setFileErrors((prev) => [
-              ...prev,
-              { file, id: index, reason: (error as Error).message },
-            ]);
-          }
+      const uploadPromises = partsToUpload.map(async (partNumber) => {
+        const chunkIndex = partNumber - 1;
+        const start = chunkIndex * chunkSize;
+        const end = Math.min(start + chunkSize, file.size);
+        const url = presignedUrls[chunkIndex];
+        try {
+          const { etag } = await uploadChunk(
+            url,
+            file,
+            partNumber,
+            start,
+            end,
+            file.size,
+            (partNumber, chunkProgress) => {
+              const overallProgress =
+                ((completedChunks + chunkProgress) / totalChunks) * 100;
+              setFileProgress((prev) => ({
+                ...prev,
+                [index]: parseFloat(overallProgress.toFixed(2)),
+              }));
+            }
+          );
+          etags.push({ ETag: etag, PartNumber: partNumber });
+          completedChunks++;
+        } catch (error) {
+          setFileErrors((prev) => [
+            ...prev,
+            { file, id: index, reason: (error as Error).message },
+          ]);
         }
-      );
-
-      await Promise.all(uploadPromises);
-      await mergeFileChunks(uploadId, key, etags, index, file);
-      setPresignedUrlsMap((prev) => {
-        const newMap = { ...prev };
-        delete newMap[index];
-        return newMap;
       });
+      await Promise.all(uploadPromises);
+      const allEtags = [...existingEtags, ...etags];
+      if (completedChunks === totalChunks) {
+        await mergeFileChunks(uploadId, key, allEtags, index, file);
+        setPresignedUrlsMap((prev) => {
+          const newMap = { ...prev };
+          delete newMap[index];
+          return newMap;
+        });
+        setEtagsMap((prev) => {
+          const newMap = { ...prev };
+          delete newMap[index];
+          return newMap;
+        });
+      } else {
+        setEtagsMap((prev) => ({ ...prev, [index]: allEtags }));
+      }
     } catch (error) {
       setFileErrors((prev) => [
         ...prev,
@@ -311,7 +317,6 @@ const MultiPartUploadComponent = ({
       ]);
     }
   };
-
   const uploadChunk = async (
     url: string,
     file: File,
@@ -322,17 +327,17 @@ const MultiPartUploadComponent = ({
     progressCallback: (partNumber: number, chunkProgress: number) => void
   ): Promise<{ etag: string }> => {
     const chunk = file.slice(start, end);
-
     const response = await axios.put(url, chunk, {
       headers: {
         "Content-Type": "application/octet-stream",
       },
       onUploadProgress: (progressEvent: any) => {
-        const chunkProgress = (progressEvent.loaded / chunk.size) * 100;
+        const { loaded, total } = progressEvent;
+        const chunkProgress =
+          ((loaded / total) * (end - start)) / totalFileSize;
         progressCallback(partNumber, chunkProgress);
       },
     });
-
     const etag = response.headers["etag"];
     return { etag };
   };
@@ -384,7 +389,7 @@ const MultiPartUploadComponent = ({
     setFileErrors(erros);
     if (file.size > 5242880) {
       const { chunkSize, totalChunks } = calculateChunks(file.size);
-      await startUploadEvent(file, index, chunkSize, totalChunks);
+      await fetchIncompletePresignedUrls(index, totalChunks, chunkSize, file);
     } else {
       await uploadSinglePartFile(file, index);
     }
@@ -404,6 +409,48 @@ const MultiPartUploadComponent = ({
     } catch (error) {
       console.error(error);
     }
+  };
+
+  const fetchIncompletePresignedUrls = async (
+    index: number,
+    totalChunks: number,
+    chunkSize: number,
+    file: File
+  ) => {
+    const categoriesId = from === "sidebar" ? selectedCategoryId : file_id;
+
+    if (presignedUrlsMap[index]) {
+      return presignedUrlsMap[index];
+    }
+    const upload_id = uploadFileDetails[0]?.upload_id;
+    const file_key = uploadFileDetails[0]?.file_key;
+
+    const response: PresignedUrlsResponse =
+      await getPresignedUrlsForIncompleteFileAPI(
+        {
+          upload_id,
+          file_key,
+          parts: totalChunks,
+        },
+        categoriesId
+      );
+
+    if (!response.success) {
+      throw new Error("Failed to get presigned URLs");
+    }
+
+    const incompleteParts: any = response.data;
+    setIncompleteData(incompleteParts);
+    console.log(incompleteParts, "inCOMPLETE");
+    await uploadFileIntoChunks(
+      upload_id,
+      file,
+      index,
+      file_key,
+      chunkSize,
+      totalChunks,
+      incompleteParts
+    );
   };
 
   // Upload single part file which is less than 5 mb

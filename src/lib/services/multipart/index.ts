@@ -31,6 +31,21 @@ export const getPresignedUrlsForFileAPI = async (body: any, id: any) => {
   }
 };
 
+export const getPresignedUrlsForIncompleteFileAPI = async (body: any, id: any) => {
+  try {
+    const { data, success } = await $fetch.post(
+      `/categories/${id}/files/list-incomplete-parts`,
+      body
+    );
+    if (!success) {
+      return handleAPIErrorResponse(data);
+    }
+    return data;
+  } catch (err) {
+    console.error();
+  }
+};
+
 export const mergeAllChunksAPI = async (body: any, id: any) => {
   try {
     const { data, success } = await $fetch.post(
