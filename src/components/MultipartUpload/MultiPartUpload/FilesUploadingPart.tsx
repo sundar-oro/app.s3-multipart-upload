@@ -28,6 +28,7 @@ const UploadFiles: React.FC<uploadImagesComponentProps> = ({
   setSelectedCategoryId,
   setShowFileUpload,
   from,
+  setFileErrors,
 }) => {
   const { file_id } = useParams();
 
@@ -35,6 +36,8 @@ const UploadFiles: React.FC<uploadImagesComponentProps> = ({
   const [startUploading, setStartUploading] = useState(false);
   const onDrop = useCallback((acceptedFiles: File[]) => {
     if (acceptedFiles.length > 0) {
+      setMultipleFiles([]);
+      setFileTitles([]);
       setFile(acceptedFiles);
       handleFileChange(acceptedFiles, false);
       setFileTitles((prev: any) => [
@@ -58,11 +61,10 @@ const UploadFiles: React.FC<uploadImagesComponentProps> = ({
   const removeFileAfterAdding = (index: number) => {
     const updatedFiles = multipleFiles.filter((_, i) => i !== index);
     const updatedTitles = fileTitles.filter((_: any, i: any) => i !== index);
-    const updatedProgress = { ...fileProgress };
-    delete updatedProgress[index];
+
     setMultipleFiles(updatedFiles);
-    setFileProgress(updatedProgress);
     setFileTitles(updatedTitles);
+    abortFileUpload(index);
   };
 
   const retryUpload = (file: File, index: number) => {
@@ -81,6 +83,18 @@ const UploadFiles: React.FC<uploadImagesComponentProps> = ({
   const allFilesUploaded =
     multipleFiles.length > 0 &&
     multipleFiles.every((_, index) => fileProgress[index] === 100);
+
+  const handleCancelUpload = (index: number) => {
+    abortFileUpload(index);
+    setFileErrors((prev: any) => [
+      ...prev,
+      {
+        file: { name: multipleFiles[index].name } as File,
+        id: index,
+        reason: "Upload Canceled",
+      },
+    ]);
+  };
 
   return (
     <div className="p-4 bg-white rounded-lg shadow-md">
@@ -171,21 +185,37 @@ const UploadFiles: React.FC<uploadImagesComponentProps> = ({
                   {fileProgress[index] === 100 ? (
                     <CheckCircle className="text-green-500 w-5 h-5 mr-2" />
                   ) : error ? (
-                    <Button
-                      onClick={() => retryUpload(item, index)}
-                      className="text-sm"
-                    >
-                      Retry
-                    </Button>
+                    error.reason !== "Upload Canceled" ? (
+                      <Button
+                        onClick={() => retryUpload(item, index)}
+                        className="text-sm"
+                      >
+                        Retry
+                      </Button>
+                    ) : null
                   ) : (
                     ""
                   )}
+                  {fileProgress[index] < 100 &&
+                    fileProgress[index] > 0 &&
+                    error?.reason !== "Upload Canceled" && (
+                      <Button
+                        onClick={() => handleCancelUpload(index)}
+                        className="text-sm text-red-500 ml-2"
+                      >
+                        Cancel
+                      </Button>
+                    )}
                 </div>
               </div>
               <Button
                 onClick={() => removeFileAfterAdding(index)}
                 className="ml-2 text-red-500"
-                disabled={fileProgress[index] !== 100}
+                disabled={
+                  fileProgress[index] == 100 || fileProgress[index] == 0
+                    ? false
+                    : true
+                }
               >
                 <X className="w-4 h-4" />
               </Button>
@@ -193,12 +223,12 @@ const UploadFiles: React.FC<uploadImagesComponentProps> = ({
           );
         })}
       </div>
-      <div className="mt-4 flex  items-center justify-between">
+      <div className="mt-4 flex items-center justify-between">
         <Button
           onClick={() => {
             setShowFileUpload(false);
             setStartUploading(false);
-            if (from == "sidebar") {
+            if (from === "sidebar") {
               location.reload();
             }
           }}
@@ -216,7 +246,7 @@ const UploadFiles: React.FC<uploadImagesComponentProps> = ({
             multipleFiles.length === 0 ||
             allFilesUploaded ||
             startUploading ||
-            (!selectedCategoryId && from == "sidebar") ||
+            (!selectedCategoryId && from === "sidebar") ||
             !allTitlesProvided
           }
           className={`w-[50%] ${
@@ -225,7 +255,7 @@ const UploadFiles: React.FC<uploadImagesComponentProps> = ({
             multipleFiles.length === 0 ||
             allFilesUploaded ||
             startUploading ||
-            (!selectedCategoryId && from == "sidebar") ||
+            (!selectedCategoryId && from === "sidebar") ||
             !allTitlesProvided
               ? "opacity-50 cursor-not-allowed"
               : ""

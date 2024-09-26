@@ -106,7 +106,6 @@ const MultiPartUploadComponent = ({
   const handleFileChange = async (files: File[], start: any) => {
     const newFiles: any = Array.from(files);
     const combinedFiles = [...newFiles, ...multipleFiles];
-    console.log(combinedFiles, "lakkkkk");
     setMultipleFiles(combinedFiles);
     setFileProgress((prev) => ({
       ...prev,
@@ -208,28 +207,38 @@ const MultiPartUploadComponent = ({
     key: string,
     totalChunks: number
   ) => {
-    const categoriesId = from === "sidebar" ? selectedCategoryId : file_id;
+    try {
+      const categoriesId = from === "sidebar" ? selectedCategoryId : file_id;
 
-    if (presignedUrlsMap[fileIndex]) {
-      return presignedUrlsMap[fileIndex];
+      if (presignedUrlsMap[fileIndex]) {
+        return presignedUrlsMap[fileIndex];
+      }
+
+      const response: PresignedUrlsResponse = await getPresignedUrlsForFileAPI(
+        {
+          file_key: key,
+          upload_id: uploadId,
+          parts: totalChunks,
+        },
+        categoriesId
+      );
+
+      if (response.data?.length === 0 || !response) {
+        throw new Error("Failed to get presigned URLs");
+      }
+      const presignedUrls: any = response.data;
+      setPresignedUrlsMap((prev) => ({ ...prev, [fileIndex]: presignedUrls }));
+      return presignedUrls;
+    } catch (error) {
+      setFileErrors((prev) => [
+        ...prev,
+        {
+          file: multipleFiles[fileIndex],
+          id: fileIndex,
+          reason: (error as Error).message,
+        },
+      ]);
     }
-
-    const response: PresignedUrlsResponse = await getPresignedUrlsForFileAPI(
-      {
-        file_key: key,
-        upload_id: uploadId,
-        parts: totalChunks,
-      },
-      categoriesId
-    );
-
-    if (!response.success) {
-      throw new Error("Failed to get presigned URLs");
-    }
-
-    const presignedUrls = response.data;
-    setPresignedUrlsMap((prev) => ({ ...prev, [fileIndex]: presignedUrls }));
-    return presignedUrls;
   };
 
   const uploadFileIntoChunks = async (
@@ -239,15 +248,35 @@ const MultiPartUploadComponent = ({
     key: string,
     chunkSize: number,
     totalChunks: number,
-    unuploadedParts?: number[]
+    unuploadedParts?: number[],
+    initialProgress?: number
   ): Promise<void> => {
     const etags: { ETag: string; PartNumber: number }[] = [];
-
+    const chunkProgresses: number[] = new Array(totalChunks).fill(0);
     try {
       const existingEtags: any = unuploadedParts?.length
         ? etagsMap[index] || []
         : [];
 
+      existingEtags.forEach((part: any) => {
+        chunkProgresses[part.PartNumber - 1] = 1;
+      });
+
+      if (initialProgress === 100) {
+        for (let i = 0; i < totalChunks; i++) {
+          chunkProgresses[i] = 1;
+        }
+      }
+
+      const initialProgressPercent =
+        (chunkProgresses.reduce((sum, progress) => sum + progress, 0) /
+          totalChunks) *
+        100;
+
+      setFileProgress((prev) => ({
+        ...prev,
+        [index]: parseFloat(initialProgressPercent.toFixed(2)),
+      }));
       const partsToUpload =
         unuploadedParts || Array.from({ length: totalChunks }, (_, i) => i + 1);
 
@@ -257,11 +286,6 @@ const MultiPartUploadComponent = ({
         key,
         partsToUpload.length
       );
-      let completedChunks = 0;
-
-      completedChunks =
-        totalChunks -
-        (unuploadedParts?.length ? unuploadedParts.length : totalChunks);
 
       const uploadPromises = partsToUpload.map(async (partNumber) => {
         const chunkIndex = partNumber - 1;
@@ -278,9 +302,12 @@ const MultiPartUploadComponent = ({
             end,
             file.size,
             (partNumber, chunkProgress) => {
-              const overallProgress =
-                ((completedChunks + chunkProgress) / totalChunks) * 100;
-
+              chunkProgresses[chunkIndex] = chunkProgress;
+              const totalLoaded = chunkProgresses.reduce(
+                (sum, progress) => sum + progress,
+                0
+              );
+              const overallProgress = (totalLoaded / totalChunks) * 100;
               setFileProgress((prev) => ({
                 ...prev,
                 [index]: parseFloat(overallProgress.toFixed(2)),
@@ -289,7 +316,6 @@ const MultiPartUploadComponent = ({
           );
 
           etags.push({ ETag: etag, PartNumber: partNumber });
-          completedChunks++;
         } catch (error) {
           setFileErrors((prev) => [
             ...prev,
@@ -302,7 +328,7 @@ const MultiPartUploadComponent = ({
 
       const allEtags = [...existingEtags, ...etags];
 
-      if (completedChunks === totalChunks) {
+      if (allEtags.length === totalChunks) {
         await mergeFileChunks(uploadId, key, allEtags, index, file);
         setPresignedUrlsMap((prev) => {
           const newMap = { ...prev };
@@ -341,9 +367,8 @@ const MultiPartUploadComponent = ({
         "Content-Type": "application/octet-stream",
       },
       onUploadProgress: (progressEvent: any) => {
-        const { loaded, total } = progressEvent;
-        const chunkProgress =
-          ((loaded / total) * (end - start)) / totalFileSize;
+        const { loaded } = progressEvent;
+        const chunkProgress = loaded / (end - start);
         progressCallback(partNumber, chunkProgress);
       },
     });
@@ -416,7 +441,8 @@ const MultiPartUploadComponent = ({
         uploadFileDetails[index]?.file_key,
         chunkSize,
         totalChunks,
-        unuploadedParts
+        unuploadedParts,
+        fileProgress[index]
       );
     } catch (error) {
       console.error(error);
@@ -435,12 +461,14 @@ const MultiPartUploadComponent = ({
   };
 
   const abortFileUpload = async (index: number) => {
+    const categoriesId = from === "sidebar" ? selectedCategoryId : file_id;
+
     const body = {
-      upload_id: uploadFileDetails[0]?.upload_id,
-      file_key: uploadFileDetails[0]?.file_key,
+      upload_id: uploadFileDetails[index]?.upload_id,
+      file_key: uploadFileDetails[index]?.file_key,
     };
     try {
-      const response = await abortUploadingAPI(body);
+      const response = await abortUploadingAPI(body, categoriesId);
       if (!response.success) {
         throw new Error("Failed to abort upload");
       }
@@ -526,6 +554,9 @@ const MultiPartUploadComponent = ({
   };
 
   const saveFileMetadata = async (file: File, index: number, path: any) => {
+    if (abortedFiles.has(index)) {
+      return;
+    }
     const categoriesId = from === "sidebar" ? selectedCategoryId : file_id;
 
     try {
@@ -631,6 +662,7 @@ const MultiPartUploadComponent = ({
         setSelectedCategoryId={setSelectedCategoryId}
         setShowFileUpload={setShowFileUpload}
         from={from}
+        setFileErrors={setFileErrors}
       />
     </div>
   );

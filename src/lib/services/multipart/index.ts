@@ -61,10 +61,10 @@ export const resumeUploadAPI = async (body: any, id: any) => {
   }
 };
 
-export const abortUploadingAPI = async (body: any) => {
+export const abortUploadingAPI = async (body: any, id: any) => {
   try {
     const { data, success } = await $fetch.post(
-      `/multipart-upload/abort`,
+      `/categories/${id}/files/abort`,
       body
     );
     if (!success) {
