@@ -34,17 +34,18 @@ export default function DynamicPagination({
   totalItems,
   capturePageNum,
   captureRowPerItems,
-  initialPage = 1,
   limitOptionsFromProps,
   paginationDetails,
 }: DynamicPaginationProps) {
-  const [currentPage, setCurrentPage] = useState(initialPage);
-  const [pageValue, setPageValue] = useState<number>(initialPage);
+  // const [currentPage, setCurrentPage] = useState(paginationDetails?.page || 1);
+  const [pageValue, setPageValue] = useState(paginationDetails?.page);
   const [limitOptions, setLimitOptions] = useState<
     { title: string; value: number }[]
   >([]);
 
   const selectedValue = paginationDetails?.limit;
+
+  console.log(paginationDetails?.page);
 
   useEffect(() => {
     setLimitOptions(
@@ -61,9 +62,12 @@ export default function DynamicPagination({
     );
   }, [limitOptionsFromProps]);
 
+  useEffect(() => {
+    setPageValue(paginationDetails?.page);
+  }, [paginationDetails?.page]);
+
   const handlePageChange = (page: number) => {
     if (page >= 1 && page <= totalPages) {
-      setCurrentPage(page);
       setPageValue(page);
       capturePageNum(page);
     }
@@ -89,13 +93,13 @@ export default function DynamicPagination({
         pageNumbers.push(i);
       }
     } else {
-      if (currentPage <= 3) {
+      if (paginationDetails?.page <= 3) {
         for (let i = 1; i <= 4; i++) {
           pageNumbers.push(i);
         }
         pageNumbers.push(null); // For ellipsis
         pageNumbers.push(totalPages);
-      } else if (currentPage >= totalPages - 2) {
+      } else if (paginationDetails?.page >= totalPages - 2) {
         pageNumbers.push(1);
         pageNumbers.push(null); // For ellipsis
         for (let i = totalPages - 3; i <= totalPages; i++) {
@@ -104,7 +108,11 @@ export default function DynamicPagination({
       } else {
         pageNumbers.push(1);
         pageNumbers.push(null); // For ellipsis
-        for (let i = currentPage - 1; i <= currentPage + 1; i++) {
+        for (
+          let i = paginationDetails?.page - 1;
+          i <= paginationDetails?.page + 1;
+          i++
+        ) {
           pageNumbers.push(i);
         }
         pageNumbers.push(null); // For ellipsis
@@ -145,9 +153,9 @@ export default function DynamicPagination({
             href="#"
             onClick={(e) => {
               e.preventDefault();
-              handlePageChange(currentPage - 1);
+              handlePageChange(paginationDetails?.page - 1);
             }}
-            aria-disabled={currentPage === 1}
+            aria-disabled={paginationDetails?.page === 1}
           />
         </PaginationItem>
 
@@ -160,7 +168,7 @@ export default function DynamicPagination({
             <PaginationItem key={pageNumber}>
               <PaginationLink
                 href="#"
-                isActive={pageNumber === currentPage}
+                isActive={pageNumber === paginationDetails?.page}
                 onClick={(e) => {
                   e.preventDefault();
                   handlePageChange(pageNumber);
@@ -177,9 +185,9 @@ export default function DynamicPagination({
             href="#"
             onClick={(e) => {
               e.preventDefault();
-              handlePageChange(currentPage + 1);
+              handlePageChange(paginationDetails?.page + 1);
             }}
-            aria-disabled={currentPage === totalPages}
+            aria-disabled={paginationDetails?.page === totalPages}
           />
         </PaginationItem>
       </PaginationContent>

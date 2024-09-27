@@ -18,6 +18,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { FilePenLine } from "lucide-react";
 import AddDialog from "@/components/Core/CreateDialog";
+import Loading from "@/components/Core/loading";
 
 const MyListFiles = ({
   filesData,
@@ -201,7 +202,7 @@ const MyListFiles = ({
   return (
     <>
       <div className="ml-6 mt-4 p-6 flex-grow  max-h-[60vh]">
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto relative">
           <TanStackTable
             columns={[...FilesTableColumns(), ...filesActions]}
             data={filesData}
@@ -209,6 +210,8 @@ const MyListFiles = ({
             searchParams={searchParams}
             getData={getAllMyFiles}
           />
+          <Loading loading={loading} />
+          {/* {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : ""} */}
         </div>
         <div className="mb-10 ">
           <DynamicPagination

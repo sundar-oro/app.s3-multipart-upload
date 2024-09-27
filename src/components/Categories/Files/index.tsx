@@ -1,26 +1,32 @@
 "use client";
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
-import { Button } from "@/components/ui/button";
+
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { ListOrdered, PanelLeft, Search, Table2 } from "lucide-react";
+import {
+  ChevronDown,
+  ListOrdered,
+  Loader2,
+  PanelLeft,
+  Search,
+  Table2,
+} from "lucide-react";
 import {
   useParams,
   usePathname,
   useRouter,
   useSearchParams,
 } from "next/navigation";
-
+import { Check, ChevronsUpDown, X } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { getAllFilesAPI, getMyFilesAPI } from "@/lib/services/files";
-import { RootState } from "@/redux";
 import { useEffect, useRef, useState } from "react";
-import { useSelector } from "react-redux";
 import { DateRangePicker } from "rsuite";
+import Select from "react-select";
 import "rsuite/dist/rsuite.css";
 
 interface FileData {
@@ -51,6 +57,8 @@ import {
 } from "@/lib/helpers/Core/prepareQueryParams";
 import { prepareURLEncodedParams } from "@/lib/helpers/prepareUrlEncodedParams";
 import { Input } from "@/components/ui/input";
+import { types } from "@/lib/constants/filters";
+import { getSelectAllCategoriesAPI } from "@/lib/services/categories";
 
 const truncateFileName = (name: string, maxLength: number) => {
   const baseName = name.split(".")[0];
@@ -69,6 +77,8 @@ const FilesComponent = () => {
   const router = useRouter();
   const params = useSearchParams();
   const pathname = usePathname();
+  const fileListRef = useRef<HTMLDivElement>(null);
+  const { file_id } = useParams();
 
   const [page, setPage] = useState(1);
   const [showFileUpload, setShowFileUpload] = useState<any>(false);
@@ -77,7 +87,6 @@ const FilesComponent = () => {
   const [loading, setLoading] = useState(false);
   const [noData, setNoData] = useState(false);
   const [listView, setListView] = useState(true);
-  const [showMultipartUpload, setShowMultipartUpload] = useState(false);
   const [paginationDetails, setPaginationDetails] = useState({});
   const [selectedDates, setSelectedDates] = useState<[Date, Date] | null>(null);
   const [formattedStartDate, setFormattedStartDate] = useState<string | null>(
@@ -85,10 +94,11 @@ const FilesComponent = () => {
   );
   const [search, setSearch] = useState("");
   const [formattedEndDate, setFormattedEndDate] = useState<string | null>(null);
-  const lastFileRef = useRef<HTMLDivElement>(null);
-  const fileListRef = useRef<HTMLDivElement>(null);
-  const { file_id } = useParams();
-  const user = useSelector((state: RootState) => state?.user);
+  const [open, setOpen] = useState(false);
+  const [value, setValue] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<any>();
+  const [categoriesData, setCategoriesData] = useState([]);
+
   const [searchParams, setSearchParams] = useState(
     Object.fromEntries(new URLSearchParams(Array.from(params.entries())))
   );
@@ -96,16 +106,12 @@ const FilesComponent = () => {
     setShowFileUpload((prevState: any) => !prevState);
   };
 
-  const handleMultipartUploadToggle = () => {
-    setShowMultipartUpload((prevState) => !prevState);
-    handleToggle();
-  };
-
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearch(e.target.value.toLowerCase());
   };
 
   const handleDateChange = (dates: any) => {
+    console.log(dates);
     setSelectedDates(dates);
     setFormattedStartDate(null);
     setFormattedEndDate(null);
@@ -146,15 +152,40 @@ const FilesComponent = () => {
     }
   };
 
+  const getAllCategories = async () => {
+    try {
+      const response = await getSelectAllCategoriesAPI();
+
+      if (response.status === 200 || response.status === 201) {
+        const options = response?.data.data?.map((category: any) => ({
+          value: category.id,
+          label: category.name,
+        }));
+        setCategoriesData(options);
+      } else {
+        throw response;
+      }
+    } catch (error) {
+      console.error("Failed to call API", error);
+    } finally {
+    }
+  };
+  const handleChange = (selectedOption: any) => {
+    // setSelectedCategoryId(selectedOption);
+    setSelectedCategory(selectedOption);
+  };
+
   const getAllFiles = async ({
     page = params.get("page") as string,
     limit = params.get("limit") as string,
     orderBy = params.get("sort_by") as string,
     orderType = params.get("sort_type") as string,
     search_string = params.get("search_string") as string,
+    type = params.get("type") as string,
     date_from = params.get("date_from") as any,
     date_to = params.get("date_to") as any,
   }: any) => {
+    setLoading(true);
     let queryParams = prepareQueryParams({
       page: page ? page : 1,
       limit: limit ? limit : 10,
@@ -163,8 +194,9 @@ const FilesComponent = () => {
       search_string,
       date_from,
       date_to,
+      type,
     });
-    setLoading(true);
+
     let querySting = prepareURLEncodedParams("", queryParams);
     router.push(`${pathname}${querySting}`);
     setSearchParams(queryParams);
@@ -190,9 +222,12 @@ const FilesComponent = () => {
     orderBy = params.get("sort_by") as string,
     orderType = params.get("sort_type") as string,
     search_string = params.get("search_string") as string,
+    type = params.get("type") as string,
     date_from = params.get("date_from") as any,
     date_to = params.get("date_to") as any,
+    category_id = params.get("category_id") as string,
   }: any) => {
+    setLoading(true);
     let queryParams = prepareQueryParams({
       page: page ? page : 1,
       limit: limit ? limit : 10,
@@ -201,8 +236,10 @@ const FilesComponent = () => {
       search_string,
       date_from,
       date_to,
+      type,
+      category_id,
     });
-    setLoading(true);
+
     let querySting = prepareURLEncodedParams("", queryParams);
     router.push(`${pathname}${querySting}`);
     setSearchParams(queryParams);
@@ -226,6 +263,7 @@ const FilesComponent = () => {
       setCategoryId(parseInt(Array.isArray(file_id) ? file_id[0] : file_id));
     } else {
       getAllMyFiles({});
+      getAllCategories();
     }
   }, []);
 
@@ -276,12 +314,34 @@ const FilesComponent = () => {
     );
   };
 
+  const handleSelect = (selectedValue: string) => {
+    setValue(value === selectedValue ? "" : selectedValue);
+    if (file_id) {
+      getAllFiles({
+        page: 1,
+        type: value === selectedValue ? "" : selectedValue,
+      });
+    } else {
+      getAllMyFiles({
+        page: 1,
+        type: value === selectedValue ? "" : selectedValue,
+      });
+    }
+    setOpen(false);
+  };
+
   useEffect(() => {
+    setSearch(params.get("search_string") as string);
+    setValue(params.get("type") as string);
+
     const date_from: any = params.get("date_from");
     const date_to: any = params.get("date_to");
     if (date_from && date_to) {
-      const startDate = dayjs(date_from, "MM-DD-YYYY").toDate();
-      const endDate = dayjs(date_to, "MM-DD-YYYY").toDate();
+      const startDate = dayjs(date_from, "YYYY-MM-DD").toDate();
+      console.log(startDate);
+      const endDate = dayjs(date_to, "YYYY-MM-DD").toDate();
+      console.log(endDate);
+
       setSelectedDates([startDate, endDate]);
     }
   }, []);
@@ -291,11 +351,16 @@ const FilesComponent = () => {
       if (file_id) {
         getAllFiles({ page: 1, search_string: search });
       } else {
-        getAllMyFiles({ page: 1, search_string: search });
+        getAllMyFiles({
+          page: 1,
+          search_string: search,
+          category_id: selectedCategory?.value ? selectedCategory?.value : "",
+        });
       }
     }, 500);
     return () => clearInterval(debounce);
-  }, [search]);
+  }, [search, selectedCategory]);
+  console.log(selectedCategory, "Selected");
 
   return (
     <>
@@ -368,16 +433,96 @@ const FilesComponent = () => {
                     placeholder="Select Date Range"
                   />
                 </div>
+                <div>
+                  {/* <Select
+                    options={types}
+                    placeholder="Select Category"
+                    onChange={handleChange}
+                    value={selectedType}
+                  /> */}
+                  <Popover open={open} onOpenChange={setOpen}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        role="combobox"
+                        aria-expanded={open}
+                        className="w-[200px] justify-between bg-white-700"
+                      >
+                        {value
+                          ? types.find((type) => type.value === value)?.label
+                          : "Select File Type..."}
+                        <div className="flex">
+                          {value && (
+                            <X
+                              className="mr-2 h-4 w-4 shrink-0 opacity-50"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setValue("");
+                              }}
+                            />
+                          )}
+                          <ChevronDown className="h-4 w-4 shrink-0 opacity-50" />
+                        </div>
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-[200px] p-0 ">
+                      <div className="max-h-[300px] overflow-y-auto ">
+                        {types.map((type) => (
+                          <Button
+                            key={type.value}
+                            onClick={() => handleSelect(type.value)}
+                            className={cn(
+                              "w-full justify-start font-normal",
+                              value === type.value
+                                ? "bg-accent text-black-500"
+                                : "bg-transparent text-black-500"
+                            )}
+                          >
+                            <Check
+                              className={cn(
+                                "mr-2 h-4 w-4",
+                                value === type.value
+                                  ? "opacity-100"
+                                  : "opacity-0"
+                              )}
+                            />
+                            {type.label}
+                          </Button>
+                        ))}
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                </div>
+                {!file_id ? (
+                  <div>
+                    <Select
+                      options={categoriesData}
+                      placeholder="Select Category"
+                      onChange={handleChange}
+                      value={selectedCategory}
+                      className="w-200"
+                      isClearable
+                    />
+                  </div>
+                ) : (
+                  ""
+                )}
               </div>
-              <MyListFiles
-                filesData={filesData}
-                loading={loading}
-                searchParams={searchParams}
-                getAllMyFiles={file_id ? getAllFiles : getAllMyFiles}
-                paginationDetails={paginationDetails}
-                file_id={file_id}
-                setLoading={setLoading}
-              />
+              <div className="relative">
+                <MyListFiles
+                  filesData={filesData}
+                  loading={loading}
+                  searchParams={searchParams}
+                  getAllMyFiles={file_id ? getAllFiles : getAllMyFiles}
+                  paginationDetails={paginationDetails}
+                  file_id={file_id}
+                  setLoading={setLoading}
+                />
+                {/* <Loading loading={loading} /> */}
+                {/* Other content */}
+
+                {/* Other content */}
+              </div>
             </div>
           ) : (
             ""
@@ -399,7 +544,6 @@ const FilesComponent = () => {
           </Dialog>
         </div>
       </div>
-      <Loading loading={loading} />
     </>
   );
 };

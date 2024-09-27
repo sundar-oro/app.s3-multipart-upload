@@ -6,6 +6,7 @@ import {
   SortingState,
   useReactTable,
 } from "@tanstack/react-table";
+import { Loader2 } from "lucide-react";
 import Image from "next/image";
 import { FC, useState } from "react";
 
@@ -261,8 +262,17 @@ const TanStackTable: FC<pageProps> = ({
               </tr>
             ) : (
               <tr>
-                <td colSpan={columns.length} className="text-center py-8">
-                  Loading...
+                <td
+                  colSpan={columns.length}
+                  className={` py-8 ${loading ? "bg-gray-100" : ""}`}
+                >
+                  <div className="flex justify-between items-center ml-[50%]">
+                    {/* {loading ? (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                      ""
+                    )} */}
+                  </div>
                 </td>
               </tr>
             )}

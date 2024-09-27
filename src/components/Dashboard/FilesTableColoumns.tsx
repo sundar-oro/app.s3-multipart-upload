@@ -1,8 +1,4 @@
-import { Delete, Download, Trash2 } from "lucide-react";
 import { formatSize } from "../Categories/Files";
-import { Button } from "../ui/button";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import customParseFormat from "dayjs/plugin/customParseFormat";
@@ -27,13 +23,13 @@ export const FilesTableColumns = () => {
       id: "title",
       header: () => <span>Title</span>,
       footer: (props: any) => props.column.id,
-      width: "120px",
-      maxWidth: "120px",
-      minWidth: "120px",
+      width: "160px",
+      maxWidth: "160px",
+      minWidth: "160px",
       cell: (info: any) => {
         const title = info.getValue() || "--";
         const displayTitle =
-          title.length > 10 ? `${title.slice(0, 10)}...` : title;
+          title.length > 20 ? `${title.slice(0, 20)}...` : title;
 
         return (
           <TooltipProvider>
@@ -50,21 +46,30 @@ export const FilesTableColumns = () => {
       },
     },
     {
-      accessorFn: (row: any) => row.uploaded_at,
-      id: "uploaded_at",
-      header: () => <span>Uploaded At</span>,
+      accessorFn: (row: any) => row.type,
+      id: "type",
+      header: () => <span>File Type</span>,
       footer: (props: any) => props.column.id,
-      width: "150px",
-      maxWidth: "150px",
-      minWidth: "150px",
+      width: "100px",
+      maxWidth: "100px",
+      minWidth: "100px",
       cell: (info: any) => {
-        return (
-          <span>
-            {info.getValue() ? convertToLocalDate(info.getValue()) : "N/A"}
-          </span>
-        );
+        return <span className="capitalize">{info.getValue() || "---"}</span>;
       },
     },
+    {
+      accessorFn: (row: any) => row.size,
+      id: "size",
+      header: () => <span>File Size</span>,
+      footer: (props: any) => props.column.id,
+      width: "100px",
+      maxWidth: "100px",
+      minWidth: "100px",
+      cell: (info: any) => {
+        return <span>{formatSize(info.getValue() || 0)}</span>;
+      },
+    },
+
     {
       accessorFn: (row: any) => row.category_name,
       id: "category_name",
@@ -97,28 +102,94 @@ export const FilesTableColumns = () => {
       },
     },
     {
-      accessorFn: (row: any) => row.size,
-      id: "size",
-      header: () => <span>File Size</span>,
+      accessorFn: (row: any) => row.uploaded_at,
+      id: "uploaded_at",
+      header: () => <span>Uploaded At</span>,
       footer: (props: any) => props.column.id,
-      width: "120px",
-      maxWidth: "120px",
-      minWidth: "120px",
+      width: "150px",
+      maxWidth: "150px",
+      minWidth: "150px",
       cell: (info: any) => {
-        return <span>{formatSize(info.getValue() || 0)}</span>;
-      },
-    },
-    {
-      accessorFn: (row: any) => row.type,
-      id: "type",
-      header: () => <span>File Type</span>,
-      footer: (props: any) => props.column.id,
-      width: "120px",
-      maxWidth: "120px",
-      minWidth: "120px",
-      cell: (info: any) => {
-        return <span className="capitalize">{info.getValue() || "---"}</span>;
+        return (
+          <span>
+            {info.getValue() ? convertToLocalDate(info.getValue()) : "N/A"}
+          </span>
+        );
       },
     },
   ];
 };
+
+// {
+//   accessorFn: (row: any) => row.title,
+//   id: "title",
+//   header: () => <span>Title</span>,
+//   footer: (props: any) => props.column.id,
+//   width: "160px",
+//   maxWidth: "160px",
+//   minWidth: "160px",
+//   cell: (info: any) => {
+//     const [isEditing, setIsEditing] = useState(false);
+//     const [newTitle, setNewTitle] = useState(info.getValue() || "");
+//     const [title, setTitle] = useState(info.getValue() || "--");
+
+//     const handleDoubleClick = () => {
+//       setIsEditing(true);
+//     };
+
+//     const handleBlur = async () => {
+//       setIsEditing(false);
+//       if (newTitle !== title) {
+//         try {
+//           // Call your update API here
+//           const payload = {
+//             title: newTitle,
+//           };
+//           await updateFileAPI(
+//             info.row.original.category_id,
+//             info.row.original.file_id,
+//             payload
+//           ); // Replace with your API call
+//           setTitle(newTitle);
+//         } catch (error) {
+//           console.error("Failed to update title", error);
+//         }
+//       }
+//     };
+
+//     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+//       if (e.key === "Enter") {
+//         handleBlur();
+//       }
+//     };
+
+//     const displayTitle =
+//       title.length > 20 ? `${title.slice(0, 20)}...` : title;
+
+//     return isEditing ? (
+//       <input
+//         type="text"
+//         value={newTitle}
+//         onChange={(e) => setNewTitle(e.target.value)}
+//         onBlur={handleBlur}
+//         onKeyDown={handleKeyDown}
+//         className="w-full border px-2 py-1"
+//         autoFocus
+//       />
+//     ) : (
+//       <TooltipProvider>
+//         <Tooltip>
+//           <TooltipTrigger asChild>
+//             <span
+//               className="cursor-pointer capitalize"
+//               onDoubleClick={handleDoubleClick}
+//             >
+//               {displayTitle}
+//             </span>
+//           </TooltipTrigger>
+//           <TooltipContent className="capitalize">{title}</TooltipContent>
+//         </Tooltip>
+//       </TooltipProvider>
+//     );
+//   },
+// },

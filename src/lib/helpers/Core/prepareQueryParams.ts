@@ -23,6 +23,8 @@ export interface apiPropsForQuaryParams {
   searchValue: string;
   date_from: string;
   date_to: string;
+  type: string;
+  category_id: string;
 }
 
 export const prepareQueryParams = (params: Partial<apiPropsForQuaryParams>) => {
