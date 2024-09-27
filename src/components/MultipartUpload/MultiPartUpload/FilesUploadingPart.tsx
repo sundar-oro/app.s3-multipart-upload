@@ -35,9 +35,9 @@ const UploadFiles: React.FC<uploadImagesComponentProps> = ({
   const [file, setFile] = useState<File[]>([]);
   const [startUploading, setStartUploading] = useState(false);
   const onDrop = useCallback((acceptedFiles: File[]) => {
+    console.log(acceptedFiles, "files1");
     if (acceptedFiles.length > 0) {
-      setMultipleFiles([]);
-      setFileTitles([]);
+      // setFileTitles([]);
       setFile(acceptedFiles);
       handleFileChange(acceptedFiles, false);
       setFileTitles((prev: any) => [
@@ -56,6 +56,7 @@ const UploadFiles: React.FC<uploadImagesComponentProps> = ({
       // "text/csv": [],
       // "text/plain": [],
     },
+    disabled: startUploading,
   });
 
   const removeFileAfterAdding = (index: number) => {
@@ -161,6 +162,7 @@ const UploadFiles: React.FC<uploadImagesComponentProps> = ({
                   placeholder="Enter title"
                   className="border rounded p-1 mt-1 w-full"
                   value={fileTitles[index] || ""}
+                  disabled={startUploading}
                   onChange={(e) => handleTitleChange(index, e.target.value)}
                 />
                 <Progress

@@ -30,6 +30,10 @@ import { useSelector } from "react-redux";
 import UploadFiles from "./FilesUploadingPart";
 import Select from "react-select";
 import { getSelectAllCategoriesAPI } from "@/lib/services/categories";
+import {
+  mergeSinglePartAPI,
+  startUploadSinglepartFileAPI,
+} from "@/lib/services/singlepart";
 
 const MultiPartUploadComponent = ({
   showFileUpload,
@@ -106,9 +110,16 @@ const MultiPartUploadComponent = ({
   };
 
   const handleFileChange = async (files: File[], start: any) => {
+    console.log(files, "files");
+
     const newFiles: any = Array.from(files);
-    const combinedFiles = [...newFiles, ...multipleFiles];
-    setMultipleFiles(combinedFiles);
+
+    setMultipleFiles((prevFiles: any) => {
+      const combinedFiles = [...prevFiles, ...newFiles];
+      console.log(combinedFiles, "combinedFiles");
+      return combinedFiles;
+    });
+
     setFileProgress((prev) => ({
       ...prev,
       ...Object.fromEntries(
@@ -124,6 +135,8 @@ const MultiPartUploadComponent = ({
       }
     }
   };
+
+  console.log(multipleFiles, "otsidemultifiles");
 
   const uploadProgressStart = async (start: any) => {
     const newFiles: any = Array.from(multipleFiles);
@@ -414,6 +427,7 @@ const MultiPartUploadComponent = ({
           reason: (error as Error).message,
         },
       ]);
+    } finally {
     }
   };
 
@@ -524,21 +538,20 @@ const MultiPartUploadComponent = ({
     const categoriesId = from === "sidebar" ? selectedCategoryId : file_id;
 
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/categories/${categoriesId}/files/generate-presigned-url`,
-        {
-          method: "POST",
-          body: JSON.stringify({
-            fileName: file.name,
-            fileSize: file.size,
-            fileType: file.type,
-          }),
-        }
+      const payload = {
+        fileName: file.name,
+        fileType: file.type,
+        fileSize: file.size,
+      };
+      const response = await startUploadSinglepartFileAPI(
+        payload,
+        categoriesId
       );
-      const result = await response.json();
+      console.log(response);
+      const result = response;
 
-      if (response.ok) {
-        const { upload_id, file_key } = result.data;
+      if (response.status === 200 || response.status === 201) {
+        const { upload_id, file_key } = result?.data;
         setUploadFileDetails((prev: any) => [
           ...prev,
           {
@@ -572,6 +585,7 @@ const MultiPartUploadComponent = ({
     index: number,
     path: any
   ) => {
+    console.log(url, "urls");
     try {
       await axios.put(url, file, {
         headers: {
@@ -601,28 +615,18 @@ const MultiPartUploadComponent = ({
     const categoriesId = from === "sidebar" ? selectedCategoryId : file_id;
 
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/categories/${categoriesId}/files`,
-        {
-          method: "POST",
-          body: JSON.stringify({
-            title: fileTitles[index],
-            name: file.name,
-            size: file.size,
-            path: path,
-            mime_type: file.type,
-            type: handleFileTypes(file.type.split("/")[1]),
-            tags: ["image", "sample"],
-          }),
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: user,
-          },
-        }
-      );
-      const result = await response.json();
+      const payload = {
+        title: fileTitles[index],
+        name: file.name,
+        size: file.size,
+        path: path,
+        mime_type: file.type,
+        type: handleFileTypes(file.type.split("/")[1]),
+        tags: ["image", "sample"],
+      };
+      const result = await mergeSinglePartAPI(payload, categoriesId);
 
-      if (response.ok) {
+      if (result.status === 200 || result?.status === 201) {
         if (file_id) {
           getAllFiles && getAllFiles(1);
         }
