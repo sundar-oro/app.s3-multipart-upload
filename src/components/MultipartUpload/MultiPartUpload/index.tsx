@@ -44,6 +44,7 @@ const MultiPartUploadComponent = ({
   const { file_id } = useParams();
   const user = useSelector((state: RootState) => state?.user?.access_token);
 
+  const [categoryError, setCategoryError] = useState("Select the Category");
   const [multipleFiles, setMultipleFiles] = useState<File[]>([]);
   const [abortedFiles, setAbortedFiles] = useState<Set<number>>(new Set());
   const [fileProgress, setFileProgress] = useState<FileProgress>({});
@@ -55,7 +56,7 @@ const MultiPartUploadComponent = ({
     totalChunksParts: "",
     chunkSizeInBytes: 0,
   });
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(false);
   const [selectedCategoryId, setSelectedCategoryId] = useState<any>();
   const [selectedCategory, setSelectedCategory] = useState<any>();
   const [uploadFileDetails, setUploadFileDetails] = useState<any>([]);
@@ -69,6 +70,7 @@ const MultiPartUploadComponent = ({
   const [categoriesData, setCategoriesData] = useState([]);
   const [incompleteData, setIncompleteData] = useState([]);
   const [inputValue, setInputValue] = useState("");
+  const [startUploading, setStartUploading] = useState(false);
 
   const handleFileTypes = (type: string) => {
     const fileType = type.toLowerCase();
@@ -120,12 +122,12 @@ const MultiPartUploadComponent = ({
       return combinedFiles;
     });
 
-    setFileProgress((prev) => ({
-      ...prev,
-      ...Object.fromEntries(
-        newFiles.map((_: any, index: number) => [index, 0])
-      ),
-    }));
+    // setFileProgress((prev) => ({
+    //   ...prev,
+    //   ...Object.fromEntries(
+    //     newFiles.map((_: any, index: number) => [index, 0])
+    //   ),
+    // }));
     setFileErrors([]);
     for (const [index, file] of newFiles.entries()) {
       if (file.type.startsWith("video")) {
@@ -139,28 +141,32 @@ const MultiPartUploadComponent = ({
   console.log(multipleFiles, "otsidemultifiles");
 
   const uploadProgressStart = async (start: any) => {
+    setOpen(true);
     const newFiles: any = Array.from(multipleFiles);
 
     if (start) {
       for (const [index, file] of newFiles.entries()) {
-        try {
-          const { chunkSize, totalChunks } = calculateChunks(file.size);
-          setFileFormData((prev) => ({
-            ...prev,
-            chunkSize: chunkSize.toString(),
-            totalChunksParts: totalChunks.toString(),
-            chunkSizeInBytes: chunkSize,
-          }));
-          if (file.size > 52428800) {
-            await startUploadEvent(file, index, chunkSize, totalChunks);
-          } else {
-            await uploadSinglePartFile(file, index);
+        if (fileProgress[index] !== 100) {
+          try {
+            const { chunkSize, totalChunks } = calculateChunks(file.size);
+            setFileFormData((prev) => ({
+              ...prev,
+              chunkSize: chunkSize.toString(),
+              totalChunksParts: totalChunks.toString(),
+              chunkSizeInBytes: chunkSize,
+            }));
+            if (file.size > 52428800) {
+              await startUploadEvent(file, index, chunkSize, totalChunks);
+            } else {
+              await uploadSinglePartFile(file, index);
+            }
+          } catch (error) {
+            setFileErrors((prev) => [
+              ...prev,
+              { file, id: index, reason: (error as Error).message },
+            ]);
+            setStartUploading(false);
           }
-        } catch (error) {
-          setFileErrors((prev) => [
-            ...prev,
-            { file, id: index, reason: (error as Error).message },
-          ]);
         }
       }
     }
@@ -213,6 +219,7 @@ const MultiPartUploadComponent = ({
         ...prev,
         { file, id: index, reason: (error as Error).message },
       ]);
+      setStartUploading(false);
     }
   };
 
@@ -253,6 +260,7 @@ const MultiPartUploadComponent = ({
           reason: (error as Error).message,
         },
       ]);
+      setStartUploading(false);
     }
   };
 
@@ -336,6 +344,7 @@ const MultiPartUploadComponent = ({
             ...prev,
             { file, id: index, reason: (error as Error).message },
           ]);
+          setStartUploading(false);
         }
       });
 
@@ -363,6 +372,7 @@ const MultiPartUploadComponent = ({
         ...prev,
         { file, id: index, reason: (error as Error).message },
       ]);
+      setStartUploading(false);
     }
   };
   const uploadChunk = async (
@@ -417,6 +427,7 @@ const MultiPartUploadComponent = ({
       } else {
         setFileProgress((prev) => ({ ...prev, [index]: 100 }));
         await saveFileMetadata(file, index, fileKey);
+        setStartUploading(false);
       }
     } catch (error) {
       setFileErrors((prev) => [
@@ -427,9 +438,11 @@ const MultiPartUploadComponent = ({
           reason: (error as Error).message,
         },
       ]);
+      setStartUploading(false);
     } finally {
     }
   };
+  console.log(fileErrors, "fileErrors");
 
   const resumeUploadForMultipart = async (file: File, index: number) => {
     let body = {
@@ -459,6 +472,7 @@ const MultiPartUploadComponent = ({
       );
     } catch (error) {
       console.error(error);
+      setStartUploading(false);
     }
   };
 
@@ -486,6 +500,7 @@ const MultiPartUploadComponent = ({
         throw new Error("Failed to abort upload");
       }
       setAbortedFiles((prev) => new Set(prev.add(index)));
+      setStartUploading(false);
     } catch (error) {
       console.error(error);
     }
@@ -576,6 +591,7 @@ const MultiPartUploadComponent = ({
         ...prev,
         { file, id: index, reason: (error as Error).message },
       ]);
+      setStartUploading(false);
     }
   };
 
@@ -605,6 +621,7 @@ const MultiPartUploadComponent = ({
         ...prev,
         { file, id: index, reason: (error as Error).message },
       ]);
+      setStartUploading(false);
     }
   };
 
@@ -627,6 +644,7 @@ const MultiPartUploadComponent = ({
       const result = await mergeSinglePartAPI(payload, categoriesId);
 
       if (result.status === 200 || result?.status === 201) {
+        setStartUploading(false);
         if (file_id) {
           getAllFiles && getAllFiles(1);
         }
@@ -643,8 +661,10 @@ const MultiPartUploadComponent = ({
           reason: (error as Error).message,
         },
       ]);
+      setStartUploading(false);
     }
   };
+  console.log(fileProgress, "progress");
 
   const getAllCategories = async () => {
     try {
@@ -667,6 +687,7 @@ const MultiPartUploadComponent = ({
   const handleChange = (selectedOption: any) => {
     setSelectedCategoryId(selectedOption.value);
     setSelectedCategory(selectedOption);
+    setCategoryError("");
   };
 
   useEffect(() => {
@@ -684,7 +705,10 @@ const MultiPartUploadComponent = ({
             placeholder="Select Category"
             onChange={handleChange}
             value={selectedCategory}
+            isDisabled={open}
+            // isClearable
           />
+          {/* {categoryError && <p className="text-red-500">{categoryError}</p>} */}
         </div>
       )}
       <UploadFiles
@@ -708,6 +732,8 @@ const MultiPartUploadComponent = ({
         setShowFileUpload={setShowFileUpload}
         from={from}
         setFileErrors={setFileErrors}
+        startUploading={startUploading}
+        setStartUploading={setStartUploading}
       />
     </div>
   );

@@ -101,4 +101,6 @@ export interface uploadImagesComponentProps {
   setShowFileUpload: any;
   from: string;
   setFileErrors: any;
+  startUploading: boolean;
+  setStartUploading: React.Dispatch<React.SetStateAction<boolean>>;
 }
