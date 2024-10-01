@@ -132,42 +132,20 @@ const SideBar = ({ children }: { children?: React.ReactNode }) => {
   }, []);
 
   return (
-    <div className="flex bg-white">
+    <div className="flex bg-white h-screen">
       {/* Sidebar */}
-      <div className="w-[10%] flex-col justify-between  border-r">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild className="cursor-pointer">
-            <Button className="flex items-center justify-center cursor-pointer w-full py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
-              <span>+ New</span>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-56 cursor-pointer">
-            <DropdownMenuGroup>
-              <DropdownMenuItem
-                className="cursor-pointer"
-                onClick={handleCreate}
-              >
-                <Folder className="mr-2 h-4 w-4" />
-                <span>New Category</span>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                className="cursor-pointer"
-                onClick={() => setShowFileUpload(true)}
-              >
-                <File className="mr-2 h-4 w-4" />
-                <span>File Upload</span>
-              </DropdownMenuItem>
-            </DropdownMenuGroup>
-          </DropdownMenuContent>
-        </DropdownMenu>
-
-        <ul className="flex-col gap-8 flex mt-28 py-7 px-5">
-          <li>
+      <div className="w-[13%] flex-col justify-between border-r">
+        <div className="text-center py-5">
+          <h2 className="font-primary font-bold text-2xl text-[#7645EB]">
+            Ashika Files
+          </h2>
+        </div>
+        <ul className="flex-col gap-8 flex mt-10 py-7 px-5">
+          <li className="font-primary text-[16px]">
             <Link
               href="/dashboard"
-              className={`flex items-center space-x-3 p-2 rounded-md ${
-                isActive("/dashboard") ? "bg-gray-200" : "hover:bg-gray-200"
+              className={`flex items-center space-x-3 p-2 rounded-md hover:bg-gray-200 font-primary text-[16px] ${
+                isActive("/dashboard") ? "text-[#7645eb]" : "text-black"
               }`}
             >
               <Image
@@ -183,8 +161,8 @@ const SideBar = ({ children }: { children?: React.ReactNode }) => {
           <li>
             <Link
               href="/myfiles"
-              className={`flex items-center space-x-3 p-2 rounded-md ${
-                isActive("/myfiles") ? "bg-gray-200" : "hover:bg-gray-200"
+              className={`flex items-center space-x-3 p-2 rounded-md hover:bg-gray-200 font-primary text-[16px] ${
+                isActive("/myfiles") ? "text-[#7645eb]" : "text-black"
               }`}
             >
               <Image
@@ -199,8 +177,8 @@ const SideBar = ({ children }: { children?: React.ReactNode }) => {
           <li>
             <a
               onClick={handleCategorySidebar}
-              className={`flex items-center space-x-3 p-2 rounded-md ${
-                isActive(`/categories`) ? "bg-gray-200" : "hover:bg-gray-200"
+              className={`flex items-center space-x-3 p-2 rounded-md hover:bg-gray-200  font-primary text-[16px]${
+                isActive(`/categories`) ? "text-[#7645eb]" : "text-black"
               }`}
             >
               <Image
@@ -229,16 +207,15 @@ const SideBar = ({ children }: { children?: React.ReactNode }) => {
           errMessage={errMessages?.name}
           buttonName="Create"
         />
-
-        {pathname.includes("/categories") && (
-          <div className="w-60">
-            <CategoriesSideBar />
-          </div>
-        )}
       </div>
 
+      {pathname.includes("/categories") && (
+        <div>
+          <CategoriesSideBar />
+        </div>
+      )}
       {/* Main Content */}
-      <div className="flex-grow w-[90%] bg-white">
+      <div className="flex-grow  w-[90%] bg-[#f3f0f7]">
         <NavBar />
         {children}
       </div>

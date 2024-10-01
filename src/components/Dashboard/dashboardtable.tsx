@@ -60,22 +60,18 @@ export function DashboardTable() {
   }, []);
 
   return (
-    <div className="flex flex-col ">
-      <Card className="bg-white shadow-lg rounded-lg">
-        <CardContent>
-          <h2 className="text-xl font-semibold mt-4 mb-4"> Recent Files</h2>
+    <div className="flex flex-col p-4">
+      <h2 className="text-xl font-semibold mt-4 mb-2"> Recent Files</h2>
 
-          <div className="overflow-x-auto">
-            <TanStackTable
-              columns={FilesTableColumns()}
-              data={filesData}
-              loading={loading}
-              searchParams={searchParams}
-              getData={getAllMyFiles}
-            />
-          </div>
-        </CardContent>
-      </Card>
+      <div className="max-h-[350px] overflow-y-auto">
+        <TanStackTable
+          columns={FilesTableColumns()}
+          data={filesData}
+          loading={loading}
+          searchParams={searchParams}
+          getData={getAllMyFiles}
+        />
+      </div>
     </div>
   );
 }

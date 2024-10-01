@@ -360,188 +360,144 @@ const FilesComponent = () => {
   }, [search, selectedCategory]);
 
   return (
-    <>
-      <div className="flex min-h-screen w-full bg-muted/40">
-        <div className="flex flex-1 flex-col">
-          <header className="sticky top-0 z-30 flex h-14 items-center gap-4 bg-background px-6 border-b">
-            <Sheet>
-              <SheetTrigger asChild>
-                <Button size="icon" variant="outline" className="sm:hidden">
-                  <PanelLeft className="h-5 w-5" />
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="left"></SheetContent>
-            </Sheet>
-
-            <div className="ml-auto flex space-x-4">
-              <Table2
-                onClick={() => setListView(true)}
-                className="cursor-pointer"
-              />
-              <ListOrdered
-                onClick={() => setListView(false)}
-                className="cursor-pointer"
-              />
+    <div className="flex flex-col w-full bg-muted/40 gap-4">
+      <div className="flex flex-row justify-center w-full">
+        <div className="mt-8 flex justify-between space-x-4">
+          {file_id ? (
+            <div className="fixed  right-6 space-x-4 flex">
+              <Button
+                variant="outline"
+                className="shadow-lg outline outline-2 outline-blue-500 bg-black-500 text-white-500"
+                onClick={handleToggle}
+              >
+                +
+              </Button>
             </div>
-          </header>
-
-          {listView ? (
-            <div>
-              <h2 className="text-xl font-bold  ml-14">My Files</h2>
-              {file_id ? (
-                <div className="fixed  right-6 space-x-4 flex">
-                  <Button
-                    variant="outline"
-                    className="shadow-lg outline outline-2 outline-blue-500 bg-black-500 text-white-500"
-                    onClick={handleToggle}
-                  >
-                    +
-                  </Button>
-                  {/* <Button
-                    variant="outline"
-                    className="shadow-lg"
-                    onClick={handleMultipartUploadToggle}
-                  >
-                    Multipart Upload
-                  </Button> */}
-                </div>
-              ) : (
-                ""
-              )}
-              <div className="mt-8 ml-10 flex items-center space-x-4">
-                <div className="relative">
-                  <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
-                  <Input
-                    placeholder="Search Title..."
-                    value={search}
-                    type="search"
-                    onChange={handleSearchChange}
-                    className="w-30 pl-8 bg-white-500"
-                  />
-                </div>
-                <div>
-                  <DateRangePicker
-                    ranges={predefinedRanges}
-                    value={selectedDates}
-                    onChange={handleDateChange}
-                    format="dd-MM-yyyy"
-                    editable={false}
-                    showHeader={false}
-                    placeholder="Select Date Range"
-                  />
-                </div>
-                <div>
-                  {/* <Select
-                    options={types}
-                    placeholder="Select Category"
-                    onChange={handleChange}
-                    value={selectedType}
-                  /> */}
-                  <Popover open={open} onOpenChange={setOpen}>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        role="combobox"
-                        aria-expanded={open}
-                        className="w-[200px] justify-between bg-white-700"
-                      >
-                        {value
-                          ? types.find((type) => type.value === value)?.label
-                          : "Select File Type..."}
-                        <div className="flex">
-                          {value && (
-                            <X
-                              className="mr-2 h-4 w-4 shrink-0 opacity-50"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleSelect(value);
-                              }}
-                            />
-                          )}
-                          <ChevronDown className="h-4 w-4 shrink-0 opacity-50" />
-                        </div>
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-[200px] p-0 ">
-                      <div className="max-h-[300px] overflow-y-auto ">
-                        {types.map((type) => (
-                          <Button
-                            key={type.value}
-                            onClick={() => handleSelect(type.value)}
-                            className={cn(
-                              "w-full justify-start font-normal",
-                              value === type.value
-                                ? "bg-accent text-black-500"
-                                : "bg-transparent text-black-500"
-                            )}
-                          >
-                            <Check
-                              className={cn(
-                                "mr-2 h-4 w-4",
-                                value === type.value
-                                  ? "opacity-100"
-                                  : "opacity-0"
-                              )}
-                            />
-                            {type.label}
-                          </Button>
-                        ))}
-                      </div>
-                    </PopoverContent>
-                  </Popover>
-                </div>
-                {!file_id ? (
-                  <div>
-                    <Select
-                      options={categoriesData}
-                      placeholder="Select Category"
-                      onChange={handleChange}
-                      value={selectedCategory}
-                      className="w-200"
-                      isClearable
-                    />
+          ) : (
+            ""
+          )}
+          <div className="relative">
+            <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
+            <Input
+              placeholder="Search Title..."
+              value={search}
+              type="search"
+              onChange={handleSearchChange}
+              className="w-30 pl-8 bg-white-500"
+            />
+          </div>
+          <div>
+            <DateRangePicker
+              ranges={predefinedRanges}
+              value={selectedDates}
+              onChange={handleDateChange}
+              format="dd-MM-yyyy"
+              editable={false}
+              showHeader={false}
+              placeholder="Select Date Range"
+            />
+          </div>
+          <div>
+            <Popover open={open} onOpenChange={setOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  aria-expanded={open}
+                  className="w-[200px] justify-between bg-white-700"
+                >
+                  {value
+                    ? types.find((type) => type.value === value)?.label
+                    : "Select File Type..."}
+                  <div className="flex">
+                    {value && (
+                      <X
+                        className="mr-2 h-4 w-4 shrink-0 opacity-50"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleSelect(value);
+                        }}
+                      />
+                    )}
+                    <ChevronDown className="h-4 w-4 shrink-0 opacity-50" />
                   </div>
-                ) : (
-                  ""
-                )}
-              </div>
-              <div className="relative">
-                <MyListFiles
-                  filesData={filesData}
-                  loading={loading}
-                  searchParams={searchParams}
-                  getAllMyFiles={file_id ? getAllFiles : getAllMyFiles}
-                  paginationDetails={paginationDetails}
-                  file_id={file_id}
-                  setLoading={setLoading}
-                />
-                {/* <Loading loading={loading} /> */}
-                {/* Other content */}
-
-                {/* Other content */}
-              </div>
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-[200px] p-0 ">
+                <div className="max-h-[300px] overflow-y-auto ">
+                  {types.map((type) => (
+                    <Button
+                      key={type.value}
+                      onClick={() => handleSelect(type.value)}
+                      className={cn(
+                        "w-full justify-start font-normal",
+                        value === type.value
+                          ? "bg-accent text-black-500"
+                          : "bg-transparent text-black-500"
+                      )}
+                    >
+                      <Check
+                        className={cn(
+                          "mr-2 h-4 w-4",
+                          value === type.value ? "opacity-100" : "opacity-0"
+                        )}
+                      />
+                      {type.label}
+                    </Button>
+                  ))}
+                </div>
+              </PopoverContent>
+            </Popover>
+          </div>
+          {!file_id ? (
+            <div>
+              <Select
+                options={categoriesData}
+                placeholder="Select Category"
+                onChange={handleChange}
+                value={selectedCategory}
+                className="w-200"
+                isClearable
+              />
             </div>
           ) : (
             ""
           )}
         </div>
-
-        <div>
-          <Dialog open={showFileUpload}>
-            <DialogContent className="bg-white w-[80%]">
-              <DialogTitle>New FileUpload</DialogTitle>
-              <MultiPartUploadComponent
-                showFileUpload={showFileUpload}
-                setShowFileUpload={setShowFileUpload}
-                getAllFiles={getAllFiles}
-                from="category"
-              />
-              <DialogFooter></DialogFooter>
-            </DialogContent>
-          </Dialog>
-        </div>
       </div>
-    </>
+      <div className="flex flex-1 flex-col px-6 ">
+        {listView ? (
+          <div className="relative">
+            <MyListFiles
+              filesData={filesData}
+              loading={loading}
+              searchParams={searchParams}
+              getAllMyFiles={file_id ? getAllFiles : getAllMyFiles}
+              paginationDetails={paginationDetails}
+              file_id={file_id}
+              setLoading={setLoading}
+            />
+          </div>
+        ) : (
+          ""
+        )}
+      </div>
+
+      <div>
+        <Dialog open={showFileUpload}>
+          <DialogContent className="bg-white w-[80%]">
+            <DialogTitle>New FileUpload</DialogTitle>
+            <MultiPartUploadComponent
+              showFileUpload={showFileUpload}
+              setShowFileUpload={setShowFileUpload}
+              getAllFiles={getAllFiles}
+              from="category"
+            />
+            <DialogFooter></DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
+    </div>
   );
 };
 

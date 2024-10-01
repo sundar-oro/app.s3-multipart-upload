@@ -100,185 +100,179 @@ const TanStackTable: FC<pageProps> = ({
   };
 
   return (
-    <div className="overflow-x-auto w-full">
-      <div className="max-h-[500px] overflow-y-auto">
-        <table className="min-w-full border-collapse border border-gray-300">
-          <thead className="bg-gray-200 sticky top-0">
-            {table.getHeaderGroups().map((headerGroup) => {
-              if (Object.keys(searchParams)?.length > 0) {
-                return (
-                  <tr className="border-b" key={headerGroup.id}>
-                    {headerGroup.headers.map((header) => (
+    <div className="w-full">
+      <table className="min-w-full border-collapse border border-gray-300">
+        <thead className="bg-gray-200 sticky top-0">
+          {table.getHeaderGroups().map((headerGroup) => {
+            if (Object.keys(searchParams)?.length > 0) {
+              return (
+                <tr className="border-b" key={headerGroup.id}>
+                  {headerGroup.headers.map((header) => (
+                    <th
+                      key={header.id}
+                      colSpan={header.colSpan}
+                      className="p-4 text-left font-semibold text-gray-700"
+                      style={{
+                        minWidth: getWidth(header.id),
+                        width: getWidth(header.id),
+                      }}
+                    >
+                      {!header.isPlaceholder && (
+                        <div
+                          className="flex items-center gap-2 cursor-pointer"
+                          onClick={() => sortAndGetData(header)}
+                        >
+                          {flexRender(
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
+                          <SortItems
+                            searchParams={searchParams}
+                            header={header}
+                          />
+                        </div>
+                      )}
+                    </th>
+                  ))}
+                </tr>
+              );
+            } else {
+              return (
+                <tr className="border-b" key={headerGroup.id}>
+                  {headerGroup.headers.map((header: any, index: number) => {
+                    return (
                       <th
-                        key={header.id}
-                        colSpan={header.colSpan}
                         className="p-4 text-left font-semibold text-gray-700"
+                        key={index}
+                        colSpan={header.colSpan}
                         style={{
                           minWidth: getWidth(header.id),
                           width: getWidth(header.id),
+                          color: "#000",
+                          background: "#F0EDFF",
                         }}
                       >
-                        {!header.isPlaceholder && (
+                        {header.isPlaceholder ? null : (
                           <div
-                            className="flex items-center gap-2 cursor-pointer"
-                            onClick={() => sortAndGetData(header)}
+                            {...{
+                              className: header.column.getCanSort()
+                                ? "cursor-pointer select-none"
+                                : "",
+                              onClick: header.column.getToggleSortingHandler(),
+                            }}
+                            style={{
+                              display: "flex",
+                              gap: "10px",
+                              cursor: "pointer",
+                              minWidth: getWidth(header.id),
+                              width: getWidth(header.id),
+                            }}
                           >
                             {flexRender(
                               header.column.columnDef.header,
                               header.getContext()
                             )}
-                            <SortItems
-                              searchParams={searchParams}
-                              header={header}
-                            />
-                          </div>
-                        )}
-                      </th>
-                    ))}
-                  </tr>
-                );
-              } else {
-                return (
-                  <tr className="border-b" key={headerGroup.id}>
-                    {headerGroup.headers.map((header: any, index: number) => {
-                      return (
-                        <th
-                          className="p-4 text-left font-semibold text-gray-700"
-                          key={index}
-                          colSpan={header.colSpan}
-                          style={{
-                            minWidth: getWidth(header.id),
-                            width: getWidth(header.id),
-                            color: "#000",
-                            background: "#F0EDFF",
-                          }}
-                        >
-                          {header.isPlaceholder ? null : (
-                            <div
-                              {...{
-                                className: header.column.getCanSort()
-                                  ? "cursor-pointer select-none"
-                                  : "",
-                                onClick:
-                                  header.column.getToggleSortingHandler(),
-                              }}
-                              style={{
-                                display: "flex",
-                                gap: "10px",
-                                cursor: "pointer",
-                                minWidth: getWidth(header.id),
-                                width: getWidth(header.id),
-                              }}
-                            >
-                              {flexRender(
-                                header.column.columnDef.header,
-                                header.getContext()
-                              )}
 
-                              {{
-                                asc: (
-                                  <Image
-                                    src="/sort/sort-asc.svg"
-                                    height={8}
-                                    width={8}
-                                    style={{
-                                      display:
-                                        removeSortingForColumnIds?.includes(
-                                          header.id
-                                        )
-                                          ? "none"
-                                          : "",
-                                    }}
-                                    alt="image"
-                                  />
-                                ),
-                                desc: (
-                                  <Image
-                                    src="/sort/sort-desc.svg"
-                                    height={8}
-                                    width={8}
-                                    style={{
-                                      display:
-                                        removeSortingForColumnIds?.includes(
-                                          header.id
-                                        )
-                                          ? "none"
-                                          : "",
-                                    }}
-                                    alt="image"
-                                  />
-                                ),
-                              }[header.column.getIsSorted() as string] ?? (
+                            {{
+                              asc: (
                                 <Image
-                                  src="/sort/un-sort.svg"
+                                  src="/sort/sort-asc.svg"
                                   height={8}
                                   width={8}
-                                  alt="Unsorted"
                                   style={{
                                     display:
-                                      header.id === "actions" ||
-                                      removeSortingForColumnIds.includes(
+                                      removeSortingForColumnIds?.includes(
                                         header.id
                                       )
                                         ? "none"
                                         : "",
                                   }}
+                                  alt="image"
                                 />
-                              )}
-                            </div>
-                          )}
-                        </th>
-                      );
-                    })}
-                  </tr>
-                );
-              }
-            })}
-          </thead>
-          <tbody>
-            {data.length ? (
-              table.getRowModel().rows.map((row) => (
-                <tr className="border-b hover:bg-gray-100" key={row.id}>
-                  {row.getVisibleCells().map((cell) => (
-                    <td className="p-4" key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </td>
-                  ))}
+                              ),
+                              desc: (
+                                <Image
+                                  src="/sort/sort-desc.svg"
+                                  height={8}
+                                  width={8}
+                                  style={{
+                                    display:
+                                      removeSortingForColumnIds?.includes(
+                                        header.id
+                                      )
+                                        ? "none"
+                                        : "",
+                                  }}
+                                  alt="image"
+                                />
+                              ),
+                            }[header.column.getIsSorted() as string] ?? (
+                              <Image
+                                src="/sort/un-sort.svg"
+                                height={8}
+                                width={8}
+                                alt="Unsorted"
+                                style={{
+                                  display:
+                                    header.id === "actions" ||
+                                    removeSortingForColumnIds.includes(
+                                      header.id
+                                    )
+                                      ? "none"
+                                      : "",
+                                }}
+                              />
+                            )}
+                          </div>
+                        )}
+                      </th>
+                    );
+                  })}
                 </tr>
-              ))
-            ) : !loading ? (
-              <tr className="flex justify-center items-center w-full">
-                <td colSpan={6} className="text-center py-8">
-                  <Image
-                    src="/No-Files.jpg"
-                    alt="No Data"
-                    height={150}
-                    width={250}
-                  />
-                </td>
+              );
+            }
+          })}
+        </thead>
+        <tbody>
+          {data.length ? (
+            table.getRowModel().rows.map((row) => (
+              <tr className="border-b hover:bg-gray-100" key={row.id}>
+                {row.getVisibleCells().map((cell) => (
+                  <td className="p-4" key={cell.id}>
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  </td>
+                ))}
               </tr>
-            ) : (
-              <tr>
-                <td
-                  colSpan={columns.length}
-                  className={` py-8 ${loading ? "bg-gray-100" : ""}`}
-                >
-                  <div className="flex justify-between items-center ml-[50%]">
-                    {/* {loading ? (
+            ))
+          ) : !loading ? (
+            <tr className="flex justify-center items-center w-full">
+              <td colSpan={6} className="text-center py-8">
+                <Image
+                  src="/No-Files.jpg"
+                  alt="No Data"
+                  height={150}
+                  width={250}
+                />
+              </td>
+            </tr>
+          ) : (
+            <tr>
+              <td
+                colSpan={columns.length}
+                className={` py-8 ${loading ? "bg-gray-100" : ""}`}
+              >
+                <div className="flex justify-between items-center ml-[50%]">
+                  {/* {loading ? (
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     ) : (
                       ""
                     )} */}
-                  </div>
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+                </div>
+              </td>
+            </tr>
+          )}
+        </tbody>
+      </table>
     </div>
   );
 };

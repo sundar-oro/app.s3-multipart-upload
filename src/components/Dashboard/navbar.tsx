@@ -37,7 +37,7 @@ const NavBar = () => {
 
   return (
     <div className="flex  w-full flex-col ">
-      <header className=" bg-white shadow-md z-50 w-full px-5 py-2 flex justify-end">
+      <header className=" bg-white shadow-md z-50 w-full px-5 py-2 flex justify-end items-center gap-4">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
@@ -62,6 +62,7 @@ const NavBar = () => {
             <DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
+        <p>{user ? `Hello, ${user.full_name}` : "Hello, Guest"}</p>
       </header>
     </div>
   );

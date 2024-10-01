@@ -232,8 +232,8 @@ const CategoriesSideBar = () => {
 
   return (
     <>
-      <div className="flex flex-col h-screen w-60 bg-gray text-gray-800 p-4">
-        <div className="mt-14 relative">
+      <div className="flex flex-col h-screen w-60 bg-gray text-gray-800 p-4 gap-3">
+        <div className="mt-2 relative">
           <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
           <Input
             placeholder="Search categories..."

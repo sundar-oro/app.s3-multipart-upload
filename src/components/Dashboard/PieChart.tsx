@@ -96,7 +96,7 @@ const PieChart = ({ data, loading }: { data: any; loading: boolean }) => {
           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
         </div>
       ) : (
-        <div className="ml-8">
+        <div>
           <HighchartsReact highcharts={Highcharts} options={options} />
         </div>
       )}

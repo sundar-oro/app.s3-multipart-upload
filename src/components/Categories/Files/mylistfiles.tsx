@@ -200,30 +200,29 @@ const MyListFiles = ({
   };
 
   return (
-    <>
-      <div className="ml-6 mt-4 p-6 flex-grow  max-h-[60vh]">
-        <div className="overflow-x-auto relative">
-          <TanStackTable
-            columns={[...FilesTableColumns(), ...filesActions]}
-            data={filesData}
-            loading={loading}
-            searchParams={searchParams}
-            getData={getAllMyFiles}
-          />
-          <Loading loading={loading} />
-          {/* {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : ""} */}
-        </div>
-        <div className="mb-10 ">
-          <DynamicPagination
-            totalPages={
-              paginationDetails?.total_pages || paginationDetails?.count || "0"
-            }
-            captureRowPerItems={captureRowPerItems}
-            capturePageNum={capturePageNum}
-            paginationDetails={paginationDetails}
-          />
-        </div>
+    <div>
+      <div className="max-h-[500px] overflow-y-auto">
+        <TanStackTable
+          columns={[...FilesTableColumns(), ...filesActions]}
+          data={filesData}
+          loading={loading}
+          searchParams={searchParams}
+          getData={getAllMyFiles}
+        />
+        <Loading loading={loading} />
+        {/* {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : ""} */}
       </div>
+      <div className="mb-5">
+        <DynamicPagination
+          totalPages={
+            paginationDetails?.total_pages || paginationDetails?.count || "0"
+          }
+          captureRowPerItems={captureRowPerItems}
+          capturePageNum={capturePageNum}
+          paginationDetails={paginationDetails}
+        />
+      </div>
+
       <DeleteDialog
         openOrNot={deleteDialogOpen}
         onCancelClick={() => setDeleteDialogOpen(false)}
@@ -243,7 +242,7 @@ const MyListFiles = ({
         errMessage={errMessages?.title}
         buttonName="Rename"
       />
-    </>
+    </div>
   );
 };
 export default MyListFiles;

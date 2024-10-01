@@ -1,14 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Card } from "../ui/card";
-import { useSelector } from "react-redux";
-import { RootState } from "@/redux";
 import { getStatsApi } from "@/lib/services/dashboard";
-import PieChart from "./PieChart";
+import { useEffect, useState } from "react";
 import CountUp from "react-countup";
-import Loading from "../Core/loading";
 import { toast } from "sonner";
+import Loading from "../Core/loading";
+import PieChart from "./PieChart";
 
 const StatsData = () => {
   const [loading, setLoading] = useState(false);
@@ -36,80 +33,76 @@ const StatsData = () => {
     (bytes / (1024 * 1024 * 1024)).toFixed(2);
 
   return (
-    <>
-      <div className="bg-gray-100 flex justify-center">
-        <Card className="w-full bg-white shadow-lg rounded-lg p-6 h-[40%]">
-          <div className="flex flex-col lg:flex-row justify-between items-center">
-            <div className="w-1/5 flex justify-start">
-              <PieChart data={data} loading={loading} />
-            </div>
+    <div className="flex flex-row justify-center items-center w-full gap-20 ">
+      <div className="w-1/5 flex">
+        <PieChart data={data} loading={loading} />
+      </div>
 
-            {/* Storage Breakdown Section */}
-
-            <div className="lg:w-2/3 grid grid-cols-4 gap-4 h-24">
-              {[
-                {
-                  label: "Images",
-                  value: bytesToGB(data?.storageBreakdown?.image?.storage || 0),
-                  count: (
-                    <CountUp
-                      end={data?.storageBreakdown?.image?.count || 0}
-                      duration={5}
-                    />
-                  ),
-                  color: "bg-blue-100",
-                },
-                {
-                  label: "Documents",
-                  value: bytesToGB(
-                    data?.storageBreakdown?.document?.storage || 0
-                  ),
-                  count: (
-                    <CountUp
-                      end={data?.storageBreakdown?.document?.count || 0}
-                      duration={5}
-                    />
-                  ),
-                  color: "bg-green-100",
-                },
-                {
-                  label: "Media Files",
-                  value: bytesToGB(data?.storageBreakdown?.media?.storage || 0),
-                  count: (
-                    <CountUp
-                      end={data?.storageBreakdown?.media?.count || 0}
-                      duration={5}
-                    />
-                  ),
-                  color: "bg-orange-100",
-                },
-                {
-                  label: "Other Files",
-                  value: bytesToGB(data?.storageBreakdown?.other?.storage || 0),
-                  count: (
-                    <CountUp
-                      end={data?.storageBreakdown?.other?.count || 0}
-                      duration={5}
-                    />
-                  ),
-                  color: "bg-yellow-100",
-                },
-              ].map((item, index) => (
-                <div
-                  key={index}
-                  className={`p-4 ${item.color} rounded-lg shadow`}
-                >
-                  <h3 className="font-semibold text-gray-700">{item.label}</h3>
-                  <p className="text-lg font-bold">{item.value} GB</p>
-                  <p className="text-sm text-gray-600">{item.count} files</p>
-                </div>
-              ))}
+      <div className="w-2/3 flex flex-row gap-3">
+        {[
+          {
+            label: "Images",
+            value: bytesToGB(data?.storageBreakdown?.image?.storage || 0),
+            count: (
+              <CountUp
+                end={data?.storageBreakdown?.image?.count || 0}
+                duration={5}
+              />
+            ),
+            color: "bg-blue-100",
+          },
+          {
+            label: "Documents",
+            value: bytesToGB(data?.storageBreakdown?.document?.storage || 0),
+            count: (
+              <CountUp
+                end={data?.storageBreakdown?.document?.count || 0}
+                duration={5}
+              />
+            ),
+            color: "bg-green-100",
+          },
+          {
+            label: "Media Files",
+            value: bytesToGB(data?.storageBreakdown?.media?.storage || 0),
+            count: (
+              <CountUp
+                end={data?.storageBreakdown?.media?.count || 0}
+                duration={5}
+              />
+            ),
+            color: "bg-orange-100",
+          },
+          {
+            label: "Other Files",
+            value: bytesToGB(data?.storageBreakdown?.other?.storage || 0),
+            count: (
+              <CountUp
+                end={data?.storageBreakdown?.other?.count || 0}
+                duration={5}
+              />
+            ),
+            color: "bg-yellow-100",
+          },
+        ].map((item, index) => (
+          <div
+            key={index}
+            className={` p-[16px] w-1/4 ${item.color} rounded-lg shadow`}
+          >
+            <div className="flex flex-row justify-between items-center">
+              <div className="flex flex-col">
+                <p className="font-primary text-[#000000] text-[18px]">
+                  {item.label}
+                </p>
+                <p className="text-sm text-gray-600">{item.count} files</p>
+              </div>
+              <p className="text-[20px] text-[#135CFD]">{item.value} GB</p>
             </div>
           </div>
-        </Card>
+        ))}
       </div>
       <Loading loading={loading} />
-    </>
+    </div>
   );
 };
 
