@@ -36,42 +36,33 @@ const NavBar = () => {
   };
 
   return (
-    <div>
-      <div className="flex  w-full flex-col ">
-        <header className="fixed bg-blue-600 shadow-md  z-50 w-full px-5 py-2 flex justify-between items-center">
-          <Link
-            href="#"
-            className="text-white font-bold-200 transition-colors hover:text-foreground "
-          >
-            <b>Ashika Group</b>
-          </Link>
-
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="outline"
-                size="icon"
-                className="overflow-hidden rounded-full bg-white"
-              >
-                <Image
-                  src="/dashboard/dashboard-avatar.svg"
-                  width={36}
-                  height={36}
-                  alt="Avatar"
-                  className="overflow-hidden rounded-full bg-white"
-                />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>
-                {user ? `Hello, ${user.full_name}` : "Hello, Guest"}
-              </DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </header>
-      </div>
+    <div className="flex  w-full flex-col ">
+      <header className=" bg-white shadow-md z-50 w-full px-5 py-2 flex justify-end">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="outline"
+              size="icon"
+              className="overflow-hidden rounded-full bg-black"
+            >
+              <Image
+                src="/dashboard/dashboard-avatar.svg"
+                width={36}
+                height={36}
+                alt="Avatar"
+                className="overflow-hidden rounded-full bg-black"
+              />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuLabel>
+              {user ? `Hello, ${user.full_name}` : "Hello, Guest"}
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </header>
     </div>
   );
 };

@@ -111,7 +111,6 @@ const FilesComponent = () => {
   };
 
   const handleDateChange = (dates: any) => {
-    console.log(dates);
     setSelectedDates(dates);
     setFormattedStartDate(null);
     setFormattedEndDate(null);
@@ -457,7 +456,7 @@ const FilesComponent = () => {
                               className="mr-2 h-4 w-4 shrink-0 opacity-50"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                setValue("");
+                                handleSelect(value);
                               }}
                             />
                           )}
