@@ -24,10 +24,9 @@ const SignInPage = () => {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [emailError, setEmailError] = useState<string | null>(null);
-  const [passwordError, setPasswordError] = useState<string | null>(null);
   const [isLoading, setLoading] = useState(false);
   const [errors, setErrors] = useState<any>([]);
+  const [errorMessage, setErrorMessage] = useState("");
 
   const user = useSelector((state: RootState) => state.user);
 
@@ -45,9 +44,8 @@ const SignInPage = () => {
   const fetchData = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-
-    // if (emailError || passwordError) return;
-
+    setErrorMessage("");
+    setErrors([]);
     try {
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/users/signin`,
@@ -64,32 +62,26 @@ const SignInPage = () => {
       );
 
       const data = await response.json();
-      console.log(data);
       if (response.ok) {
         setUserDetailsInCookies(data?.data);
+        dispatch(
+          loginSuccess({
+            user: data.data,
+            token: data.data.access_token,
+          })
+        );
+        toast.success(data?.message);
+
+        router.push("/dashboard");
       } else if (data?.status == 422) {
-        setErrors(data?.errors); // errors
+        setErrors(data?.errors);
       } else if (data?.status == 401) {
-        setErrors(data);
+        setErrorMessage(data?.message);
       }
-
-      dispatch(
-        loginSuccess({
-          user: data.data,
-          token: data.data.access_token,
-        })
-      );
-      toast.success(data?.message);
-
-      console.log("Stored User State:", store.getState());
-      router.push("/dashboard");
-
-      console.log("API Response Data:", data);
     } catch (error) {
       console.error("Error fetching data:", error);
-      toast.error("Invalid credentials");
     } finally {
-      // setLoading(false);
+      setLoading(false);
     }
   };
 
@@ -122,12 +114,6 @@ const SignInPage = () => {
             <div className="grid gap-2">
               <div className="flex items-center">
                 <Label htmlFor="password">Password</Label>
-                {/* <Link
-                  href="/forgot-password"
-                  className="ml-auto inline-block text-sm underline"
-                >
-                  Forgot your password?
-                </Link> */}
               </div>
               <Input
                 id="password"
@@ -135,35 +121,17 @@ const SignInPage = () => {
                 placeholder="Enter your password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                // onChange={handlePasswordChange}
                 required
               />
               {errors?.password && (
                 <p className="text-red-500">{errors.password[0]}</p>
               )}
-              {errors?.message && (
-                <p className="text-red-500">{errors.message[0]}</p>
-              )}
+              {errorMessage && <p className="text-red-500">{errorMessage}</p>}
             </div>
-            <Button
-              type="submit"
-              onClick={fetchData}
-              disabled={isLoading}
-              className="w-full"
-            >
+            <Button type="submit" onClick={fetchData} className="w-full">
               {isLoading ? "Logging in..." : "Login"}
             </Button>
-            {/* <Button variant="outline" className="w-full">
-              Login with Google
-            </Button> */}
           </form>
-
-          {/* <div className="mt-4 text-center text-sm">
-            Don&apos;t have an account?{" "}
-            <Link href="#" className="underline">
-              Sign up
-            </Link>
-          </div> */}
         </div>
       </div>
 
