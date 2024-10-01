@@ -15,6 +15,4 @@ export const types = [
         value : "other",
         label: "Others"
     },
-
-    
 ]

@@ -314,6 +314,7 @@ const FilesComponent = () => {
   };
 
   const handleSelect = (selectedValue: string) => {
+    console.log(selectedValue);
     setValue(value === selectedValue ? "" : selectedValue);
     if (file_id) {
       getAllFiles({
@@ -337,9 +338,7 @@ const FilesComponent = () => {
     const date_to: any = params.get("date_to");
     if (date_from && date_to) {
       const startDate = dayjs(date_from, "YYYY-MM-DD").toDate();
-      console.log(startDate);
       const endDate = dayjs(date_to, "YYYY-MM-DD").toDate();
-      console.log(endDate);
 
       setSelectedDates([startDate, endDate]);
     }
@@ -359,7 +358,6 @@ const FilesComponent = () => {
     }, 500);
     return () => clearInterval(debounce);
   }, [search, selectedCategory]);
-  console.log(selectedCategory, "Selected");
 
   return (
     <>

@@ -29,16 +29,28 @@ const UploadFiles: React.FC<uploadImagesComponentProps> = ({
   setShowFileUpload,
   from,
   setFileErrors,
+  startUploading,
+  setStartUploading,
 }) => {
   const { file_id } = useParams();
 
   const [file, setFile] = useState<File[]>([]);
-  const [startUploading, setStartUploading] = useState(false);
   const onDrop = useCallback((acceptedFiles: File[]) => {
+    console.log(acceptedFiles, "files1");
     if (acceptedFiles.length > 0) {
-      setMultipleFiles([]);
-      setFileTitles([]);
-      setFile(acceptedFiles);
+      // setFileTitles([]);
+      setFile((prevFiles) => [...prevFiles, ...acceptedFiles]);
+
+      setFileProgress((prevProgress) => {
+        const newProgress = { ...prevProgress };
+        const currentLength = Object.keys(prevProgress).length;
+        acceptedFiles.forEach((file, index) => {
+          const newIndex = currentLength + index;
+          newProgress[newIndex] = 0;
+        });
+        return newProgress;
+      });
+
       handleFileChange(acceptedFiles, false);
       setFileTitles((prev: any) => [
         ...prev,
@@ -56,15 +68,39 @@ const UploadFiles: React.FC<uploadImagesComponentProps> = ({
       // "text/csv": [],
       // "text/plain": [],
     },
+    disabled: startUploading,
   });
+
+  const dropzoneClass = startUploading
+    ? "bg-gray-300 cursor-not-allowed"
+    : "bg-white cursor-pointer";
 
   const removeFileAfterAdding = (index: number) => {
     const updatedFiles = multipleFiles.filter((_, i) => i !== index);
     const updatedTitles = fileTitles.filter((_: any, i: any) => i !== index);
+    // setFileProgress((prevProgress) => {
+    //   const newProgress = { ...prevProgress };
+    //   delete newProgress[index];
+    //   return newProgress;
+    // });
+    setFileProgress((prevProgress) => {
+      const newProgress = { ...prevProgress };
+      delete newProgress[index];
+
+      const shiftedProgress: any = {};
+      Object.keys(newProgress).forEach((key: any) => {
+        const currentIndex = parseInt(key);
+        shiftedProgress[
+          currentIndex > index ? currentIndex - 1 : currentIndex
+        ] = newProgress[key];
+      });
+
+      return shiftedProgress;
+    });
 
     setMultipleFiles(updatedFiles);
     setFileTitles(updatedTitles);
-    abortFileUpload(index);
+    // abortFileUpload(index);
   };
 
   const retryUpload = (file: File, index: number) => {
@@ -100,11 +136,10 @@ const UploadFiles: React.FC<uploadImagesComponentProps> = ({
     <div className="p-4 bg-white rounded-lg shadow-md">
       <h3 className="text-xl font-semibold mb-4">Upload Files</h3>
 
-      <div className="mb-4">
+      <div className="mb-4 ">
         <div
           {...getRootProps({
-            className:
-              "dropzone border-2 border-dashed border-gray-400 p-6 rounded-md cursor-pointer hover:border-gray-600",
+            className: `dropzone border-2 border-dashed border-gray-400 p-6 rounded-md cursor-pointer hover:border-gray-600  ${dropzoneClass}`,
           })}
         >
           <input {...getInputProps()} />
@@ -161,6 +196,7 @@ const UploadFiles: React.FC<uploadImagesComponentProps> = ({
                   placeholder="Enter title"
                   className="border rounded p-1 mt-1 w-full"
                   value={fileTitles[index] || ""}
+                  disabled={fileProgress[index] > 0 && !fileErrors[index]}
                   onChange={(e) => handleTitleChange(index, e.target.value)}
                 />
                 <Progress
@@ -212,9 +248,11 @@ const UploadFiles: React.FC<uploadImagesComponentProps> = ({
                 onClick={() => removeFileAfterAdding(index)}
                 className="ml-2 text-red-500"
                 disabled={
-                  fileProgress[index] == 100 || fileProgress[index] == 0
-                    ? false
-                    : true
+                  !(
+                    fileProgress[index] === 0 ||
+                    fileProgress[index] === 100 ||
+                    fileErrors[index]
+                  )
                 }
               >
                 <X className="w-4 h-4" />
