@@ -100,7 +100,7 @@ const TanStackTable: FC<pageProps> = ({
   };
 
   return (
-    <div className="w-full">
+    <div className="w-full bg-[#ffffff]">
       <table className="min-w-full border-collapse border border-gray-300">
         <thead className="bg-gray-200 sticky top-0">
           {table.getHeaderGroups().map((headerGroup) => {

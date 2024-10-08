@@ -60,10 +60,10 @@ export function DashboardTable() {
   }, []);
 
   return (
-    <div className="flex flex-col p-4">
-      <h2 className="text-xl font-semibold mt-4 mb-2"> Recent Files</h2>
+    <div className="flex flex-col px-4">
+      <h2 className="text-xl font-semibold mt-2 mb-2"> Recent Files</h2>
 
-      <div className="max-h-[350px] overflow-y-auto">
+      <div className="max-h-[400px] overflow-y-auto">
         <TanStackTable
           columns={FilesTableColumns()}
           data={filesData}

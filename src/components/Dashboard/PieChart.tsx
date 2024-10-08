@@ -1,5 +1,5 @@
 import React from "react";
-import Highcharts from "highcharts";
+import Highcharts, { color } from "highcharts";
 import HighchartsReact from "highcharts-react-official";
 import { Loader2 } from "lucide-react";
 
@@ -12,6 +12,7 @@ const PieChart = ({ data, loading }: { data: any; loading: boolean }) => {
       type: "pie",
       width: 300,
       height: 200,
+      backgroundColor: null,
       events: {
         load: function (this: Highcharts.Chart) {
           const chart = this;
@@ -62,24 +63,28 @@ const PieChart = ({ data, loading }: { data: any; loading: boolean }) => {
         data: [
           {
             name: "Images",
+            color: "#A3C6E8",
             y: parseFloat(
               bytesToGB(data?.storageBreakdown?.image?.storage || 0)
             ),
           },
           {
             name: "Media",
+            color: "#f1c1a0",
             y: parseFloat(
               bytesToGB(data?.storageBreakdown?.media?.storage || 0)
             ),
           },
           {
             name: "Documents",
+            color: "#a8e0d3",
             y: parseFloat(
               bytesToGB(data?.storageBreakdown?.document?.storage || 0)
             ),
           },
           {
             name: "Other",
+            color: "#e6e29d",
             y: parseFloat(
               bytesToGB(data?.storageBreakdown?.other?.storage || 0)
             ),

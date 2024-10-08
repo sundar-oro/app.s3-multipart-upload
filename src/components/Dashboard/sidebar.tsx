@@ -97,6 +97,7 @@ const SideBar = ({ children }: { children?: React.ReactNode }) => {
         throw response;
       }
     } catch (err: any) {
+      console.error(err);
       //   errorPopper(err);
     } finally {
       setLoading(false);
@@ -132,21 +133,21 @@ const SideBar = ({ children }: { children?: React.ReactNode }) => {
   }, []);
 
   return (
-    <div className="flex bg-white h-screen">
-      {/* Sidebar */}
-      <div className="w-[13%] flex-col justify-between border-r">
+    <div className="flex bg-white h-full">
+      <div className="w-[13%] flex flex-col justify-between border">
         <div className="text-center py-5">
           <h2 className="font-primary font-bold text-2xl text-[#7645EB]">
             Ashika Files
           </h2>
-        </div>
-        <ul className="flex-col gap-8 flex mt-10 py-7 px-5">
-          <li className="font-primary text-[16px]">
-            <Link
-              href="/dashboard"
-              className={`flex items-center space-x-3 p-2 rounded-md hover:bg-gray-200 font-primary text-[16px] ${
+          <hr />
+          <ul className="flex-col gap-8 flex mt-24 py-7 px-5">
+            <li
+              className={`text-[16px] cursor-pointer flex flex-row items-center gap-4 ${
                 isActive("/dashboard") ? "text-[#7645eb]" : "text-black"
               }`}
+              onClick={() => {
+                router.push("/dashboard");
+              }}
             >
               <Image
                 src="/dashboard/dashboard.svg"
@@ -155,15 +156,15 @@ const SideBar = ({ children }: { children?: React.ReactNode }) => {
                 height={20}
               />
               <span>Dashboard</span>
-            </Link>
-          </li>
+            </li>
 
-          <li>
-            <Link
-              href="/myfiles"
-              className={`flex items-center space-x-3 p-2 rounded-md hover:bg-gray-200 font-primary text-[16px] ${
+            <li
+              className={`text-[16px] cursor-pointer flex flex-row items-center gap-4 ${
                 isActive("/myfiles") ? "text-[#7645eb]" : "text-black"
               }`}
+              onClick={() => {
+                router.push("/myfiles");
+              }}
             >
               <Image
                 src="/dashboard/MyFiles.svg"
@@ -172,14 +173,12 @@ const SideBar = ({ children }: { children?: React.ReactNode }) => {
                 height={20}
               />
               <span>My Files</span>
-            </Link>
-          </li>
-          <li>
-            <a
-              onClick={handleCategorySidebar}
-              className={`flex items-center space-x-3 p-2 rounded-md hover:bg-gray-200  font-primary text-[16px]${
-                isActive(`/categories`) ? "text-[#7645eb]" : "text-black"
+            </li>
+            <li
+              className={`text-[16px] cursor-pointer flex flex-row items-center gap-4 ${
+                isActive("/categories") ? "text-[#7645eb]" : "text-black"
               }`}
+              onClick={handleCategorySidebar}
             >
               <Image
                 src="/dashboard/Categories.svg"
@@ -191,22 +190,38 @@ const SideBar = ({ children }: { children?: React.ReactNode }) => {
                 <span>Categories</span>
                 {pathname.includes("/categories") ? <ChevronRight /> : ""}
               </div>
-            </a>
-          </li>
-        </ul>
+            </li>
+          </ul>
+        </div>
 
-        <AddDialog
-          openOrNot={open}
-          onCancelClick={handleClose}
-          title="New Category"
-          onOKClick={createCategories}
-          placeholder="Enter the Category Name"
-          createLoading={loading}
-          handleTextFieldChange={handleTextFieldChange}
-          value={data?.name}
-          errMessage={errMessages?.name}
-          buttonName="Create"
-        />
+        <div className="w-full px-5">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild className="cursor-pointer">
+              <Button className="flex items-center justify-center  cursor-pointer w-full py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                <span>+ New</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-56 cursor-pointer">
+              <DropdownMenuGroup>
+                <DropdownMenuItem
+                  className="cursor-pointer"
+                  onClick={handleCreate}
+                >
+                  <Folder className="mr-2 h-4 w-4" />
+                  <span>New Category</span>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  className="cursor-pointer"
+                  onClick={() => setShowFileUpload(true)}
+                >
+                  <File className="mr-2 h-4 w-4" />
+                  <span>File Upload</span>
+                </DropdownMenuItem>
+              </DropdownMenuGroup>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
 
       {pathname.includes("/categories") && (
@@ -234,6 +249,18 @@ const SideBar = ({ children }: { children?: React.ReactNode }) => {
           <DialogFooter></DialogFooter>
         </DialogContent>
       </Dialog>
+      <AddDialog
+        openOrNot={open}
+        onCancelClick={handleClose}
+        title="New Category"
+        onOKClick={createCategories}
+        placeholder="Enter the Category Name"
+        createLoading={loading}
+        handleTextFieldChange={handleTextFieldChange}
+        value={data?.name}
+        errMessage={errMessages?.name}
+        buttonName="Create"
+      />
     </div>
   );
 };
